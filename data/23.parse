@@ -1,0 +1,8 @@
+"type","value"
+strict              , "no"
+digraph             , "yes"
+graph_id            , "graph_23"
+start_graph         , "1"
+node_id             , "node_23_1"
+node_id             , "node_23_2"
+end_graph           , "1"

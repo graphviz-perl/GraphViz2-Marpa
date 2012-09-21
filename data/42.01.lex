@@ -1,0 +1,7 @@
+"type","value"
+strict              , "no"
+digraph             , "yes"
+graph_id            , "graph_42_01"
+open_brace          , "1"
+node_id             , "node_42_01"
+close_brace         , "1"

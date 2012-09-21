@@ -1,0 +1,39 @@
+Revision history for Perl extension GraphViz2::Marpa.
+
+1.04  Wed Sep 12 11:11:00 2012
+	- Add GraphViz2::Marpa::Parser::TreeUtils with method fixed_length_paths(), together with
+		scripts/fixed.length.paths.pl and scripts/fixed.length.paths.sh (which just runs *.pl).
+		This parses a DOT file and finds all paths of a given length starting from a given node.
+	- Hence added dependency Tree::DAG_Node, whose only dependencies are Carp, strict and vars.
+	- Add t/fixed.length.paths.t to test the new code.
+	- Add data/fixed.length.paths.gv as output from scripts/fixed.length.paths.sh.
+	- Add html/fixed.length.paths.svg likewise.
+	- Add html/fixed.length.paths.html to demonstrate the output of the new code.
+	- See http://savage.net.au/Perl-modules/html/graphviz2.marpa/fixed.length.paths.html.
+
+1.03  Mon Sep  3 09:28:00 2012
+	- Remove unused dependency Module::UseFrom.
+	- Fix disastrous bug in the parser. Test with data/90.Petersen.dot.
+	- Add README.
+	- Rename scripts/generate.demo.pl to scripts/generate.index.pl, since it does not run all demos,
+		it just creates html/index.html.
+	- Add FAQ item in GraphViz2::Marpa about how to re-create demo files.
+
+1.02  Fri Jun 22 11:50:00 2012
+	- Patch the regexp in the DFA used to recognize HTML-style labels. It's smarter now.
+	- Patch the default renderer to not add double-quote delimiters when outputting HTML-style labels.
+		These patches require files (30, 31, 32, 33, 34, 35, 38).dot to be edited.
+		And they require files (30, 31, 32, 33, 34, 35, 38).(lex, parse, rend) to be re-generated.
+	- Add an item to both the lexer's and parser's FAQs about embedding things like <br ... /> in HTML-style labels.
+	- Add an item to the lexer's FAQ about the 1 label format still not handled by the new code.
+	- Change the format (spacing) of tokens printed in the lexer to match format used in the parser.
+	- Update FAQ as to why setting report_items prints 2 copies of the tokens (Ans: 1 each for lexer and parser).
+
+1.01  Wed Feb  8 11:22:00 2012
+	  - Add a renderer attribute to the Marpa class, which gets passed to the parser.
+	  	In Marpa.pm, this defaults to '' but in Parser.pm it defaults to a GraphViz2::Marpa::Renderer::GraphViz2 object.
+	  - Expand docs relating to script options and class attributes.
+	  - Update data/code.attributes.*.
+
+1.00  Mon Jan 23 11:09:44 2012
+	  - Original version

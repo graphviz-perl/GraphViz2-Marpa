@@ -1,0 +1,20 @@
+digraph if
+{
+	graph
+	[
+		rankdir = "LR"
+	]
+	{
+		graph
+		[
+			rank = "same"
+		]
+		b
+		c
+	}
+	a -> b
+	c -> b
+	[
+		label = "long long long"
+	]
+}

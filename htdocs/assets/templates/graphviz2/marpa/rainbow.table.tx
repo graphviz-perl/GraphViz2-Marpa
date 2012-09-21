@@ -1,0 +1,8 @@
+<table align="center" border="<: $table.border :>" summary="<: $table.summary :>">
+: for $table.row -> $item {
+<tr>
+		: include "rainbow.row.tx" { row => $item };
+</tr>
+: }
+</table>
+

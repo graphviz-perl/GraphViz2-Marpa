@@ -1,0 +1,8 @@
+digraph graph_37
+{
+	node_37
+	[
+		color = "red"
+		fontcolor = "green"
+	]
+}

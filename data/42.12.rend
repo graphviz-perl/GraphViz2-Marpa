@@ -1,0 +1,9 @@
+digraph graph_42_12
+{
+	node_42_12
+	[
+		fixedsize = "1"
+		height = "2"
+		width = "1"
+	]
+}

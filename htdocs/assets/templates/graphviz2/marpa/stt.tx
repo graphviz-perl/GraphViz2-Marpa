@@ -1,0 +1,34 @@
+<html>
+<head>
+<title><: $title :></title>
+</head>
+<body>
+
+<h1 align="center">State Transition Table for GraphViz2::Marpa V <: $version :></h1>
+
+<p>This is the STT for <a href="http://metacpan.org/search?q=GraphViz2%3A%3AMarpa">GraphViz2::Marpa</a> V <: $version :>.</p>
+
+<p>It covers most, but perhaps not quite all, of the <a href="http://www.graphviz.org/content/dot-language">Graphviz</a> dot language.</p>
+
+<p>This table has been exported from an OpenOffice Calc spreadsheet as a CSV file,
+with the latter being incorporated into this HTML.</p>
+
+<p>The lexer which reads the STT does not use the last 2 columns, Regexp and Interpretation.<p>
+
+<p>The Regexp column is referred to in the spreadsheet by formulas, and the Interpretation column is just for the reader.</p>
+
+<p>GraphViz2::Marpa::Lexer reads this STT, and outputs tokens in an intermediary language.</p>
+
+<p>The STT is actually at the end of Lexer.pm, but options to new() allow you to override that source for the STT.</p>
+
+<p>The lexer uses <a href="https://metacpan.org/search?q=Set%3A%3AFA%3A%3AElement">Set::FA::Element</a> to process the graph definition.</p>
+
+<p>GraphViz2::Marpa::Parser reads lexed tokens and builds a data structure in memory representing the graph.</p>
+
+<p>Lastly, the default rendering engine GraphViz2::Marpa::Renderer::GraphViz2 uses this data structure to re-create the input to the lexer,
+although the formatting might be slightly different.</p>
+
+: include "rainbow.table.tx" { table => $table };
+
+</body>
+</html>

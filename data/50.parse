@@ -1,0 +1,7 @@
+"type","value"
+strict              , "no"
+digraph             , "yes"
+graph_id            , "graph_50"
+start_graph         , "1"
+node_id             , "0"
+end_graph           , "1"

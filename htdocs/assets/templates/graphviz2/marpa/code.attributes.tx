@@ -1,0 +1,14 @@
+<html>
+<head>
+<title><: $title :></title>
+</head>
+<body>
+
+<h1 align="center">Code and Command Line Attributes for GraphViz2::Marpa V <: $version :></h1>
+
+<p>This documents the list of command line options and object attributes shared by the modules in this package.</p>
+
+: include "rainbow.table.tx" { table => $table };
+
+</body>
+</html>

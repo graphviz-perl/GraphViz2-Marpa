@@ -1,0 +1,6 @@
+"type","value"
+strict              , "yes"
+digraph             , "no"
+graph_id            , "graph_11"
+open_brace          , "1"
+close_brace         , "1"

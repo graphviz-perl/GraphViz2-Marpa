@@ -1,0 +1,38 @@
+digraph G
+{
+	subgraph cluster_0
+	{
+		graph
+		[
+			label = "hello world"
+		]
+		a -> b
+		a -> c
+		graph
+		[
+			color = "hotpink"
+		]
+	}
+	subgraph cluster_1
+	{
+		graph
+		[
+			label = "MSDOT"
+		]
+		graph
+		[
+			style = "dashed"
+		]
+		graph
+		[
+			color = "purple"
+		]
+		x -> y
+		x -> z
+		y -> z
+		y -> q
+	}
+	top -> a
+	top -> y
+	y -> b
+}

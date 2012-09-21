@@ -1,0 +1,1202 @@
+<html>
+<head>
+<title>State Transition Table for GraphViz2::Marpa::Lexer</title>
+</head>
+<body>
+
+<h1 align="center">State Transition Table for GraphViz2::Marpa V 1.02</h1>
+
+<p>This is the STT for <a href="http://metacpan.org/search?q=GraphViz2%3A%3AMarpa">GraphViz2::Marpa</a> V 1.02.</p>
+
+<p>It covers most, but perhaps not quite all, of the <a href="http://www.graphviz.org/content/dot-language">Graphviz</a> dot language.</p>
+
+<p>This table has been exported from an OpenOffice Calc spreadsheet as a CSV file,
+with the latter being incorporated into this HTML.</p>
+
+<p>The lexer which reads the STT does not use the last 2 columns, Regexp and Interpretation.<p>
+
+<p>The Regexp column is referred to in the spreadsheet by formulas, and the Interpretation column is just for the reader.</p>
+
+<p>GraphViz2::Marpa::Lexer reads this STT, and outputs tokens in an intermediary language.</p>
+
+<p>The STT is actually at the end of Lexer.pm, but options to new() allow you to override that source for the STT.</p>
+
+<p>The lexer uses <a href="https://metacpan.org/search?q=Set%3A%3AFA%3A%3AElement">Set::FA::Element</a> to process the graph definition.</p>
+
+<p>GraphViz2::Marpa::Parser reads lexed tokens and builds a data structure in memory representing the graph.</p>
+
+<p>Lastly, the default rendering engine GraphViz2::Marpa::Renderer::GraphViz2 uses this data structure to re-create the input to the lexer,
+although the formatting might be slightly different.</p>
+
+<table align="center" border="0" summary="STT">
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">Start</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Accept</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">State</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Event</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Next</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Entry</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Exit</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Regexp</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Interpretation</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">Yes</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">initial</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">strict</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_prefix</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:"[^"]*"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">ID</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:graph|digraph)</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">:(?:"[^"]+"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">: + ID</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">initial</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">initial</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">:(?:"[^"]+"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*)):(?:n|ne|e|se|s|sw|w|nw|c|_)(?![a-zA-Z_0-9])</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">: + ID + : + Compass point</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">:(?:n|ne|e|se|s|sw|w|nw|c|_)(?![a-zA-Z_0-9])</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">: + Compass point</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:graph|digraph)</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_prefix</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:->|--)</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Edge</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:"[^"]*"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">open_brace</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_graph_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">{</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">open_brace</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">{</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">start_statements</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">open_brace</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">open_brace</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">start_statement</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">{</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">start_statements</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">start_statement</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">start_statement</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Yes</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">subgraph</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_id_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:"[^"]*"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:->|--)</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">edge_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:\[)</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_list</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">{</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_2</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">}</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">end_statement</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">;</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Yes</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_2</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">subgraph</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_id_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:"[^"]*"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:->|--)</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">edge_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:\[)</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_list</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">{</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">}</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">end_statement</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">;</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_2</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_2</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_2</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">subgraph</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_id_2</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">:(?:n|ne|e|se|s|sw|w|nw|c|_)(?![a-zA-Z_0-9])</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">:(?:"[^"]+"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*)):(?:n|ne|e|se|s|sw|w|nw|c|_)(?![a-zA-Z_0-9])</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">:(?:"[^"]+"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:"[^"]*"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">{</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">A stand-alone {</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">}</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">end_statement</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:->|--)</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\[</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_list</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">=</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">;</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">subgraph</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_id_2</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">:(?:n|ne|e|se|s|sw|w|nw|c|_)(?![a-zA-Z_0-9])</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">:(?:"[^"]+"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*)):(?:n|ne|e|se|s|sw|w|nw|c|_)(?![a-zA-Z_0-9])</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">:(?:"[^"]+"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:"[^"]*"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">{</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">A stand-alone {</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">}</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">end_statement</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:->|--)</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\[</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_list</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">=</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">;</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">edge_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">subgraph</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_id_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:"[^"]*"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:->|--)</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">}</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">end_statement</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">edge_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">edge_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_list</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:"[^"]*"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_attribute</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">]</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">}</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_list</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_list</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:"[^"]*"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_attribute</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">=</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">,</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_list</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">]</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:"[^"]*"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_attribute</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">=</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">,</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_list</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">]</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_b</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Yes</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">end_statement</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">subgraph</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">graph_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">save_id_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:"[^"]*"|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">id_a</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">(?:->|--)</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">edge_id</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\[</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">attribute_list</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">{</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">}</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">statement_list_1</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\/\*.*?\*\/</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">end_statement</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">\s+</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">end_statement</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">.</div></td>
+</tr>
+<tr>
+<td><div style="border: thin solid; margin: 0; padding: 0">Start</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Accept</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">State</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Event</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Next</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Entry</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Exit</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Regexp</div></td>
+<td><div style="border: thin solid; margin: 0; padding: 0">Interpretation</div></td>
+</tr>
+</table>
+
+
+</body>
+</html>
