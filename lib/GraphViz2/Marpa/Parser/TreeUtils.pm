@@ -8,7 +8,7 @@ use Hash::FieldHash ':all';
 
 use Tree::DAG_Node;
 
-fieldhash my %allow_loops  => 'allow_loops';
+fieldhash my %allow_cycles => 'allow_cycles';
 fieldhash my %fixed_paths  => 'fixed_paths';
 fieldhash my %image_size   => 'image_size';
 fieldhash my %path_length  => 'path_length';
@@ -280,7 +280,9 @@ sub _find_fixed_length_paths
 sub find_fixed_length_paths
 {
 	my($self)  = @_;
-	my($title) = 'Paths of length ' . $self -> path_length . ' starting from node ' . $self -> start_node;
+	my($title) = 'Path length: ' . $self -> path_length .
+		'. Starting node: ' . $self -> start_node .
+		'. Allow cycles: ' . $self -> allow_cycles;
 
 	# Generate the RAM-based version of the graph.
 
@@ -325,12 +327,12 @@ sub _find_start_node_cb
 sub _init
 {
 	my($self, $arg)     = @_;
-	$$arg{allow_loops}  ||= 0;     # Caller can set.
+	$$arg{allow_cycles} ||= 0;     # Caller can set.
 	$$arg{image_size}   ||= '8,8'; # Caller can set.
 	$$arg{path_length}  ||= 0;     # Caller can set.
 	$$arg{report_paths} ||= 0;     # Caller can set.
 	$$arg{root}         = Tree::DAG_Node -> new;
-	$$arg{start_node}   = defined($$arg{start_node}) ? $$arg{start_node} : undef; # Caller can set.
+	$$arg{start_node}   = defined($$arg{start_node}) ? $$arg{start_node} : undef; # Caller can set (to 0).
 	$self               = $self -> SUPER::_init($arg);
 
 	die "No start node specified\n"  if (! defined $self -> start_node);
@@ -431,8 +433,8 @@ sub report_fixed_length_paths
 
 sub _winnow_fixed_length_paths
 {
-	my($self)  = @_;
-	my($loops) = $self -> allow_loops;
+	my($self)   = @_;
+	my($cycles) = $self -> allow_cycles;
 
 	my(@solutions);
 
@@ -444,15 +446,15 @@ sub _winnow_fixed_length_paths
 
 		$seen{$_}++ for map{$_ -> name} @$candidate;
 
-		# Exclude nodes depending on the allow_loops option:
+		# Exclude nodes depending on the allow_cycles option:
 		# o 0 - Do not allow any loops.
 		# o 1 - Allow any node to be included once or twice.
 
-		if ($loops == 0)
+		if ($cycles == 0)
 		{
 			@$candidate = grep{$seen{$_ -> name} == 1} @$candidate;
 		}
-		elsif ($loops == 1)
+		elsif ($cycles == 1)
 		{
 			@$candidate = grep{$seen{$_ -> name} <= 2} @$candidate;
 		}
@@ -520,6 +522,9 @@ Currently, the only feature available is to find all paths of a given length sta
 Sample output: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/fixed.length.paths.html>.
 
 This HTML file was hand-rolled to showcase the module. See the synopsis for sample code.
+
+Note: Currently the code ignores the directions of the edges, meaning all input graphs are assumed to be
+undirected.
 
 =head1 Distributions
 
@@ -677,25 +682,27 @@ Such graphs are deemed to be pathological.
 
 =head2 How are cycles in the graph handled?
 
-Firstly, paths are forbidden to return to the starting node.
+This is controlled by the I<allow_cycles> option to new(), or the corresponding method L</allow_cycles($integer)>.
 
-Secondly, apart from the starting node, any other node may appear at most twice in the path. This is a way of
-saying you can exit from, and return to, any non-starting node only once.
+Sample code: Using the input file data/90.clust1.lex (see scripts/fixed.length.paths.sh) we can specify
+various combinations of parameters like this:
 
-So, when searching for paths of length 3 starting from node 5, we have:
+	allow_cycles  path_length  start node  solutions
+	0             3            a0          5
+	1             3            a0          21
 
-	5 -> 4 -> 3 -> 5 is excluded from the result
-	5 -> 4 -> 3 -> 4 is included in the result
+	0             4            a0          1
+	1             4            a0          47
 
 =head2 Are all paths found unique?
 
-Yes. The code checks for duplicates.
+Yes.
 
 =head1 Reference Book
 
 Combinatorial Algorithms for Computers and Calculators, A Nijenhuis and H Wilf, p 240.
 
-This books explains very neatly the backtracking parser I used to process the combinations of nodes found
+This books very clearly explains the backtracking parser I used to process the combinations of nodes found
 at each point along each path. Source code in the book is in Fortran.
 
 The book is now downloadable as a PDF from L<http://www.math.upenn.edu/~wilf/website/CombAlgDownld.html>.

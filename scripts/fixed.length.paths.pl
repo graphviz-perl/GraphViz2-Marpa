@@ -18,7 +18,7 @@ my(%option);
 if ($option_parser -> getoptions
 (
 	\%option,
-	'allow_loops=i',
+	'allow_cycles=i',
 	'help',
 	'image_size=s',
 	'lexed_file=s',
@@ -55,7 +55,7 @@ find.trees.pl - Run GraphViz2::Marpa::Parser::Tree.
 find.trees.pl [options]
 
 	Options:
-	-allow_loops $integer
+	-allow_cycles $integer
 	-help
 	-image_size xInchesByyInches
 	-lexed_file aLexedInputFileName
@@ -75,7 +75,7 @@ Exit value: 0 for success, 1 for failure. Die upon error.
 
 =over 4
 
-=item o -allow_loops $integer
+=item o -allow_cycles $integer
 
 Specify whether or not loops are allowed in the paths found.
 
