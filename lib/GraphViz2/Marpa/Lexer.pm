@@ -37,7 +37,7 @@ fieldhash my %timeout      => 'timeout';
 fieldhash my %type         => 'type';
 fieldhash my %utils        => 'utils';
 
-our $VERSION = '1.04';
+our $VERSION = '1.03';
 
 # --------------------------------------------------
 
@@ -777,8 +777,6 @@ It also means that dot identifiers in (normal) double-quotes will never match th
 
 =head2 description([$graph])
 
-'description' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 The [] indicate an optional parameter.
 
 Get or set the L<Graphviz|http://www.graphviz.org/> (dot) graph definition.
@@ -786,6 +784,8 @@ Get or set the L<Graphviz|http://www.graphviz.org/> (dot) graph definition.
 The value supplied by the 'description' option takes precedence over the value read from the 'input_file'.
 
 See also L</input_file()>.
+
+'description' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 generate_lexed_file($file_name)
 
@@ -815,8 +815,6 @@ Called by L</get_graph_from_command_line()> and L</get_graph_from_file()>.
 
 =head2 input_file([$graph_file_name])
 
-'input_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the name of the file to read the L<Graphviz|http://www.graphviz.org/> (dot) graph definition from.
@@ -824,6 +822,8 @@ Get or set the name of the file to read the L<Graphviz|http://www.graphviz.org/>
 The value supplied by the 'description' option takes precedence over the value read from the 'input_file'.
 
 See also the L</description()> method.
+
+'input_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 items()
 

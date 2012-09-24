@@ -49,7 +49,6 @@ requires =>
 	Set::Array                  => 0.23,
 	Set::FA::Element            => 1.08,
 	strict                      => 1.03,
-	Tree::DAG_Node              => 1.06,
 	Text::CSV_XS                => 0.80,
 	Text::Xslate                => 1.4001,
 	Try::Tiny                   => 0.09,

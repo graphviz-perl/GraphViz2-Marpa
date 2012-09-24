@@ -1,16 +1,5 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
-1.04  Wed Sep 12 11:11:00 2012
-	- Add GraphViz2::Marpa::Parser::TreeUtils with method fixed_length_paths(), together with
-		scripts/fixed.length.paths.pl and scripts/fixed.length.paths.sh (which just runs *.pl).
-		This parses a DOT file and finds all paths of a given length starting from a given node.
-	- Hence added dependency Tree::DAG_Node, whose only dependencies are Carp, strict and vars.
-	- Add t/fixed.length.paths.t to test the new code.
-	- Add data/fixed.length.paths.gv as output from scripts/fixed.length.paths.sh.
-	- Add html/fixed.length.paths.svg likewise.
-	- Add html/fixed.length.paths.html to demonstrate the output of the new code.
-	- See http://savage.net.au/Perl-modules/html/graphviz2.marpa/fixed.length.paths.html.
-
 1.03  Mon Sep  3 09:28:00 2012
 	- Remove unused dependency Module::UseFrom.
 	- Fix disastrous bug in the parser. Test with data/90.Petersen.dot.

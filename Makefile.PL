@@ -56,7 +56,6 @@ PREREQ_PM =>
 	Set::Array                  => 0.23,
 	Set::FA::Element            => 1.08,
 	strict                      => 1.03,
-	Tree::DAG_Node              => 1.06,
 	Test::More                  => 0.98,
 	Test::Pod                   => 1.44,
 	Text::CSV_XS                => 0.80,
