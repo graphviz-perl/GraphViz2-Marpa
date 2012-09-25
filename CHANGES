@@ -1,13 +1,12 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
 1.04  Tue Sep 25 13:55:00 2012
-	- No need to upgrade.
-	- Code: Internal changes to Marpa.pm to support the new distro GraphViz2::Marpa::TreeUtils, which is a
-		sub-class of GraphViz2::Marpa.
+	- Internal changes only.No need to upgrade.
+	- Change Marpa.pm to support the new distro GraphViz2::Marpa::TreeUtils, which is a sub-class of GraphViz2::Marpa.
 		Specifically, the lexer and the parser are stored in mutators, so they can be called from sub-classes.
 	- This means any shell scripts using -l now need -lexed_file, and if using -p now need -parsed_file.
-	- This in turns means patches to these scripts: g2m.sh, lex.sh, parsed.sh and rend.sh.
-	- So, the opportunity was taken to spell out all command line option names in shell scripts.
+	- This in turns means patches to various scripts (scripts/*.sh and scripts/*.pl).
+	- The opportunity was taken to spell out all command line option names in shell scripts.
 	- Lastly, all data/*.dot files were renamed to data/*.gv, in line with Graphviz itself.
 
 1.03  Mon Sep  3 09:28:00 2012

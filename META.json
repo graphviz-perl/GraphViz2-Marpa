@@ -60,27 +60,27 @@
    "provides" : {
       "GraphViz2::Marpa" : {
          "file" : "lib/GraphViz2/Marpa.pm",
-         "version" : "1.03"
+         "version" : "1.04"
       },
       "GraphViz2::Marpa::Lexer" : {
          "file" : "lib/GraphViz2/Marpa/Lexer.pm",
-         "version" : "1.03"
+         "version" : "1.04"
       },
       "GraphViz2::Marpa::Lexer::DFA" : {
          "file" : "lib/GraphViz2/Marpa/Lexer/DFA.pm",
-         "version" : "1.03"
+         "version" : "1.04"
       },
       "GraphViz2::Marpa::Parser" : {
          "file" : "lib/GraphViz2/Marpa/Parser.pm",
-         "version" : "1.03"
+         "version" : "1.04"
       },
       "GraphViz2::Marpa::Renderer::GraphViz2" : {
          "file" : "lib/GraphViz2/Marpa/Renderer/GraphViz2.pm",
-         "version" : "1.03"
+         "version" : "1.04"
       },
       "GraphViz2::Marpa::Utils" : {
          "file" : "lib/GraphViz2/Marpa/Utils.pm",
-         "version" : "1.03"
+         "version" : "1.04"
       }
    },
    "release_status" : "stable",
@@ -89,5 +89,5 @@
          "http://opensource.org/licenses/artistic-license.php"
       ]
    },
-   "version" : "1.03"
+   "version" : "1.04"
 }
