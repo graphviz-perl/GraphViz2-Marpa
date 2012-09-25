@@ -16,8 +16,8 @@ cat $2
 echo ----------------------------
 rm -rf $3
 echo Output of lexer:
-#perl -Ilib scripts/lex.pl -i $2 -l $3 -stt data/default.stt.$1 -type $1 $4 $5
-perl -Ilib scripts/lex.pl -i $2 -l $3 $4 $5
+#perl -Ilib scripts/lex.pl -i $2 -lexed_file $3 -stt data/default.stt.$1 -type $1 $4 $5
+perl -Ilib scripts/lex.pl -i $2 -lexed_file $3 $4 $5
 echo ----------------------------
 echo Contents of $3:
 cat $3

@@ -37,7 +37,7 @@ for my $file_name (GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, $
 	$in_file  = File::Spec -> catfile($data_dir_name, "$file_name.$in_suffix");
 	$out_file = File::Spec -> catfile($temp_dir_name, "$file_name.$out_suffix");
 
-	`$^X scripts/rend.pl -p $in_file -o $out_file`;
+	`$^X scripts/rend.pl -parsed_file $in_file -output_file $out_file`;
 
 	$in_file     = File::Spec -> catfile($data_dir_name, "$file_name.$out_suffix");
 	@old_content = slurp $in_file;

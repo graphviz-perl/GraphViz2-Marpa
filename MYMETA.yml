@@ -17,25 +17,22 @@ name: GraphViz2-Marpa
 provides:
   GraphViz2::Marpa:
     file: lib/GraphViz2/Marpa.pm
-    version: 1.04
+    version: 1.03
   GraphViz2::Marpa::Lexer:
     file: lib/GraphViz2/Marpa/Lexer.pm
-    version: 1.04
+    version: 1.03
   GraphViz2::Marpa::Lexer::DFA:
     file: lib/GraphViz2/Marpa/Lexer/DFA.pm
-    version: 1.04
+    version: 1.03
   GraphViz2::Marpa::Parser:
     file: lib/GraphViz2/Marpa/Parser.pm
-    version: 1.04
-  GraphViz2::Marpa::Parser::TreeUtils:
-    file: lib/GraphViz2/Marpa/Parser/TreeUtils.pm
-    version: 1.04
+    version: 1.03
   GraphViz2::Marpa::Renderer::GraphViz2:
     file: lib/GraphViz2/Marpa/Renderer/GraphViz2.pm
-    version: 1.04
+    version: 1.03
   GraphViz2::Marpa::Utils:
     file: lib/GraphViz2/Marpa/Utils.pm
-    version: 1.04
+    version: 1.03
 requires:
   Algorithm::Diff: 1.1902
   Data::Section::Simple: 0.02
@@ -58,7 +55,6 @@ requires:
   Set::FA::Element: 1.08
   Text::CSV_XS: 0.8
   Text::Xslate: 1.4001
-  Tree::DAG_Node: 1.06
   Try::Tiny: 0.09
   feature: 1
   parent: 0.225
@@ -67,4 +63,4 @@ requires:
   warnings: 1.03
 resources:
   license: http://opensource.org/licenses/artistic-license.php
-version: 1.04
+version: 1.03

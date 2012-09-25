@@ -15,7 +15,7 @@ cat $2
 echo ----------------------------
 rm -rf $3
 echo Output of parser:
-perl -Ilib scripts/parse.pl -l $2 -r 1 -p $3 $4 $5
+perl -Ilib scripts/parse.pl -lexed_file $2 -report_items 1 -parsed_file $3 $4 $5
 echo ----------------------------
 echo Contents of $1:
 cat $1

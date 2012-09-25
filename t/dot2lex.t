@@ -21,7 +21,7 @@ use Test::More;
 my($temp_dir)      = File::Temp -> newdir('temp.XXXX', CLEANUP => 1, EXLOCK => 0, TMPDIR => 1);
 my($temp_dir_name) = $temp_dir -> dirname;
 my($data_dir_name) = 'data';
-my($in_suffix)     = 'dot';
+my($in_suffix)     = 'gv';
 my($out_suffix)    = 'lex';
 my($test_count)    = 0;
 
@@ -39,7 +39,7 @@ for my $file_name (grep{! /^(?:01|02|03|04|05|06|08)/} GraphViz2::Marpa::Utils -
 	$in_file  = File::Spec -> catfile($data_dir_name, "$file_name.$in_suffix");
 	$out_file = File::Spec -> catfile($temp_dir_name, "$file_name.$out_suffix");
 
-	my($result) = `$^X scripts/lex.pl -i $in_file -l $out_file`;
+	my($result) = `$^X scripts/lex.pl -input_file $in_file -lexed_file $out_file`;
 	$in_file     = File::Spec -> catfile($data_dir_name, "$file_name.$out_suffix");
 	@old_content = slurp $in_file;
 	@new_content = slurp $out_file;

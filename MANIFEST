@@ -330,7 +330,6 @@ data/code.attributes.ods
 data/default.stt.csv
 data/default.stt.html
 data/default.stt.ods
-data/fixed.length.paths.gv
 data/Marpa.Grammar.dat
 htdocs/assets/templates/graphviz2/marpa/code.attributes.tx
 htdocs/assets/templates/graphviz2/marpa/rainbow.page.tx
@@ -416,8 +415,6 @@ html/90.structs.svg
 html/90.train11.svg
 html/90.tree.svg
 html/90.try.svg
-html/fixed.length.paths.html
-html/fixed.length.paths.svg
 html/graphviz2.marpa.index.tx
 html/index.html
 html/Marpa.Grammar.svg
@@ -425,7 +422,6 @@ lib/GraphViz2/Marpa.pm
 lib/GraphViz2/Marpa/Lexer.pm
 lib/GraphViz2/Marpa/Lexer/DFA.pm
 lib/GraphViz2/Marpa/Parser.pm
-lib/GraphViz2/Marpa/Parser/TreeUtils.pm
 lib/GraphViz2/Marpa/Renderer/GraphViz2.pm
 lib/GraphViz2/Marpa/Utils.pm
 Makefile.PL
@@ -436,8 +432,6 @@ README
 scripts/code.attributes2html.pl
 scripts/dot2lex.pl
 scripts/dot2rend.pl
-scripts/fixed.length.paths.pl
-scripts/fixed.length.paths.sh
 scripts/g2m.pl
 scripts/g2m.sh
 scripts/generate.index.pl
@@ -458,7 +452,6 @@ scripts/rend.sh
 scripts/rend2svg.pl
 scripts/stt2html.pl
 t/dot2lex.t
-t/fixed.length.paths.t
 t/lex2parse.t
 t/parse2rend.t
 t/pod.t

@@ -13,11 +13,13 @@ use Log::Handler;
 fieldhash my %description  => 'description';
 fieldhash my %input_file   => 'input_file';
 fieldhash my %lexed_file   => 'lexed_file';
+fieldhash my %lexer        => 'lexer';
 fieldhash my %logger       => 'logger';
 fieldhash my %maxlevel     => 'maxlevel';
 fieldhash my %minlevel     => 'minlevel';
 fieldhash my %output_file  => 'output_file';
 fieldhash my %parsed_file  => 'parsed_file';
+fieldhash my %parser       => 'parser';
 fieldhash my %renderer     => 'renderer';
 fieldhash my %report_items => 'report_items';
 fieldhash my %report_stt   => 'report_stt';
@@ -25,27 +27,29 @@ fieldhash my %stt_file     => 'stt_file';
 fieldhash my %timeout      => 'timeout';
 fieldhash my %type         => 'type';
 
-our $VERSION = '1.03';
+our $VERSION = '1.04';
 
 # --------------------------------------------------
 
 sub _init
 {
 	my($self, $arg)     = @_;
-	$$arg{description}  ||= '';       # Caller can set.
-	$$arg{input_file}   ||= '';       # Caller can set.
-	$$arg{lexed_file}   ||= '';       # Caller can set.
+	$$arg{description}  ||= ''; # Caller can set.
+	$$arg{input_file}   ||= ''; # Caller can set.
+	$$arg{lexed_file}   ||= ''; # Caller can set.
+	$$arg{lexer}        = '';
 	$$arg{logger}       = defined($$arg{logger}) ? $$arg{logger} : undef; # Caller can set.
 	$$arg{maxlevel}     ||= 'notice'; # Caller can set.
 	$$arg{minlevel}     ||= 'error';  # Caller can set.
 	$$arg{output_file}  ||= '';       # Caller can set.
 	$$arg{parsed_file}  ||= '';       # Caller can set.
+	$$arg{parser}       = '';
 	$$arg{renderer}     ||= '';       # Caller can set.
 	$$arg{report_items} ||= 0;        # Caller can set.
 	$$arg{report_stt}   ||= 0;        # Caller can set.
-	$$arg{stt_file}     ||= ''; # Caller can set.
-	$$arg{timeout}      ||= 10; # Caller can set.
-	$$arg{type}         ||= ''; # Caller can set.
+	$$arg{stt_file}     ||= '';       # Caller can set.
+	$$arg{timeout}      ||= 10;       # Caller can set.
+	$$arg{type}         ||= '';       # Caller can set.
 	$self               = from_hash($self, $arg);
 
 	if (! defined $self -> logger)
@@ -71,6 +75,8 @@ sub _init
 sub log
 {
 	my($self, $level, $s) = @_;
+	$level ||= 'debug';
+	$s     ||= '';
 
 	$self -> logger -> $level($s);
 
@@ -93,7 +99,9 @@ sub new
 sub run
 {
 	my($self)  = @_;
-	my($lexer) = GraphViz2::Marpa::Lexer -> new
+
+	$self -> lexer
+	(GraphViz2::Marpa::Lexer -> new
 		(
 		 description  => $self -> description,
 		 input_file   => $self -> input_file,
@@ -106,15 +114,17 @@ sub run
 		 stt_file     => $self -> stt_file,
 		 timeout      => $self -> timeout,
 		 type         => $self -> type,
-		);
+		)
+	);
 
 	# Return 0 for success and 1 for failure.
 
-	my($result) = $lexer -> run;
+	my($result) = $self -> lexer -> run;
 
 	if ($result == 0)
 	{
-		$result = GraphViz2::Marpa::Parser -> new
+		$self -> parser
+		(GraphViz2::Marpa::Parser -> new
 			(
 			 lexed_file   => $self -> lexed_file,
 			 logger       => $self -> logger,
@@ -124,8 +134,11 @@ sub run
 			 parsed_file  => $self -> parsed_file,
 			 renderer     => $self -> renderer,
 			 report_items => $self -> report_items,
-			 tokens       => $lexer -> items,
-			) -> run;
+			 tokens       => $self -> lexer -> items,
+			)
+		);
+
+		$result = $self -> parser -> run;
 	}
 	else
 	{

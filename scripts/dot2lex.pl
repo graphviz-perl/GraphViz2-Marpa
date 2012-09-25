@@ -15,12 +15,12 @@ my($print)         = shift || 0;
 my($dot_file);
 my($lex_file);
 
-for my $file_name (GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, 'dot') )
+for my $file_name (GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, 'gv') )
 {
-	$dot_file = File::Spec -> catfile($data_dir_name, "$file_name.dot");
+	$dot_file = File::Spec -> catfile($data_dir_name, "$file_name.gv");
 	$lex_file = File::Spec -> catfile($data_dir_name, "$file_name.lex");
 
 	print "$dot_file. \n" if ($print);
 
-	`$^X -Ilib scripts/lex.pl -i $dot_file -l $lex_file`;
+	`$^X -Ilib scripts/lex.pl -input_file $dot_file -lexed_file $lex_file`;
 }

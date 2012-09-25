@@ -21,7 +21,7 @@ use Text::Xslate 'mark_raw';
 my($data_dir_name) = 'data';
 my($html_dir_name) = 'html';
 my($format)        = 'svg';
-my(@dot_file)      = GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, 'dot');
+my(@dot_file)      = GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, 'gv');
 
 my(@content);
 my($dot_file);
@@ -30,7 +30,7 @@ my($lex_file);
 
 for my $file_name (@dot_file)
 {
-	$dot_file               = File::Spec -> catfile($data_dir_name, "$file_name.dot");
+	$dot_file               = File::Spec -> catfile($data_dir_name, "$file_name.gv");
 	$lex_file               = File::Spec -> catfile($data_dir_name, "$file_name.lex");
 	$image_file             = File::Spec -> catfile($html_dir_name, "$file_name.$format");
 	@content                = map{$Entitize{$_} } slurp($dot_file);

@@ -14,7 +14,7 @@ cat $1
 echo ----------------------------
 rm -rf $2
 echo Output of renderer:
-perl -Ilib scripts/rend.pl -p $1 -o $2 $3 $4
+perl -Ilib scripts/rend.pl -parsed_file $1 -output_file $2 $3 $4
 echo ----------------------------
 echo Contents of $1:
 cat $1

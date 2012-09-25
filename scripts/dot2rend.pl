@@ -17,9 +17,9 @@ my($lex_file);
 my($parse_file);
 my($rend_file);
 
-for my $file_name (GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, 'dot') )
+for my $file_name (GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, 'gv') )
 {
-	$dot_file = File::Spec -> catfile($data_dir_name, "$file_name.dot");
+	$dot_file = File::Spec -> catfile($data_dir_name, "$file_name.gv");
 	$lex_file = File::Spec -> catfile($data_dir_name, "$file_name.lex");
 
 	print "$dot_file. \n" if ($print);
@@ -31,6 +31,6 @@ for my $file_name (GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, '
 		$parse_file = File::Spec -> catfile($data_dir_name, "$file_name.parse");
 		$rend_file  = File::Spec -> catfile($data_dir_name, "$file_name.rend");
 
-		`$^X -Ilib scripts/parse.pl -l $lex_file -p $parse_file -o $rend_file`;
+		`$^X -Ilib scripts/parse.pl -lexed_file $lex_file -parsed_file $parse_file -output_file $rend_file`;
 	}
 }

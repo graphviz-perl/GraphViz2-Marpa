@@ -8,4 +8,4 @@
 # 2 & 3: Use to run the default renderer. E.g.: -o data/19.rend.
 #    Or, use for debugging. E.g.: -maxlevel debug.
 
-perl -Ilib scripts/g2m.pl -i data/$1.dot -l data/$1.lex -p data/$1.parse $2 $3
+perl -Ilib scripts/g2m.pl -input_file data/$1.dot -lexed_file data/$1.lex -parsed_file data/$1.parse $2 $3

@@ -20,5 +20,5 @@ for my $file_name (GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, '
 
 	print "$lex_file. \n" if ($print);
 
-	`$^X -Ilib scripts/parse.pl -l $lex_file -p $parse_file`;
+	`$^X -Ilib scripts/parse.pl -lexed_fle $lex_file -parsed_file $parse_file`;
 }
