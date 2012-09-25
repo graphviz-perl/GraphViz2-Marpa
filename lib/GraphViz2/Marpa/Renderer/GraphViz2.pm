@@ -251,6 +251,7 @@ sub run
 			when ('end_attribute')   {$self -> format_attributes([@attributes]);}
 			when ('open_brace')      {$self -> new_item('{', 1, 0, 0);}
 			when ('close_brace')     {$self -> new_item('}', 1, 0, 0);}
+			when ('class_id')        {$self -> new_id($last_type, $type, $value);}
 			when ('edge_id')         {$self -> new_id($last_type, $type, $value);}
 			when ('node_id')         {$self -> new_id($last_type, $type, $value);}
 			when ('colon')           {$self -> new_item($value, 0, 1, 0);}

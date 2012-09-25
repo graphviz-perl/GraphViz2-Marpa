@@ -202,7 +202,7 @@ sub _clean_up
 	# 4: This graph:
 	# digraph graph_17 {node_17:c}
 	# lexes as:                         instead of as:
-	# "type","value"                    "type","value" 
+	# "type","value"                    "type","value"
 	# strict              , "no"        strict              , "no"
 	# digraph             , "yes"       digraph             , "yes"
 	# graph_id            , "graph_17"  graph_id            , "graph_17"
@@ -256,7 +256,7 @@ sub _clean_up
 
 	push @old_items, $new_items[$#new_items];
 
-	# 6: Convert all 'id's to 'node_ids'. I /think/ this is ok.
+	# 6: Convert all 'id's to 'class_id/node_id's. I /think/ this is ok.
 
 	@new_items = ();
 
@@ -264,7 +264,14 @@ sub _clean_up
 	{
 		if ($old_items[$i]{type} eq 'id')
 		{
-			$old_items[$i]{type} = 'node_id';
+			if ($old_items[$i]{value} =~ /^edge|graph|node$/)
+			{
+				$old_items[$i]{type} = 'class_id';
+			}
+			else
+			{
+				$old_items[$i]{type} = 'node_id';
+			}
 		}
 
 		push @new_items, $old_items[$i];
@@ -314,13 +321,13 @@ sub decrement_subgraph_count
 sub fix_node_id
 {
 	my($dfa) = @_;
-	my($match) = trim($dfa -> match);
+	my($value) = trim($dfa -> match);
 
-	$myself -> log(debug => "fix_node_id($match)");
+	$myself -> log(debug => "fix_node_id($value)");
 
 	# If we get here by matching ':', we're just got a node ID.
 
-	if ($match eq ':')
+	if ($value eq ':')
 	{
 		my($id) = $myself -> items -> pop;
 
@@ -450,8 +457,7 @@ sub new_item
 
 sub _process_graph
 {
-	my($self) = @_;
-
+	my($self)   = @_;
 	my($result) = 1 - $self -> dfa -> accept($self -> graph_text);
 
 	if ($result)
@@ -564,27 +570,27 @@ sub run
 sub save_attribute
 {
 	my($dfa)   = @_;
-	my($match) = trim($dfa -> match);
+	my($value) = trim($dfa -> match);
 
-	$myself -> log(debug => "save_attribute($match)");
+	$myself -> log(debug => "save_attribute($value)");
 
 	# Handle the comma between attributes.
 
-	return if ($match eq ',');
+	return if ($value eq ',');
 
 	# Check if we have [key] or [key = value].
 
-	if ($match eq '=')
+	if ($value eq '=')
 	{
 		# If it's [key = ...] we're happy. Let the following code deal with it.
 
-		$myself -> attribute -> push($match);
+		$myself -> attribute -> push($value);
 	}
 	elsif ($myself -> attribute -> length == 0)
 	{
-		# If the stack is empty, it's [key...] so far. Push key i.e.  $match
+		# If the stack is empty, it's [key...] so far. Push key i.e.  $value
 
-		$myself -> attribute -> push($match);
+		$myself -> attribute -> push($value);
 	}
 	elsif ($myself -> attribute -> length == 1)
 	{
@@ -593,7 +599,7 @@ sub save_attribute
 		$myself -> new_item('equals', '=');
 		$myself -> new_item('attribute_value', 1); # 1 => True, the default value in the dot language.
 		$myself -> attribute -> clear;
-		$myself -> attribute -> push($match);
+		$myself -> attribute -> push($value);
 	}
 	else
 	{
@@ -601,11 +607,11 @@ sub save_attribute
 		$myself -> attribute -> clear;
 	}
 
-	my($name) = 'attribute_' . ($myself -> attribute -> length == 1 ? 'id' : 'value');
+	my($type) = 'attribute_' . ($myself -> attribute -> length == 1 ? 'id' : 'value');
 
-	$myself -> decrement_brace_count if ($match eq '}');
-	$myself -> new_item($match eq ']' ? 'close_bracket' : $match eq '=' ? 'equals' : $name, $match);
-	$myself -> attribute -> clear if ($match eq ']');
+	$myself -> decrement_brace_count if ($value eq '}');
+	$myself -> new_item($value eq ']' ? 'close_bracket' : $value eq '=' ? 'equals' : $type, $value);
+	$myself -> attribute -> clear if ($value eq ']');
 
 } # End of save_attribute.
 
@@ -615,18 +621,18 @@ sub save_attribute
 sub save_graph_id
 {
 	my($dfa)   = @_;
-	my($match) = trim($dfa -> match);
+	my($value) = trim($dfa -> match);
 
-	$myself -> log(debug => "save_graph_id($match)");
+	$myself -> log(debug => "save_graph_id($value)");
 
-	if ($match eq '{')
+	if ($value eq '{')
 	{
 		$myself -> new_item('graph_id', '');
 		$myself -> new_item('open_brace', $myself -> increment_brace_count);
 	}
 	else
 	{
-		$myself -> new_item('graph_id', $match);
+		$myself -> new_item('graph_id', $value);
 	}
 
 } # End of save_graph_id.
@@ -637,37 +643,39 @@ sub save_graph_id
 sub save_id_1
 {
 	my($dfa)   = @_;
-	my($match) = trim($dfa -> match);
+	my($value) = trim($dfa -> match);
 
-	$myself -> log(debug => "save_id_1($match)");
+	$myself -> log(debug => "save_id_1($value)");
 
 	# Handle end-of-statement '}'.
 
-	if ($match eq '}')
+	if ($value eq '}')
 	{
 		$myself -> check_end_subgraph;
 
 		return;
 	}
 
-	my($name);
+	my($type);
 
-	if ($match eq 'subgraph')
+	if ($value eq 'subgraph')
 	{
 		# Later, this tells us when a close_brace closes a subgraph. See check_end_subgraph().
 
 		$myself -> subgraph -> push($myself -> brace_count);
 
-		$match = $myself -> increment_subgraph_count;
-		$name  = 'start_subgraph';
+		$value = $myself -> increment_subgraph_count;
+		$type  = 'start_subgraph';
 	}
 	else
 	{
-		$name  = $match =~ /^-/ ? 'edge_id' : $match eq '{' ? 'open_brace' : 'id';
-		$match = $myself -> brace_count if ($name eq 'open_brace');
+		$type  = $value =~ /^-/ ? 'edge_id' : $value eq '{' ? 'open_brace' : 'id';
+		$value = $myself -> brace_count if ($type eq 'open_brace');
 	}
 
-	$myself -> new_item($name, $match);
+	print "\tsave_id_1. Type: $type. Value: $value. \n";
+
+	$myself -> new_item($type, $value);
 
 } # End of save_id_1.
 
@@ -677,22 +685,22 @@ sub save_id_1
 sub save_id_2
 {
 	my($dfa)   = @_;
-	my($match) = trim($dfa -> match);
+	my($value) = trim($dfa -> match);
 
-	$myself -> log(debug => "save_id_2($match)");
+	$myself -> log(debug => "save_id_2($value)");
 
-	if ($match eq '}')
+	if ($value eq '}')
 	{
 		$myself -> check_end_subgraph;
 	}
-	elsif ($match eq 'subgraph')
+	elsif ($value eq 'subgraph')
 	{
 		# Later, this tells us when a close_brace closes a subgraph. See check_end_subgraph().
 
 		$myself -> subgraph -> push($myself -> brace_count);
 		$myself -> new_item('start_subgraph', $myself -> increment_subgraph_count);
 	}
-	elsif ($match =~ /^:(.+):(n|ne|se|e|se|s|sw|w|nw|c|_)$/)
+	elsif ($value =~ /^:(.+):(n|ne|se|e|se|s|sw|w|nw|c|_)$/)
 	{
 		# We got a compass point. Output 3 tokens.
 
@@ -700,27 +708,29 @@ sub save_id_2
 		$myself -> new_item('node_id', trim($1) );
 		$myself -> new_item('compass_point', trim($2) );
 	}
-	elsif ($match eq '{')
+	elsif ($value eq '{')
 	{
 		$myself -> new_item('open_brace', $myself -> increment_brace_count);
 	}
 	else
 	{
-		my($name) = $match =~ /^:(?:n|ne|se|e|se|s|sw|w|nw|c|_)$/ ? 'compass_point' : 'id';
+		my($type) = $value =~ /^:(?:n|ne|se|e|se|s|sw|w|nw|c|_)$/ ? 'compass_point' : 'id';
 
 		# Handle id_1:id_2. Output ':' to differentiate between this and 'id_1 id_2'.
 
-		if ($match =~ /^:(.+)/)
+		if ($value =~ /^:(.+)/)
 		{
-			$name  = 'port_id' if ($name eq 'id');
-			$match = trim($1);
+			$type  = 'port_id' if ($type eq 'id');
+			$value = trim($1);
 
 			$myself -> new_item('colon', ':');
 		}
 
-		$name = $match eq '=' ? 'equals' : $match eq '[' ? 'open_bracket' : $match =~ /^-/ ? 'edge_id' : $name;
+		$type = $value eq '=' ? 'equals' : $value eq '[' ? 'open_bracket' : $value =~ /^-/ ? 'edge_id' : $type;
 
-		$myself -> new_item($name, $match);
+		print "\tsave_id_2. Type: $type. Value: $value. \n";
+
+		$myself -> new_item($type, $value);
 	}
 
 } # End of save_id_2.
@@ -731,23 +741,23 @@ sub save_id_2
 sub save_prefix
 {
 	my($dfa)   = @_;
-	my($match) = trim($dfa -> match);
+	my($value) = trim($dfa -> match);
 
-	# Upon each call, $match will be 1 of:
+	# Upon each call, $value will be 1 of:
 	# o strict.
 	# o digraph.
 	# o graph.
 
-	$myself -> log(debug => "save_prefix($match)");
+	$myself -> log(debug => "save_prefix($value)");
 
 	# Output:
 	# o strict  => {name => strict,  value => yes/no}.
 	# o digraph => {name => digraph, value => yes}.
 	# o graph   => {name => digraph, value => no}.
 
-	if ($match eq 'strict')
+	if ($value eq 'strict')
 	{
-		$myself -> new_item($match, 'yes');
+		$myself -> new_item($value, 'yes');
 	}
 	else
 	{
@@ -759,7 +769,7 @@ sub save_prefix
 			$myself -> new_item('strict', 'no');
 		}
 
-		$myself -> new_item('digraph', $match eq 'digraph' ? 'yes' : 'no');
+		$myself -> new_item('digraph', $value eq 'digraph' ? 'yes' : 'no');
 	}
 
 } # End of save_prefix.
@@ -770,11 +780,11 @@ sub save_prefix
 sub start_statements
 {
 	my($dfa) = @_;
-	my($match) = trim($dfa -> match);
+	my($value) = trim($dfa -> match);
 
-	# We only ever get here (via the STT) with $match eq '{'.
+	# We only ever get here (via the STT) with $value eq '{'.
 
-	$myself -> log(debug => "start_statements($match)");
+	$myself -> log(debug => "start_statements($value)");
 	$myself -> new_item('open_brace', $myself -> increment_brace_count);
 
 } # End of start_statements.

@@ -67,6 +67,19 @@ sub attribute_value
 # --------------------------------------------------
 # This is a function, not a method.
 
+sub class_id
+{
+	my($stash, $t1, undef, $t2)  = @_;
+
+	$myself -> new_item('class_id', $t1);
+
+	return $t1;
+
+} # End of class_id.
+
+# --------------------------------------------------
+# This is a function, not a method.
+
 sub colon_id
 {
 	my($stash, $t1, undef, $t2)  = @_;
@@ -188,6 +201,7 @@ sub grammar
 		{
 			attribute_id    => {terminal => 1},
 			attribute_value => {terminal => 1},
+			class_id        => {terminal => 1},
 			close_brace     => {terminal => 1},
 			close_bracket   => {terminal => 1},
 			colon           => {terminal => 1},
@@ -302,20 +316,29 @@ sub grammar
 				 rhs => [qw/start_graph graph_sequence_list end_graph/],
 			 },
 			 {
-				 lhs => 'node_statement', # 1 of 4.
+				 lhs => 'node_statement', # 1 of 5.
+				 rhs => [qw/class_item/],
+			 },
+			 {
+				 lhs => 'node_statement', # 2 of 5.
 				 rhs => [qw/node_item/],
 			 },
 			 {
-				 lhs => 'node_statement', # 2 of 4.
+				 lhs => 'node_statement', # 3 of 5.
 				 rhs => [qw/node_item colon_item port_item/],
 			 },
 			 {
-				 lhs => 'node_statement', # 3 of 4.
+				 lhs => 'node_statement', # 4 of 5.
 				 rhs => [qw/node_item colon_item port_item colon_item compass_item/],
 			 },
 			 {
-				 lhs => 'node_statement', # 4 of 4.
+				 lhs => 'node_statement', # 5 of 5.
 				 rhs => [qw/node_item colon_item compass_item/],
+			 },
+			 {
+				 lhs    => 'class_item',
+				 rhs    => [qw/class_id/],
+				 action => 'class_id',
 			 },
 			 {
 				 lhs    => 'node_item',
