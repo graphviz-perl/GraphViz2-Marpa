@@ -10,13 +10,13 @@
 
 	<p>All scripts, input files and output files required to generate these examples are shipped in the GraphViz2::Marpa distro.</p>
 
-	<p>Some sample data is deliberately faulty, and so does not produce an image, or produces a faulty one (e.g. data/42.*.dot)</p>
+	<p>Some sample data is deliberately faulty, and so does not produce an image, or produces a faulty one (e.g. data/42.*.gv)</p>
 
-	<p>The files with names like 90.*.dot are copies of the corresponding files *.gv from the <a href="http://www.graphviz.org/content/dot-language">Graphviz</a> distro.</p>
+	<p>The files with names like 90.*.gv are copies of the corresponding files *.gv from the <a href="http://www.graphviz.org/content/dot-language">Graphviz</a> distro.</p>
 
 <table border = "1">
 <tr>
-  <td>Result of GraphViz2::Marpa processing *.dot</td><td>Result of dot processing the same file</td>
+  <td>Result of GraphViz2::Marpa processing *.gv</td><td>Result of dot processing the same file</td>
 </tr>
 :for $data -> $row {
 <tr>
