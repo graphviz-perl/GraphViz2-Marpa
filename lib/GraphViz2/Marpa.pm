@@ -173,25 +173,25 @@ GraphViz2::Marpa - A Perl lexer and parser for Graphviz dot files
 
 =item o Run the lexer
 
-	perl scripts/lex.pl -i x.dot -l x.lex
+	perl scripts/lex.pl -input_file x.gv -lexed_file x.lex
 
-	x.dot is a Graphviz dot file. x.lex will be a CSV file of lexed tokens.
+	x.gv is a Graphviz dot file. x.lex will be a CSV file of lexed tokens.
 
 =item o Run the parser without running the lexer or the default renderer
 
-	perl scripts/parse.pl -l x.lex -p x.parse
+	perl scripts/parse.pl -lexed_file x.lex -parsed_file x.parse
 
 	x.parse will be a CSV file of parsed tokens.
 
 =item o Run the parser and the default renderer
 
-	perl scripts/parse.pl -l x.lex -p x.parse -o x.rend
+	perl scripts/parse.pl -lexed_file x.lex -parsed_file x.parse -output_file x.rend
 
 	x.rend will be a Graphviz dot file.
 
 =item o Run the lexer, parser and default renderer
 
-	perl scripts/g2m.pl -i x.dot -l x.lex -p x.parse -o x.rend
+	perl scripts/g2m.pl -input_file x.gv -lexed_file x.lex -parsed_file x.parse -output_file x.rend
 
 =back
 
@@ -262,15 +262,15 @@ Auxiliary code.
 
 =over 4
 
-=item o Input files: data/*.dot
+=item o Input files: data/*.gv
 
 These are L<Graphviz|http://www.graphviz.org/> (dot) graph definition files.
 
-Note 1: Some data/*.dot files contain I<serious> deliberate mistakes (from the point of view of L<Graphviz|http://www.graphviz.org/>), but they helped with writing the code.
+Note 1: Some data/*.gv files contain I<serious> deliberate mistakes (from the point of view of L<Graphviz|http://www.graphviz.org/>), but they helped with writing the code.
 
-Specifically, they are data/(01, 02, 03, 04, 05, 06, 08).dot. Natually, they do not produce output files data/*.lex, data/*.parse, data/*.rend or html/*.svg.
+Specifically, they are data/(01, 02, 03, 04, 05, 06, 08).gv. Natually, they do not produce output files data/*.lex, data/*.parse, data/*.rend or html/*.svg.
 
-Note 2: Some data/*.dot files contain I<slight> deliberate mistakes, which do not stop production of output files. They do, however, cause various warning messages to be printed
+Note 2: Some data/*.gv files contain I<slight> deliberate mistakes, which do not stop production of output files. They do, however, cause various warning messages to be printed
 when certain scripts are run.
 
 =item o Output files: data/*.lex, data/*.parse, data/*.rend and html/*.svg
@@ -311,11 +311,11 @@ Convert data/code.attributes.csv to data/code.attributes.html.
 
 =item o dot2lex.pl
 
-Convert all data/*.dot files to data/*.lex using lex.pl.
+Convert all data/*.gv files to data/*.lex using lex.pl.
 
 =item o dot2rend.pl
 
-Convert all data/*.dot files to data/*.lex and data/*.parse and data/*.rend using lex.pl and parse.pl.
+Convert all data/*.gv files to data/*.lex and data/*.parse and data/*.rend using lex.pl and parse.pl.
 
 =item o g2m.pl
 
@@ -323,7 +323,7 @@ Run the lexer, and then run the parser on the output of the lexer. Try running w
 
 =item o generate.index.pl
 
-Generates html/index.html from data/*.dot and html/*.svg.
+Generates html/index.html from data/*.gv and html/*.svg.
 
 =item o lex2parse.pl
 
@@ -429,7 +429,7 @@ The 'description' option takes precedence over the 'input_file' option.
 
 Default: ''.
 
-See the distro for data/*.dot.
+See the distro for data/*.gv.
 
 =item o lexed_file => $aLexedOutputFileName
 
@@ -705,13 +705,13 @@ Then, run the tests which ship with this module. I've tried this, and the tests 
 	shell> cd GraphViz2-Marpa-1.00/
 	shell> prove -Ilib -v t
 
-=head2 If I input x.dot and output x.rend, should these 2 files be identical?
+=head2 If I input x.gv and output x.rend, should these 2 files be identical?
 
 Yes - at least in the sense that running dot with them as input will produce the same output files. This is using the default renderer, of course.
 
-Since comments in *.dot files are discarded, they can never be in the output files (*.lex, *.parse and *.rend).
+Since comments in *.gv files are discarded, they can never be in the output files (*.lex, *.parse and *.rend).
 
-So, if x.dot is formatted as I do, then x.rend will be formatted identically.
+So, if x.gv is formatted as I do, then x.rend will be formatted identically.
 
 =head2 Why does the report_items option output 2 copies of the tokens?
 

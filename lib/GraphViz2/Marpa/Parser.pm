@@ -796,25 +796,25 @@ L<GraphViz2::Marpa::Parser> - A Perl parser for Graphviz dot files. Input comes 
 
 =item o Run the lexer
 
-	perl scripts/lex.pl -i x.dot -l x.lex
+	perl scripts/lex.pl -input_file x.gv -lexed_file x.lex
 
-	x.dot is a Graphviz dot file. x.lex will be a CSV file of lexed tokens.
+	x.gv is a Graphviz dot file. x.lex will be a CSV file of lexed tokens.
 
 =item o Run the parser without running the lexer or the default renderer
 
-	perl scripts/parse.pl -l x.lex -p x.parse
+	perl scripts/parse.pl -lexed_file x.lex -parsed_file x.parse
 
 	x.parse will be a CSV file of parsed tokens.
 
 =item o Run the parser and the default renderer
 
-	perl scripts/parse.pl -l x.lex -p x.parse -o x.rend
+	perl scripts/parse.pl -lexed_file x.lex -parsed_file x.parse -output_file x.rend
 
 	x.rend will be a Graphviz dot file.
 
 =item o Run the lexer, parser and default renderer
 
-	perl scripts/g2m.pl -i x.dot -l x.lex -p x.parse -o x.rend
+	perl scripts/g2m.pl -input_file x.gv -lexed_file x.lex -parsed_file x.parse -output_file x.rend
 
 =back
 
@@ -1147,6 +1147,19 @@ $type => $value pairs used by the parser are listed here in alphabetical order b
 =item o attribute_id => $id
 
 =item o attribute_value => $value
+
+=item o class_id => /^edge|graph|node$/
+
+This represents 3 special tokens where the author of the dot file used one or more of the 3 words
+edge, graph, or node, to specify attributes which apply to all such cases. So:
+
+	node [shape = Msquare]
+
+means all nodes after this point in the input stream default to having a square shape. Of course this
+can be overidden by another such line, or by any specific node having a shape as part of its list of
+attributes.
+
+See data/51.* for sample code.
 
 =item o colon => ':'
 

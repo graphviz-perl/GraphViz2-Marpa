@@ -510,13 +510,14 @@ Default: A object of type L<GraphViz2::Marpa::Utils>.
 
 =head1 FAQ
 
-=head2 If I input x.dot and output x.rend, should these 2 files be identical?
+=head2 If I input x.gv and output x.rend, should these 2 files be identical?
 
-Yes - at least in the sense that running dot with them as input will produce the same output files. This is using the default renderer, of course.
+Yes - at least in the sense that running dot with them as input will produce the same output files.
+This is using the default renderer, of course.
 
-Since comments in *.dot files are discarded, they can never be in the output files (*.lex, *.parse and *.rend).
+Since comments in *.gv files are discarded, they can never be in the output files (*.lex, *.parse and *.rend).
 
-So, if x.dot is formatted as I do, then x.rend will be formatted identically.
+So, if x.gv is formatted as I do, then x.rend will be formatted identically.
 
 =head1 Machine-Readable Change Log
 

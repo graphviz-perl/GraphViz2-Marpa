@@ -586,25 +586,25 @@ L<GraphViz2::Marpa::Lexer> - A Perl lexer for Graphviz dot files. Output goes to
 
 =item o Run the lexer
 
-	perl scripts/lex.pl -i x.dot -l x.lex
+	perl scripts/lex.pl -input_file x.gv -lexed_file x.lex
 
-	x.dot is a Graphviz dot file. x.lex will be a CSV file of lexed tokens.
+	x.gv is a Graphviz dot file. x.lex will be a CSV file of lexed tokens.
 
 =item o Run the parser without running the lexer or the default renderer
 
-	perl scripts/parse.pl -l x.lex -p x.parse
+	perl scripts/parse.pl -lexed_file x.lex -parsed_file x.parse
 
 	x.parse will be a CSV file of parsed tokens.
 
 =item o Run the parser and the default renderer
 
-	perl scripts/parse.pl -l x.lex -p x.parse -o x.rend
+	perl scripts/parse.pl -lexed_file x.lex -parsed_file x.parse -output_file x.rend
 
 	x.rend will be a Graphviz dot file.
 
 =item o Run the lexer, parser and default renderer
 
-	perl scripts/g2m.pl -i x.dot -l x.lex -p x.parse -o x.rend
+	perl scripts/g2m.pl -input_file x.gv -lexed_file x.lex -parsed_file x.parse -output_file x.rend
 
 =back
 
@@ -684,7 +684,7 @@ The 'description' option takes precedence over the 'input_file' option.
 
 Default: ''.
 
-See the distro for data/*.dot.
+See the distro for data/*.gv.
 
 =item o lexed_file => $aLexedOutputFileName
 
@@ -1045,6 +1045,19 @@ $type => $value pairs used by the lexer are listed here in alphabetical order by
 
 =item o attribute_value => $value
 
+=item o class_id => /^edge|graph|node$/
+
+This represents 3 special tokens where the author of the dot file used one or more of the 3 words
+edge, graph, or node, to specify attributes which apply to all such cases. So:
+
+	node [shape = Msquare]
+
+means all nodes after this point in the input stream default to having a square shape. Of course this
+can be overidden by another such line, or by any specific node having a shape as part of its list of
+attributes.
+
+See data/51.* for sample code.
+
 =item o close_brace => $brace_count
 
 This indicates the end of the graph, the end of a subgraph, or the end of a stand-alone {...}.
@@ -1111,7 +1124,7 @@ $subgraph_count increments by 1 each time 'subgraph' is detected in the input st
 
 =back
 
-Consult data/*.dot and the corresponding data/*.lex for many examples.
+Consult data/*.gv and the corresponding data/*.lex for many examples.
 
 =head2 How does the lexer handle comments?
 
@@ -1141,7 +1154,7 @@ Simply that Bash and C++-style comments appearing on the ends of lines containin
 
 =item o Since comments are discarded, they will never appear in the output
 
-This means that no output file, e.g. *.lex, *.parse or *.rend, will ever retain comments from the input *.dot file.
+This means that no output file, e.g. *.lex, *.parse or *.rend, will ever retain comments from the input *.gv file.
 
 =item o Are there any dot files the lexer or parser cannot handle?
 
