@@ -224,6 +224,10 @@ data/50.gv
 data/50.lex
 data/50.parse
 data/50.rend
+data/51.gv
+data/51.lex
+data/51.parse
+data/51.rend
 data/90.abstract.gv
 data/90.abstract.lex
 data/90.abstract.parse
@@ -390,6 +394,7 @@ html/47.svg
 html/48.svg
 html/49.svg
 html/50.svg
+html/51.svg
 html/90.abstract.svg
 html/90.alf.svg
 html/90.clust.svg
