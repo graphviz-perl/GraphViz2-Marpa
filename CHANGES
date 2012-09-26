@@ -9,7 +9,7 @@ Revision history for Perl extension GraphViz2::Marpa.
 		and common-or-garden nodes. It should have always been done this way, and specifically simplifies code
 		in GraphViz2::Marpa::TreeUtils.
 	- Change Marpa.pm to support the new distro GraphViz2::Marpa::TreeUtils, which is a sub-class of GraphViz2::Marpa.
-		Specifically, the lexer and the parser are stored in mutators, called lexer() and parser(),
+		Specifically, the lexer and the parser are stored in mutators called lexer() and parser(),
 		so they can be called from sub-classes.
 	- This means any shell scripts using -l now need -lexed_file, and if using -p now need -parsed_file.
 	- This in turns means patches to various scripts (scripts/*.sh and scripts/*.pl).
