@@ -673,8 +673,6 @@ sub save_id_1
 		$value = $myself -> brace_count if ($type eq 'open_brace');
 	}
 
-	print "\tsave_id_1. Type: $type. Value: $value. \n";
-
 	$myself -> new_item($type, $value);
 
 } # End of save_id_1.
@@ -727,8 +725,6 @@ sub save_id_2
 		}
 
 		$type = $value eq '=' ? 'equals' : $value eq '[' ? 'open_bracket' : $value =~ /^-/ ? 'edge_id' : $type;
-
-		print "\tsave_id_2. Type: $type. Value: $value. \n";
 
 		$myself -> new_item($type, $value);
 	}
