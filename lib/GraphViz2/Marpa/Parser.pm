@@ -830,7 +830,7 @@ State Transition Table: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa
 
 Command line options and object attributes: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/code.attributes.html>.
 
-My article on this set of modules: L<http://savage.net.au/Ron/html/graphviz2.marpa/Lexing.and.Parsing.with.Marpa.html>.
+My article on this set of modules: L<http://www.perl.com/pub/2012/10/an-overview-of-lexing-and-parsing.html>.
 
 The Marpa grammar as an image: L<http://savage.net.au/Ron/html/graphviz2.marpa/Marpa.Grammar.svg>. This image was created
 with L<Graphviz|http://www.graphviz.org/> via L<GraphViz2>.
