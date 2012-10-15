@@ -228,6 +228,10 @@ data/51.gv
 data/51.lex
 data/51.parse
 data/51.rend
+data/52.gv
+data/52.lex
+data/52.parse
+data/52.rend
 data/90.abstract.gv
 data/90.abstract.lex
 data/90.abstract.parse

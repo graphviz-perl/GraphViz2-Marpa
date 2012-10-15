@@ -1,5 +1,13 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+1.05  Tue Oct 16 09:49:00 2012
+	- Fix a bug in the lexer where it used to combine multiple lines in the input file by, basically, using
+		join('', <IN>), which meant the last char of a line was juxtaposed with the first char of the next
+		line. If the second line started with spaces, that was ok, but if it started with, say, the name of
+		a node, then that name was concatenated with what could have been a node name on the end of a previous
+		line. This meant 2 separate node names sometimes became one.
+	- Add data/52.gv to test the solution.
+
 1.04  Tue Sep 25 13:55:00 2012
 	- All data/*.dot files were renamed to data/*.gv, in line with Graphviz itself.
 	- Design change. In the output streams from both the lexer and the parser, the 3 special tokens whose names

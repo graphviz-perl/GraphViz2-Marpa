@@ -37,7 +37,7 @@ fieldhash my %timeout      => 'timeout';
 fieldhash my %type         => 'type';
 fieldhash my %utils        => 'utils';
 
-our $VERSION = '1.04';
+our $VERSION = '1.05';
 
 # --------------------------------------------------
 
@@ -259,7 +259,7 @@ sub get_graph_from_file
 	my($self) = @_;
 	my(@line) = grep{$_ !~ m!^\s*(?:#|//)!} slurp($self -> input_file, {chomp => 1});
 
-	$self -> graph_text(join('', @line) );
+	$self -> graph_text(join(' ', @line) );
 
 } # End of get_graph_from_file.
 
