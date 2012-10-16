@@ -444,6 +444,7 @@ scripts/dot2lex.pl
 scripts/dot2rend.pl
 scripts/g2m.pl
 scripts/g2m.sh
+scripts/generate.demo.sh
 scripts/generate.index.pl
 scripts/lex.1.sh
 scripts/lex.pl

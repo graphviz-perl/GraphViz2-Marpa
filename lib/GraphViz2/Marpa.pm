@@ -743,15 +743,19 @@ Because the 1st copy is printed by the lexer and the 2nd by the parser.
 
 =head2 How are the demo files generated?
 
-Run these scripts:
+I run:
+
+	shell> scripts/generate.demo.sh
+
+Which runs these:
 
 	shell> perl scripts/dot2rend.pl
 	shell> perl scripts/rend2svg.pl
 	shell> perl scripts/generate.index.pl
 
-Then copy html/index.html and html/*.svg to the web server's doc root.
+And copies the demo files to my dev machine's doc root:
 
-In my case, I copy them to $doc_root/Perl-modules/html/graphviz2.marpa/.
+	shell> cp html/*.html html/*.svg $DR/Perl-modules/html/graphviz2.marpa/
 
 =head1 Machine-Readable Change Log
 

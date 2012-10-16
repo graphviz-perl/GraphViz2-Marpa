@@ -9,6 +9,7 @@ Revision history for Perl extension GraphViz2::Marpa.
 	- Add data/52.gv to test the solution.
 	- Shift data/code.attributes.html to html/.
 	- Shift data/default.stt.html to html/.
+	- Add scripts/generate.demo.sh.
 
 1.04  Tue Sep 25 13:55:00 2012
 	- All data/*.dot files were renamed to data/*.gv, in line with Graphviz itself.
