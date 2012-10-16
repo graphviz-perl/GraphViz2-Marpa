@@ -285,7 +285,7 @@ The html/*.svg files are output by 'dot'.
 
 =item o Data for the State Transition Table
 
-See data/default.stt.ods (LibreOffice), data/default.stt.csv (CSV file) and data/default.stt.html.
+See data/default.stt.ods (LibreOffice), data/default.stt.csv (CSV file) and html/default.stt.html.
 
 Also, data/default.stt.csv has been incorporated into the source code of L<GraphViz2::Marpa::Lexer>.
 
@@ -359,7 +359,7 @@ Run the default renderer.
 
 =item o stt2html.pl
 
-Convert data/default.stt.csv to data/default.stt.html.
+Convert data/default.stt.csv to html/default.stt.html.
 
 =back
 

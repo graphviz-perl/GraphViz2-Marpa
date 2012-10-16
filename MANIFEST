@@ -333,10 +333,8 @@ data/90.try.lex
 data/90.try.parse
 data/90.try.rend
 data/code.attributes.csv
-data/code.attributes.html
 data/code.attributes.ods
 data/default.stt.csv
-data/default.stt.html
 data/default.stt.ods
 data/Marpa.Grammar.dat
 htdocs/assets/templates/graphviz2/marpa/code.attributes.tx
@@ -425,6 +423,8 @@ html/90.structs.svg
 html/90.train11.svg
 html/90.tree.svg
 html/90.try.svg
+html/code.attributes.html
+html/default.stt.html
 html/graphviz2.marpa.index.tx
 html/index.html
 html/Marpa.Grammar.svg

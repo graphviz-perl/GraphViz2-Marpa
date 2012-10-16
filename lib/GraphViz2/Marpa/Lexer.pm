@@ -1009,7 +1009,7 @@ I use data/default.stt.ods via LibreOffice, when editing the STT.
 
 Then, I export it to data/default.stt.csv. This file is incorporated into the source code of Lexer.pm, after the __DATA__ token.
 
-Lastly, I run scripts/stt2html.pl, and output the result to data/default.stt.html.
+Lastly, I run scripts/stt2html.pl, and output the result to html/default.stt.html.
 
 So I ship 3 representations of the STT in the distro.
 
