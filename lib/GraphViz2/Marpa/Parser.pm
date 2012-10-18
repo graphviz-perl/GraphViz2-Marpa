@@ -3,6 +3,8 @@ package GraphViz2::Marpa::Parser;
 use strict;
 use warnings;
 
+use Data::Dumper::Concise; # For Dumper().
+
 use GraphViz2::Marpa::Renderer::GraphViz2;
 use GraphViz2::Marpa::Utils;
 
@@ -30,6 +32,7 @@ fieldhash my %output_file  => 'output_file';
 fieldhash my %parsed_file  => 'parsed_file';
 fieldhash my %renderer     => 'renderer';
 fieldhash my %report_items => 'report_items';
+fieldhash my %tree         => 'tree';
 fieldhash my %tokens       => 'tokens';
 fieldhash my %utils        => 'utils';
 
@@ -63,6 +66,121 @@ sub attribute_value
 	return $t1;
 
 } # End of attribute_value.
+
+# -----------------------------------------------
+
+sub _build_attribute_list
+{
+	my($self, $items, $i, $j) = @_;
+
+	my(%attribute);
+
+	if ($$items[$i + 1]{type} eq 'start_attribute')
+	{
+		for ($j = $i + 2; $$items[$j]{type} ne 'end_attribute'; $j += 2)
+		{
+			$attribute{$$items[$j]{value} } = $$items[$j + 1]{value};
+		}
+	}
+	else
+	{
+		$j = $i;
+	}
+
+	return ($j, {%attribute});
+
+} # End of _build_attribute_list.
+
+# -----------------------------------------------
+# Build a hashref of attributes for everything.
+# Output is a hashref: $self -> tree.
+# Keys in this hashref are class, edge and node.
+# Sub-keys:
+# o class => edge, graph, node.
+# o edge  => edge attributes for specific edges.
+# o node  => $node_name.
+# The sub-key's value is a hashref of its attributes.
+
+sub _build_view
+{
+	my($self) = @_;
+
+	# Phase 1: Find class (edge, graph and node) attributes,
+	# and find attributes of individual nodes.
+
+	my($i)     = - 1;
+	my($items) = $self -> items;
+
+	my(%attribute);
+	my($class_attribute, %class_attribute);
+	my($digraph);
+	my(@graph_id);
+	my($j);
+	my($key);
+	my($node, $node_attribute, %node_attribute);
+	my($type);
+	my($value);
+
+	for my $class (qw/edge graph node/)
+	{
+		$attribute{class}         = {};
+		$attribute{class}{$class} = [];
+		$class_attribute{$class}  = {};
+	}
+
+	while ($i < $#$items)
+	{
+		$i++;
+
+		$type  = $$items[$i]{type};
+		$value = $$items[$i]{value};
+
+		if ($type eq 'class_id')
+		{
+			($i, $class_attribute)   = $self -> _build_attribute_list($items, $i, $j);
+			$class_attribute{$value} = {%{$class_attribute{$value} }, %$class_attribute};
+		}
+		elsif ($type eq 'digraph')
+		{
+			$digraph = $value;
+		}
+		elsif ($type eq 'graph_id')
+		{
+			push @graph_id, $value;
+		}
+		elsif ($type eq 'node_id')
+		{
+			$node = $value;
+
+			($i, $node_attribute) = $self -> _build_attribute_list($items, $i, $j);
+
+			push @{$attribute{node}{$node} }, $node_attribute;
+		}
+		elsif ($type eq 'start_graph')
+		{
+			next if (! $class_attribute);
+
+			push @{$attribute{class}{$_} }, $class_attribute{$_} for (qw/edge graph node/);
+		}
+		elsif ($type eq 'end_graph')
+		{
+			for (qw/edge graph node/)
+			{
+				$class_attribute{$_} = {};
+
+				#pop @{$attribute{class}{$_} };
+			}
+		}
+	}
+
+	$attribute{digraph}  = $digraph eq 'yes' ? 1 : 0;
+	$attribute{graph_id} = [@graph_id];
+
+	$self -> log(notice => '-' x 50, "\n" . Dumper(%attribute) . "\n" . '-' x 50);
+
+	$self -> tree(\%attribute);
+
+} # End of _build_view.
 
 # --------------------------------------------------
 # This is a function, not a method.
@@ -539,6 +657,7 @@ sub _init
 	$$arg{parsed_file}  ||= '';       # Caller can set.
 	$$arg{renderer}     = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
 	$$arg{report_items} ||= 0;        # Caller can set.
+	$$arg{tree}         = {};
 	$$arg{tokens}       ||= [];       # Caller can set.
 	$$arg{utils}        = GraphViz2::Marpa::Utils -> new;
 	$self               = from_hash($self, $arg);
@@ -694,6 +813,10 @@ sub run
 	{
 		$self -> generate_parsed_file($file_name);
 	}
+
+	# Build a Graphviz-live view of the data.
+
+	$self -> _build_view;
 
 	# Pass the tokens to the renderer.
 
