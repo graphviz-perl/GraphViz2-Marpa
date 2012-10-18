@@ -1,0 +1,31 @@
+strict digraph graph_55
+{
+	A [shape = oval]
+
+	node [shape = house]
+	edge [color = purple]
+
+	{
+		rank = same
+		B
+		node [shape = oval]
+		A -> B
+	}
+
+	node [color = green style = filled]
+
+	subgraph cluster_outer
+	{
+		G -> H
+		label = Outer
+		subgraph cluster_inner
+		{
+			node [shape = triangle]
+			edge [color = blue]
+			I [color = pink shape = square]
+			I -> J
+			label = Inner
+		}
+	}
+	graph [rankdir = TB]
+}
