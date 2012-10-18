@@ -1,4 +1,4 @@
-strict digraph syntax
+strict digraph graph_53
 {
 	label   = "Complex Syntax Test"
 	rankdir = TB

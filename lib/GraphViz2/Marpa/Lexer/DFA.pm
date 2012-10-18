@@ -246,7 +246,7 @@ sub _clean_up
 	{
 		if ( ($new_items[$i]{type} eq 'open_bracket') && ($new_items[$i + 1]{type} eq 'close_bracket') )
 		{
-			$i += 2;
+			$i += 1;
 		}
 		else
 		{
