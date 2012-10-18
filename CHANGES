@@ -1,5 +1,9 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+1.06  Fri Oct 19 09:26:00 2012
+	- Fix a lexer bug which, when given {a [] b}, would lose node b because [] was empty. See data/54.gv.
+	- Change the output to differentiate between subgraph {} and plain old {}. See data/55.gv.
+
 1.05  Tue Oct 16 09:49:00 2012
 	- Fix a bug in the lexer where it used to combine multiple lines in the input file by, basically, using
 		join('', <IN>), which meant the last char of a line was juxtaposed with the first char of the next

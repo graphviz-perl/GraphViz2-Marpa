@@ -1,3 +1,6 @@
+# Up to V 1.05, the output did not distinguish between
+# subgraph {} and plain old {}. V 1.06 does.
+
 strict digraph graph_55
 {
 	A [shape = oval]

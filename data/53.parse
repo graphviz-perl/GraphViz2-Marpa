@@ -1,7 +1,7 @@
 "type","value"
 strict              , "yes"
 digraph             , "yes"
-graph_id            , "syntax"
+graph_id            , "graph_53"
 start_graph         , "1"
 class_id            , "graph"
 start_attribute     , "["
