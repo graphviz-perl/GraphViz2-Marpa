@@ -33,7 +33,7 @@ sub check_end_subgraph
 
 	# We only ever get the with $match eq '}'.
 
-	$self -> new_item('close_brace', $self -> brace_count);
+	$self -> new_item('end_scope', $self -> brace_count);
 	$self -> decrement_brace_count;
 
 	if ($self -> subgraph -> length && ($self -> subgraph -> last == $self -> brace_count) )
@@ -60,14 +60,14 @@ sub _clean_up
 	# strict              , "no"        strict              , "no"
 	# digraph             , "yes"       digraph             , "yes"
 	# graph_id            , "abstract"  graph_id            , "abstract"
-	# open_brace          , "1"         open_brace          , "1"
+	# start_scope         , "1"         start_scope         , "1"
 	# id                  , "size"      attribute_id        , "size"    <=
 	# equals              , "="         equals              , "="
 	# id                  , "6,6"       attribute_value     , "6,6"     <=
 	# id                  , "S24"       id                  , "S24"
 	# edge_id             , "->"        edge_id             , "->"
 	# id                  , "27"        id                  , "27"
-	# close_brace         , "1"         close_brace         , "1"
+	# end_scope           , "1"         end_scope           , "1"
 
 	my(@old_items) = $self -> items -> print;
 
@@ -90,7 +90,7 @@ sub _clean_up
 	# strict              , "no"        strict              , "no"
 	# digraph             , "yes"       digraph             , "yes"
 	# graph_id            , "abstract"  graph_id            , "abstract"
-	# open_brace          , "1"         open_brace          , "1"
+	# start_scope         , "1"         start_scope         , "1"
 	#                                   id                  , "graph"  <=
 	#                                   open_bracket        , "["      <=
 	# attribute_id        , "label"     attribute_id        , "label"
@@ -100,7 +100,7 @@ sub _clean_up
 	# id                  , "node_2"    id                  , "node_2"
 	# edge_id             , "->"        edge_id             , "->"
 	# id                  , "node_2"    id                  , "node_2"
-	# close_brace         , "1"         close_brace         , "1"
+	# end_scope           , "1"         end_scope           , "1"
 
 	my($inside_brackets) = 0;
 	@old_items           = $self -> items -> print;
@@ -161,13 +161,13 @@ sub _clean_up
 	# strict              , "no"        strict              , "no"
 	# digraph             , "yes"       digraph             , "yes"
 	# graph_id            , "graph_16"  graph_id            , "graph_16"
-	# open_brace          , "1"         open_brace          , "1"
+	# start_scope         , "1"         start_scope         , "1"
 	# id                  , "node_16"   id                  , "node_16"
 	# colon               , ":"         colon               , ":"
 	# node_id             , "port_16"   port_id             , "port_16"  <=
 	#                                   colon               , ":"        <=
 	# compass_point       , "c"         compass_point       , "c"
-	# close_brace         , "1"         close_brace         , "1"
+	# end_scope           , "1"         end_scope           , "1"
 	#
 	# Warning: Not this loop, but the next, converts the remaining 'id' to 'node_id'.
 
@@ -206,11 +206,11 @@ sub _clean_up
 	# strict              , "no"        strict              , "no"
 	# digraph             , "yes"       digraph             , "yes"
 	# graph_id            , "graph_17"  graph_id            , "graph_17"
-	# open_brace          , "1"         open_brace          , "1"
+	# start_scope         , "1"         start_scope          , "1"
 	# id                  , "node_17"   node_id             , "node_17"  <=
 	# colon               , ":"         colon               , ":"
 	# compass_point       , "c"         compass_point       , "c"
-	# close_brace         , "1"         close_brace         , "1"
+	# end_scope           , "1"         end_scope           , "1"
 
 	@new_items = ();
 
@@ -233,11 +233,11 @@ sub _clean_up
 	# strict              , "no"            strict              , "no"
 	# digraph             , "yes"           digraph             , "yes"
 	# graph_id            , "graph_42_01"   graph_id            , "graph_42_01"
-	# open_brace          , "1"             open_brace          , "1"
+	# start_scope         , "1"             start_scope         , "1"
 	# node_id             , "node_42_01"    node_id             , "node_42_01"
 	# open_bracket        , "["
 	# close_bracket       , "]"
-	# close_brace         , "1"             close_brace         , "1"
+	# end_scope           , "1"             end_scope           , "1"
 	# The real problem is the Marpa grammar, which I can't get to accept [].
 
 	@old_items = ();
@@ -628,7 +628,7 @@ sub save_graph_id
 	if ($value eq '{')
 	{
 		$myself -> new_item('graph_id', '');
-		$myself -> new_item('open_brace', $myself -> increment_brace_count);
+		$myself -> new_item('start_scope', $myself -> increment_brace_count);
 	}
 	else
 	{
@@ -660,7 +660,7 @@ sub save_id_1
 
 	if ($value eq 'subgraph')
 	{
-		# Later, this tells us when a close_brace closes a subgraph. See check_end_subgraph().
+		# Later, this tells us when an end_scope closes a subgraph. See check_end_subgraph().
 
 		$myself -> subgraph -> push($myself -> brace_count);
 
@@ -669,8 +669,8 @@ sub save_id_1
 	}
 	else
 	{
-		$type  = $value =~ /^-/ ? 'edge_id' : $value eq '{' ? 'open_brace' : 'id';
-		$value = $myself -> increment_brace_count if ($type eq 'open_brace');
+		$type  = $value =~ /^-/ ? 'edge_id' : $value eq '{' ? 'start_scope' : 'id';
+		$value = $myself -> increment_brace_count if ($type eq 'start_scope');
 	}
 
 	$myself -> new_item($type, $value);
@@ -693,7 +693,7 @@ sub save_id_2
 	}
 	elsif ($value eq 'subgraph')
 	{
-		# Later, this tells us when a close_brace closes a subgraph. See check_end_subgraph().
+		# Later, this tells us when an end_scope closes a subgraph. See check_end_subgraph().
 
 		$myself -> subgraph -> push($myself -> brace_count);
 		$myself -> new_item('start_subgraph', $myself -> increment_subgraph_count);
@@ -708,7 +708,7 @@ sub save_id_2
 	}
 	elsif ($value eq '{')
 	{
-		$myself -> new_item('open_brace', $myself -> increment_brace_count);
+		$myself -> new_item('start_scope', $myself -> increment_brace_count);
 	}
 	else
 	{
@@ -781,7 +781,7 @@ sub start_statements
 	# We only ever get here (via the STT) with $value eq '{'.
 
 	$myself -> log(debug => "start_statements($value)");
-	$myself -> new_item('open_brace', $myself -> increment_brace_count);
+	$myself -> new_item('start_scope', $myself -> increment_brace_count);
 
 } # End of start_statements.
 

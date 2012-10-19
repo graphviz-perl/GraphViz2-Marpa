@@ -124,11 +124,11 @@
 <polyline fill="none" stroke="black" points="1453.5,-1037 1453.5,-1073 "/>
 <text text-anchor="middle" x="1482" y="-1051.9" font-family="Times Roman,serif" font-size="14.00">rhs list:</text>
 <polyline fill="none" stroke="black" points="1510.5,-1037 1510.5,-1073 "/>
-<text text-anchor="middle" x="1556" y="-1051.9" font-family="Times Roman,serif" font-size="14.00">start_graph_7</text>
+<text text-anchor="middle" x="1556" y="-1051.9" font-family="Times Roman,serif" font-size="14.00">start_scope_7</text>
 <polyline fill="none" stroke="black" points="1601.5,-1037 1601.5,-1073 "/>
 <text text-anchor="middle" x="1671.5" y="-1051.9" font-family="Times Roman,serif" font-size="14.00">graph_sequence_list_7</text>
 <polyline fill="none" stroke="black" points="1741.5,-1037 1741.5,-1073 "/>
-<text text-anchor="middle" x="1785" y="-1051.9" font-family="Times Roman,serif" font-size="14.00">end_graph_7</text>
+<text text-anchor="middle" x="1785" y="-1051.9" font-family="Times Roman,serif" font-size="14.00">end_scope_7</text>
 </g>
 <!-- graph_sequence_item_12&#45;&gt;graph_sequence_definition_7 -->
 <g id="edge16" class="edge"><title>graph_sequence_item_12:port5&#45;&gt;graph_sequence_definition_7:port1</title>
@@ -231,10 +231,10 @@
 <path fill="none" stroke="grey" d="M1915,-297C1915,-225.294 676.47,-325.075 577.291,-267.101"/>
 <polygon fill="grey" stroke="grey" points="579.898,-264.751 571,-259 574.369,-269.045 579.898,-264.751"/>
 </g>
-<!-- end_graph_17 -->
-<g id="node9" class="node"><title>end_graph_17</title>
+<!-- end_scope_17 -->
+<g id="node9" class="node"><title>end_scope_17</title>
 <polygon fill="none" stroke="black" points="1815.5,-667 1815.5,-703 2090.5,-703 2090.5,-667 1815.5,-667"/>
-<text text-anchor="middle" x="1874" y="-681.9" font-family="Times Roman,serif" font-size="14.00">lhs: end_graph_17</text>
+<text text-anchor="middle" x="1874" y="-681.9" font-family="Times Roman,serif" font-size="14.00">lhs: end_scope_17</text>
 <polyline fill="none" stroke="black" points="1932.5,-667 1932.5,-703 "/>
 <text text-anchor="middle" x="1961" y="-681.9" font-family="Times Roman,serif" font-size="14.00">rhs list:</text>
 <polyline fill="none" stroke="black" points="1989.5,-667 1989.5,-703 "/>
@@ -295,11 +295,11 @@
 <polyline fill="none" stroke="black" points="1752,-741 1752,-777 "/>
 <text text-anchor="middle" x="1780.5" y="-755.9" font-family="Times Roman,serif" font-size="14.00">rhs list:</text>
 <polyline fill="none" stroke="black" points="1809,-741 1809,-777 "/>
-<text text-anchor="middle" x="1858" y="-755.9" font-family="Times Roman,serif" font-size="14.00">start_graph_22</text>
+<text text-anchor="middle" x="1858" y="-755.9" font-family="Times Roman,serif" font-size="14.00">start_scope_22</text>
 <polyline fill="none" stroke="black" points="1907,-741 1907,-777 "/>
 <text text-anchor="middle" x="1980.5" y="-755.9" font-family="Times Roman,serif" font-size="14.00">graph_sequence_list_22</text>
 <polyline fill="none" stroke="black" points="2054,-741 2054,-777 "/>
-<text text-anchor="middle" x="2101" y="-755.9" font-family="Times Roman,serif" font-size="14.00">end_graph_22</text>
+<text text-anchor="middle" x="2101" y="-755.9" font-family="Times Roman,serif" font-size="14.00">end_scope_22</text>
 </g>
 <!-- node_sequence_definition_18&#45;&gt;node_sequence_item_22 -->
 <g id="edge34" class="edge"><title>node_sequence_definition_18:port3&#45;&gt;node_sequence_item_22:port1</title>
@@ -495,22 +495,22 @@
 <path fill="none" stroke="grey" d="M3210,-741C3210,-608.428 2921.82,-827.063 2906.62,-713.012"/>
 <polygon fill="grey" stroke="grey" points="2910.11,-712.763 2906,-703 2903.13,-713.198 2910.11,-712.763"/>
 </g>
-<!-- node_sequence_item_22&#45;&gt;end_graph_17 -->
-<g id="edge86" class="edge"><title>node_sequence_item_22:port5&#45;&gt;end_graph_17:port1</title>
+<!-- node_sequence_item_22&#45;&gt;end_scope_17 -->
+<g id="edge86" class="edge"><title>node_sequence_item_22:port5&#45;&gt;end_scope_17:port1</title>
 <path fill="none" stroke="grey" d="M2101,-741C2101,-642.503 1890.54,-793.299 1874.91,-713.305"/>
 <polygon fill="grey" stroke="grey" points="1878.37,-712.651 1874,-703 1871.4,-713.27 1878.37,-712.651"/>
 </g>
-<!-- start_graph_8 -->
-<g id="node54" class="node"><title>start_graph_8</title>
+<!-- start_scope_8 -->
+<g id="node54" class="node"><title>start_scope_8</title>
 <polygon fill="none" stroke="black" points="1508.5,-667 1508.5,-703 1771.5,-703 1771.5,-667 1508.5,-667"/>
-<text text-anchor="middle" x="1565.5" y="-681.9" font-family="Times Roman,serif" font-size="14.00">lhs: start_graph_8</text>
+<text text-anchor="middle" x="1565.5" y="-681.9" font-family="Times Roman,serif" font-size="14.00">lhs: start_scope_8</text>
 <polyline fill="none" stroke="black" points="1622.5,-667 1622.5,-703 "/>
 <text text-anchor="middle" x="1651" y="-681.9" font-family="Times Roman,serif" font-size="14.00">rhs list:</text>
 <polyline fill="none" stroke="black" points="1679.5,-667 1679.5,-703 "/>
 <text text-anchor="middle" x="1725.5" y="-681.9" font-family="Times Roman,serif" font-size="14.00">open_brace_8</text>
 </g>
-<!-- node_sequence_item_22&#45;&gt;start_graph_8 -->
-<g id="edge82" class="edge"><title>node_sequence_item_22:port3&#45;&gt;start_graph_8:port1</title>
+<!-- node_sequence_item_22&#45;&gt;start_scope_8 -->
+<g id="edge82" class="edge"><title>node_sequence_item_22:port3&#45;&gt;start_scope_8:port1</title>
 <path fill="none" stroke="grey" d="M1858,-741C1858,-679.062 1597.25,-758.596 1567.71,-712.684"/>
 <polygon fill="grey" stroke="grey" points="1571.07,-711.685 1565,-703 1564.33,-713.573 1571.07,-711.685"/>
 </g>
@@ -1069,13 +1069,13 @@
 <path fill="none" stroke="grey" d="M4772,-241C4823.04,-241 4956.19,-219.155 4995,-186 4998.05,-183.396 4998.21,-179.434 4998.19,-175.8"/>
 <polygon fill="grey" stroke="grey" points="5001.27,-177.453 5003,-167 4995.13,-174.094 5001.27,-177.453"/>
 </g>
-<!-- graph_sequence_definition_7&#45;&gt;end_graph_17 -->
-<g id="edge204" class="edge"><title>graph_sequence_definition_7:port5&#45;&gt;end_graph_17:port1</title>
+<!-- graph_sequence_definition_7&#45;&gt;end_scope_17 -->
+<g id="edge204" class="edge"><title>graph_sequence_definition_7:port5&#45;&gt;end_scope_17:port1</title>
 <path fill="none" stroke="grey" d="M1785,-1037C1785,-917.64 1550,-1026.36 1550,-907 1550,-907 1550,-907 1549,-832 1549,-790.156 1538.75,-768.914 1569,-740 1637.77,-674.264 1690.1,-735.112 1780,-704 1792.81,-699.568 1796.14,-690.785 1804.95,-686.912"/>
 <polygon fill="grey" stroke="grey" points="1805.83,-690.307 1815,-685 1804.52,-683.43 1805.83,-690.307"/>
 </g>
-<!-- graph_sequence_definition_7&#45;&gt;start_graph_8 -->
-<g id="edge200" class="edge"><title>graph_sequence_definition_7:port3&#45;&gt;start_graph_8:port1</title>
+<!-- graph_sequence_definition_7&#45;&gt;start_scope_8 -->
+<g id="edge200" class="edge"><title>graph_sequence_definition_7:port3&#45;&gt;start_scope_8:port1</title>
 <path fill="none" stroke="grey" d="M1555,-1036C1555,-1017.91 1541.17,-1017.34 1536,-1000 1526.88,-969.419 1482.25,-734.563 1500.45,-691.703"/>
 <polygon fill="grey" stroke="grey" points="1502.85,-694.257 1508,-685 1498.2,-689.023 1502.85,-694.257"/>
 </g>

@@ -313,27 +313,27 @@ sub grammar
 	my($grammar) = Marpa::Grammar -> new
 		({
 		actions       => __PACKAGE__,
-		lhs_terminals => 0,
+		lhs_terminals => 1,
 		start         => 'graph_grammar',
 		symbols       =>
 		{
 			attribute_id    => {terminal => 1},
 			attribute_value => {terminal => 1},
 			class_id        => {terminal => 1},
-			close_brace     => {terminal => 1},
 			close_bracket   => {terminal => 1},
 			colon           => {terminal => 1},
 			compass_point   => {terminal => 1},
 			digraph         => {terminal => 1},
 			edge_id         => {terminal => 1},
+			end_scope       => {terminal => 1},
 			end_subgraph    => {terminal => 1},
 			equals          => {terminal => 1},
 			graph_id        => {null_value => '', terminal => 1},
 			id              => {terminal => 1},
 			node_id         => {terminal => 1},
-			open_brace      => {terminal => 1},
 			open_bracket    => {terminal => 1},
 			port_id         => {terminal => 1},
+			start_scope     => {terminal => 1},
 			start_subgraph  => {terminal => 1},
 			strict          => {terminal => 1},
 		},
@@ -368,11 +368,11 @@ sub grammar
 			 },
 			 {   # Graph stuff.
 				 lhs => 'graph_sequence_definition',
-				 rhs => [qw/start_scope graph_sequence_list end_scope/],
+				 rhs => [qw/start_skope graph_sequence_list end_skope/],
 			 },
 			 {
-				 lhs    => 'start_scope',
-				 rhs    => [qw/open_brace/],
+				 lhs    => 'start_skope',
+				 rhs    => [qw/start_scope/],
 				 action => 'start_scope',
 			 },
 			 {
@@ -409,8 +409,8 @@ sub grammar
 				 rhs => [qw/subgraph_sequence_definition/],
 			 },
 			 {
-				 lhs    => 'end_scope',
-				 rhs    => [qw/close_brace/],
+				 lhs    => 'end_skope',
+				 rhs    => [qw/end_scope/],
 				 action => 'end_scope',
 			 },
 			 {   # Node stuff.
@@ -431,7 +431,7 @@ sub grammar
 			 },
 			 {
 				 lhs => 'node_sequence_item', # 3 of 4.
-				 rhs => [qw/start_scope graph_sequence_list end_scope/],
+				 rhs => [qw/start_skope graph_sequence_list end_skope/],
 			 },
 			 {
 				 lhs => 'node_statement', # 1 of 5.
@@ -1224,13 +1224,13 @@ Yes. Consider these 3 situations and their corresponding lexed or parsed output:
 
 =item o digraph g {...}
 
-	digraph    , "yes"
-	graph_id   , "g"
-	open_brace , "1"
+	digraph     , "yes"
+	graph_id    , "g"
+	start_scope , "1"
 
 =over 4
 
-=item o The I<open_brace> count must be 1 because it's at the very start of the graph
+=item o The I<start_scope> count must be 1 because it's at the very start of the graph
 
 =back
 
@@ -1238,13 +1238,13 @@ Yes. Consider these 3 situations and their corresponding lexed or parsed output:
 
 	start_subgraph , "1"
 	graph_id       , "s"
-	open_brace     , "2"
+	start_scope    , "2"
 
 =over 4
 
-=item o The I<open_brace> count must be 2 or more
+=item o The I<start_scope> count must be 2 or more
 
-=item o When I<open_brace> is preceeded by I<graph_id>, it's a subgraph
+=item o When I<start_scope> is preceeded by I<graph_id>, it's a subgraph
 
 =item o Given 'subgraph {...}', the I<graph_id> will be ""
 
@@ -1252,13 +1252,13 @@ Yes. Consider these 3 situations and their corresponding lexed or parsed output:
 
 =item o {...}
 
-	open_brace , "2"
+	start_scope , "2"
 
 =over 4
 
-=item o The I<open_brace> count must be 2 or more
+=item o The I<start_scope> count must be 2 or more
 
-=item o When I<open_brace> is I<not> preceeded by I<graph_id>, it's a stand-alone {...}
+=item o When I<start_scope> is I<not> preceeded by I<graph_id>, it's a stand-alone {...}
 
 =back
 

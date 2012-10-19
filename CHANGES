@@ -1,6 +1,9 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
 1.06  Fri Oct 19 09:26:00 2012
+	- Change the lexer to output start_scope and end_scope rather than open_brace and close_brace.
+		Change the parser to output start_scope and end_scope rather than start_graph and end_graph.
+		This emphasises the case of the stand-alone {...}. Change the default renderer to match.
 	- Increment the brace count when a '{' is encountered. This means brace counts (after the first 1
 		at the start of the input) will be 1 higher than before, and when a '}' is encountered they will
 		also be 1 higher. Hence they count down to 1, not 0 as they used to do.
@@ -8,8 +11,6 @@ Revision history for Perl extension GraphViz2::Marpa.
 	- Add samples data/53.gv, data/54.gv and data/55.gv.
 	- Add an entry to the lexer's FAQ to clarify output from these 3: digraph {}, subgraph {} and {}.
 	- Add a corresponding entry in the parser's FAQ.
-	- Change the parser to output start_scope and end_scope rather then start_graph and end_graph.
-		This emphasises the case of the stand-alone {...}. Change the default renderer to match.
 
 1.05  Tue Oct 16 09:49:00 2012
 	- Fix a bug in the lexer where it used to combine multiple lines in the input file by, basically, using

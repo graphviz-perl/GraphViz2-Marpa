@@ -27,12 +27,12 @@
 			  },
 			  {   # Graph stuff.
 				  lhs => 'graph_sequence_definition',
-				  rhs => [qw/start_graph graph_sequence_list end_graph/],
+				  rhs => [qw/start_scope graph_sequence_list end_scope/],
 			  },
 			  {
-				  lhs    => 'start_graph',
+				  lhs    => 'start_scope',
 				  rhs    => [qw/open_brace/],
-				  action => 'start_graph',
+				  action => 'start_scope',
 			  },
 			  {
 				  lhs => 'graph_sequence_list',
@@ -68,9 +68,9 @@
 				  rhs => [qw/subgraph_sequence_definition/],
 			  },
 			  {
-				  lhs    => 'end_graph',
+				  lhs    => 'end_scope',
 				  rhs    => [qw/close_brace/],
-				  action => 'end_graph',
+				  action => 'end_scope',
 			  },
 			  {   # Node stuff.
 				  lhs => 'node_sequence_definition',
@@ -90,7 +90,7 @@
 			  },
 			  {
 				  lhs => 'node_sequence_item', # 3 of 4.
-				  rhs => [qw/start_graph graph_sequence_list end_graph/],
+				  rhs => [qw/start_scope graph_sequence_list end_scope/],
 			  },
 			  {
 				  lhs => 'node_statement', # 1 of 4.

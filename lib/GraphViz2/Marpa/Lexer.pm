@@ -985,6 +985,54 @@ Default: A object of type L<GraphViz2::Marpa::Utils>.
 
 =head1 FAQ
 
+=head2 Are the certain cases I should watch out for?
+
+Yes. Consider these 3 situations and their corresponding lexed output:
+
+=over 4
+
+=item o digraph g {...}
+
+	digraph     , "yes"
+	graph_id    , "g"
+	start_scope , "1"
+
+=over 4
+
+=item o The I<start_scope> count must be 1 because it's at the very start of the graph
+
+=back
+
+=item o subgraph s {...}
+
+	start_subgraph  , "1"
+	graph_id        , "s"
+	start_scope     , "2"
+
+=over 4
+
+=item o The I<start_scope> count must be 2 or more
+
+=item o When I<start_scope> is preceeded by I<graph_id>, it's a subgraph
+
+=item o Given 'subgraph {...}', the I<graph_id> will be ""
+
+=back
+
+=item o {...}
+
+	start_scope , "2"
+
+=over 4
+
+=item o The I<start_scope> count must be 2 or more
+
+=item o When I<start_scope> is I<not> preceeded by I<graph_id>, it's a stand-alone {...}
+
+=back
+
+=back
+
 =head2 Why doesn't the lexer/parser handle my HTML-style labels?
 
 Traps for young players:
@@ -1058,12 +1106,6 @@ attributes.
 
 See data/51.* for sample code.
 
-=item o close_brace => $brace_count
-
-This indicates the end of the graph, the end of a subgraph, or the end of a stand-alone {...}.
-
-$brace_count increments by 1 each time '{' is detected in the input string, and decrements each time '}' is detected.
-
 =item o close_bracket => ']'
 
 This indicates the end of a set of attributes.
@@ -1082,9 +1124,15 @@ This separates nodes from ports and ports from compass points.
 
 $id is either '->' for a digraph or '--' for a graph.
 
+=item o end_scope => $brace_count
+
+This indicates the end of the graph, the end of a subgraph, or the end of a stand-alone {...}.
+
+$brace_count increments by 1 each time '{' is detected in the input string, and decrements each time '}' is detected.
+
 =item o end_subgraph => $subgraph_count
 
-This indicates the end of a subgraph, and follows the subgraph's 'close_brace'.
+This indicates the end of a subgraph, and follows the subgraph's 'end_scope'.
 
 $subgraph_count increments by 1 each time 'subgraph' is detected in the input string, and decrements each time a matching '}' is detected.
 
@@ -1100,7 +1148,7 @@ For graphs and subgraphs, the $id may be '' (the empty string).
 
 =item o node_id => $id
 
-=item o open_brace => $brace_count
+=item o start_scope => $brace_count
 
 This indicates the start of the graph, the start of a subgraph, or the start of a stand-alone {...}.
 
@@ -1125,54 +1173,6 @@ $subgraph_count increments by 1 each time 'subgraph' is detected in the input st
 =back
 
 Consult data/*.gv and the corresponding data/*.lex for many examples.
-
-=head2 Are the certain cases I should watch out for?
-
-Yes. Consider these 3 situations and their corresponding lexed output:
-
-=over 4
-
-=item o digraph g {...}
-
-	digraph    , "yes"
-	graph_id   , "g"
-	open_brace , "1"
-
-=over 4
-
-=item o The I<open_brace> count must be 1 because it's at the very start of the graph
-
-=back
-
-=item o subgraph s {...}
-
-	start_subgraph , "1"
-	graph_id       , "s"
-	open_brace     , "2"
-
-=over 4
-
-=item o The I<open_brace> count must be 2 or more
-
-=item o When I<open_brace> is preceeded by I<graph_id>, it's a subgraph
-
-=item o Given 'subgraph {...}', the I<graph_id> will be ""
-
-=back
-
-=item o {...}
-
-	open_brace , "2"
-
-=over 4
-
-=item o The I<open_brace> count must be 2 or more
-
-=item o When I<open_brace> is I<not> preceeded by I<graph_id>, it's a stand-alone {...}
-
-=back
-
-=back
 
 =head2 How does the lexer handle comments?
 
@@ -1258,14 +1258,14 @@ Yes,,initial,strict,graph,,save_prefix,"(?:""[^""]*""|<\s*<.*?>\s*>|[a-zA-Z_][a-
 ,,graph,(?:graph|digraph),graph_id,,save_prefix,(?:->|--),Edge
 ,,,\s+,graph,,,,
 ,,,,,,,,
-,,graph_id,"(?:""[^""]*""|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))",open_brace,,save_graph_id,,
+,,graph_id,"(?:""[^""]*""|<\s*<.*?>\s*>|[a-zA-Z_][a-zA-Z_0-9]*|-?(?:\.[0-9]+|[0-9]+(?:\.[0-9])*))",start_scope,,save_graph_id,,
 ,,,{,statement_list_1,,,,
 ,,,\/\*.*?\*\/,graph_id,,,,
 ,,,\s+,graph_id,,,,
 ,,,,,,,,
-,,open_brace,{,statement_list_1,,start_statements,,
-,,,\/\*.*?\*\/,open_brace,,,,
-,,,\s+,open_brace,,,,
+,,start_scope,{,statement_list_1,,start_statements,,
+,,,\/\*.*?\*\/,start_scope,,,,
+,,,\s+,start_scope,,,,
 ,,,,,,,,
 ,,start_statement,{,statement_list_1,,start_statements,,
 ,,,\/\*.*?\*\/,start_statement,,,,
