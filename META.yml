@@ -17,22 +17,22 @@ name: GraphViz2-Marpa
 provides:
   GraphViz2::Marpa:
     file: lib/GraphViz2/Marpa.pm
-    version: 1.05
+    version: 1.06
   GraphViz2::Marpa::Lexer:
     file: lib/GraphViz2/Marpa/Lexer.pm
-    version: 1.05
+    version: 1.06
   GraphViz2::Marpa::Lexer::DFA:
     file: lib/GraphViz2/Marpa/Lexer/DFA.pm
-    version: 1.05
+    version: 1.06
   GraphViz2::Marpa::Parser:
     file: lib/GraphViz2/Marpa/Parser.pm
-    version: 1.05
+    version: 1.06
   GraphViz2::Marpa::Renderer::GraphViz2:
     file: lib/GraphViz2/Marpa/Renderer/GraphViz2.pm
-    version: 1.05
+    version: 1.06
   GraphViz2::Marpa::Utils:
     file: lib/GraphViz2/Marpa/Utils.pm
-    version: 1.05
+    version: 1.06
 requires:
   Algorithm::Diff: 1.1902
   Data::Section::Simple: 0.02
@@ -63,4 +63,4 @@ requires:
   warnings: 1.03
 resources:
   license: http://www.perlfoundation.org/artistic_license_1_0
-version: 1.05
+version: 1.06
