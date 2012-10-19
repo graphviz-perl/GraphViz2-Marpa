@@ -5,3 +5,5 @@ perl scripts/rend2svg.pl
 perl scripts/generate.index.pl
 
 cp html/*.html html/*.svg $DR/Perl-modules/html/graphviz2.marpa/
+
+echo Check the version number in the demo index
