@@ -1,5 +1,13 @@
-strict digraph graph_55
+strict digraph graph_53
 {
+	graph
+	[
+		label = "Complex Syntax Test"
+	]
+	graph
+	[
+		rankdir = "TB"
+	]
 	A
 	[
 		shape = "oval"
@@ -18,28 +26,49 @@ strict digraph graph_55
 			rank = "same"
 		]
 		B
+		C
 		node
 		[
 			shape = "oval"
 		]
+		D
+		graph
+		[
+			ordering = "out"
+		]
 		A -> B
-		{
-			C -> D
-		}
+		C -> D
 	}
 	node
 	[
 		color = "green"
 		style = "filled"
 	]
+	E
+	F
+	E -> F
+	[
+		label = "e->f"
+		dir = "both"
+		arrowhead = "dot"
+		arrowtail = "odot"
+	]
 	subgraph cluster_outer
 	{
 		G -> H
+		node
+		[
+			shape = "hexagon"
+		]
+		node
+		[
+			color = "red"
+		]
 		graph
 		[
 			label = "Outer"
 		]
-		subgraph
+		subgraph cluster_inner
 		{
 			node
 			[
@@ -64,5 +93,15 @@ strict digraph graph_55
 	graph
 	[
 		rankdir = "TB"
+	]
+	node
+	[
+		color = "orange"
+	]
+	K
+	L
+	K -> L
+	[
+		label = "k->l"
 	]
 }

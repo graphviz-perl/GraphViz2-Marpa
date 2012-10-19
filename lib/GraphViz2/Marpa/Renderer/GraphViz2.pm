@@ -241,8 +241,8 @@ sub run
 			when ('strict')          {$self -> new_item($value eq 'no' ? '' : 'strict ', 0, 0, 0);}
 			when ('digraph')         {$self -> new_item($value eq 'no' ? 'graph' : 'digraph', 0, 0, 0);}
 			when ('graph_id')        {$self -> new_item($value, 0, 0, 1);}
-			when ('start_graph')     {$self -> new_item('{', 1, 0, 0);}
-			when ('end_graph')       {$self -> new_item('}', 1, 0, 0);}
+			when ('start_scope')     {$self -> new_item('{', 1, 0, 0);}
+			when ('end_scope')       {$self -> new_item('}', 1, 0, 0);}
 			when ('start_subgraph')  {$self -> new_item('subgraph', 1, 0, 0);}
 			when ('end_subgraph')    {}
 			when ('start_attribute') {@attributes = ();}

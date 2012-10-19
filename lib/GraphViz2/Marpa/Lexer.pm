@@ -1126,6 +1126,54 @@ $subgraph_count increments by 1 each time 'subgraph' is detected in the input st
 
 Consult data/*.gv and the corresponding data/*.lex for many examples.
 
+=head2 Are the certain cases I should watch out for?
+
+Yes. Consider these 3 situations and their corresponding lexed output:
+
+=over 4
+
+=item o digraph g {...}
+
+	digraph    , "yes"
+	graph_id   , "g"
+	open_brace , "1"
+
+=over 4
+
+=item o The I<open_brace> count must be 1 because it's at the very start of the graph
+
+=back
+
+=item o subgraph s {...}
+
+	start_subgraph , "1"
+	graph_id       , "s"
+	open_brace     , "2"
+
+=over 4
+
+=item o The I<open_brace> count must be 2 or more
+
+=item o When I<open_brace> is preceeded by I<graph_id>, it's a subgraph
+
+=item o Given 'subgraph {...}', the I<graph_id> will be ""
+
+=back
+
+=item o {...}
+
+	open_brace , "2"
+
+=over 4
+
+=item o The I<open_brace> count must be 2 or more
+
+=item o When I<open_brace> is I<not> preceeded by I<graph_id>, it's a stand-alone {...}
+
+=back
+
+=back
+
 =head2 How does the lexer handle comments?
 
 See the next point.

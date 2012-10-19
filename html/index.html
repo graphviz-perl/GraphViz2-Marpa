@@ -1185,10 +1185,7 @@ Output file 65: html/54.svg (1070 bytes)
 </tr>
 <tr>
   <td>
-	Input file 66: data/55.gv (510 bytes). Lex result: OK:<br /># Up to V 1.05, the output did not distinguish between
-<br /># subgraph {} and plain old {}. V 1.06 does.
-<br />
-<br />strict digraph graph_55
+	Input file 66: data/55.gv (408 bytes). Lex result: OK:<br />strict digraph graph_55
 <br />{
 <br />	A [shape = oval]
 <br />
@@ -1200,6 +1197,7 @@ Output file 65: html/54.svg (1070 bytes)
 <br />		B
 <br />		node [shape = oval]
 <br />		A -&gt; B
+<br />		{ C -&gt; D }
 <br />	}
 <br />
 <br />	node [color = green style = filled]
@@ -1208,7 +1206,7 @@ Output file 65: html/54.svg (1070 bytes)
 <br />	{
 <br />		G -&gt; H
 <br />		label = Outer
-<br />		subgraph cluster_inner
+<br />		subgraph
 <br />		{
 <br />			node [shape = triangle]
 <br />			edge [color = blue]
@@ -1223,7 +1221,7 @@ Output file 65: html/54.svg (1070 bytes)
   </td>
   <td>
 <object data = "./55.svg"></object><br />
-Output file 66: html/55.svg (3613 bytes)
+Output file 66: html/55.svg (4111 bytes)
   </td>
 </tr>
 <tr>
@@ -2014,7 +2012,7 @@ Output file 91: html/90.try.svg (5309 bytes)
 
 <table align="center">
 	<tr>
-		<td>Last updated</td><td>2012-10-19 09:25:41</td>
+		<td>Last updated</td><td>2012-10-19 11:29:42</td>
 	</tr>
 	<tr>
 		<td align="center" colspan="2"><a href="http://savage.net.au/">Ron's Home page</td>

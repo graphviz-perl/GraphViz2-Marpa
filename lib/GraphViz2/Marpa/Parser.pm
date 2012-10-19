@@ -156,13 +156,13 @@ sub _build_view
 
 			push @{$attribute{node}{$node} }, $node_attribute;
 		}
-		elsif ($type eq 'start_graph')
+		elsif ($type eq 'start_scope')
 		{
 			next if (! $class_attribute);
 
 			push @{$attribute{class}{$_} }, $class_attribute{$_} for (qw/edge graph node/);
 		}
-		elsif ($type eq 'end_graph')
+		elsif ($type eq 'end_scope')
 		{
 			for (qw/edge graph node/)
 			{
@@ -263,15 +263,15 @@ sub end_attributes
 # --------------------------------------------------
 # This is a function, not a method.
 
-sub end_graph
+sub end_scope
 {
 	my($stash, $t1, undef, $t2)  = @_;
 
-	$myself -> new_item('end_graph', $t1);
+	$myself -> new_item('end_scope', $t1);
 
 	return $t1;
 
-} # End of end_graph.
+} # End of end_scope.
 
 # --------------------------------------------------
 # This is a function, not a method.
@@ -368,12 +368,12 @@ sub grammar
 			 },
 			 {   # Graph stuff.
 				 lhs => 'graph_sequence_definition',
-				 rhs => [qw/start_graph graph_sequence_list end_graph/],
+				 rhs => [qw/start_scope graph_sequence_list end_scope/],
 			 },
 			 {
-				 lhs    => 'start_graph',
+				 lhs    => 'start_scope',
 				 rhs    => [qw/open_brace/],
-				 action => 'start_graph',
+				 action => 'start_scope',
 			 },
 			 {
 				 lhs => 'graph_sequence_list',
@@ -409,9 +409,9 @@ sub grammar
 				 rhs => [qw/subgraph_sequence_definition/],
 			 },
 			 {
-				 lhs    => 'end_graph',
+				 lhs    => 'end_scope',
 				 rhs    => [qw/close_brace/],
-				 action => 'end_graph',
+				 action => 'end_scope',
 			 },
 			 {   # Node stuff.
 				 lhs => 'node_sequence_definition',
@@ -431,7 +431,7 @@ sub grammar
 			 },
 			 {
 				 lhs => 'node_sequence_item', # 3 of 4.
-				 rhs => [qw/start_graph graph_sequence_list end_graph/],
+				 rhs => [qw/start_scope graph_sequence_list end_scope/],
 			 },
 			 {
 				 lhs => 'node_statement', # 1 of 5.
@@ -848,15 +848,15 @@ sub start_attributes
 # --------------------------------------------------
 # This is a function, not a method.
 
-sub start_graph
+sub start_scope
 {
 	my($stash, $t1, undef, $t2)  = @_;
 
-	$myself -> new_item('start_graph', $t1);
+	$myself -> new_item('start_scope', $t1);
 
 	return $t1;
 
-} # End of start_graph.
+} # End of start_scope.
 
 # --------------------------------------------------
 # This is a function, not a method.
@@ -1216,6 +1216,54 @@ Default: A object of type L<GraphViz2::Marpa::Utils>.
 
 =head1 FAQ
 
+=head2 Are the certain cases I should watch out for?
+
+Yes. Consider these 3 situations and their corresponding lexed or parsed output:
+
+=over 4
+
+=item o digraph g {...}
+
+	digraph    , "yes"
+	graph_id   , "g"
+	open_brace , "1"
+
+=over 4
+
+=item o The I<open_brace> count must be 1 because it's at the very start of the graph
+
+=back
+
+=item o subgraph s {...}
+
+	start_subgraph , "1"
+	graph_id       , "s"
+	open_brace     , "2"
+
+=over 4
+
+=item o The I<open_brace> count must be 2 or more
+
+=item o When I<open_brace> is preceeded by I<graph_id>, it's a subgraph
+
+=item o Given 'subgraph {...}', the I<graph_id> will be ""
+
+=back
+
+=item o {...}
+
+	open_brace , "2"
+
+=over 4
+
+=item o The I<open_brace> count must be 2 or more
+
+=item o When I<open_brace> is I<not> preceeded by I<graph_id>, it's a stand-alone {...}
+
+=back
+
+=back
+
 =head2 Why doesn't the lexer/parser handle my HTML-style labels?
 
 Traps for young players:
@@ -1302,15 +1350,15 @@ $id is either '->' for a digraph or '--' for a graph.
 
 This indicates the end of a set of attributes.
 
-=item o end_graph => $graph_count
+=item o end_scope => $brace_count
 
 This indicates the end of a graph or subgraph or any stand-alone {}, and - for subgraphs - preceeds the subgraph's 'end_subgraph'.
 
-$graph_count increments by 1 each time 'graph_id' is detected in the input string, and decrements each time a matching 'end_graph' is detected.
+$brace_count increments by 1 each time 'graph_id' is detected in the input string, and decrements each time a matching 'end_scope' is detected.
 
 =item o end_subgraph => $subgraph_count
 
-This indicates the end of a subgraph, and follows the subgraph's 'end_graph'.
+This indicates the end of a subgraph, and follows the subgraph's 'end_scope'.
 
 $subgraph_count increments by 1 each time 'start_subgraph' is detected in the input string, and decrements each time a matching 'end_subgraph' is detected.
 
@@ -1328,11 +1376,11 @@ For graphs and subgraphs, the $id may be '' (the empty string).
 
 This indicates the start of a set of attributes.
 
-=item o start_graph => $graph_count
+=item o start_scope => $brace_count
 
-This indicates the start of a graph, or any stand-alone {}.
+This indicates the start of the graph, a subgraph, or any stand-alone {}.
 
-$graph_count increments by 1 each time 'graph_id' is detected in the input string, and decrements each time a matching 'end_graph' is detected.
+$brace_count increments by 1 each time 'graph_id' is detected in the input string, and decrements each time a matching 'end_scope' is detected.
 
 =item o start_subgraph => $subgraph_count
 

@@ -670,7 +670,7 @@ sub save_id_1
 	else
 	{
 		$type  = $value =~ /^-/ ? 'edge_id' : $value eq '{' ? 'open_brace' : 'id';
-		$value = $myself -> brace_count if ($type eq 'open_brace');
+		$value = $myself -> increment_brace_count if ($type eq 'open_brace');
 	}
 
 	$myself -> new_item($type, $value);

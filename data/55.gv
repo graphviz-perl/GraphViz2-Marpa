@@ -1,6 +1,3 @@
-# Up to V 1.05, the output did not distinguish between
-# subgraph {} and plain old {}. V 1.06 does.
-
 strict digraph graph_55
 {
 	A [shape = oval]
@@ -13,6 +10,7 @@ strict digraph graph_55
 		B
 		node [shape = oval]
 		A -> B
+		{ C -> D }
 	}
 
 	node [color = green style = filled]
@@ -21,7 +19,7 @@ strict digraph graph_55
 	{
 		G -> H
 		label = Outer
-		subgraph cluster_inner
+		subgraph
 		{
 			node [shape = triangle]
 			edge [color = blue]

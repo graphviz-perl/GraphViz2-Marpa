@@ -2,5 +2,5 @@
 strict              , "yes"
 digraph             , "yes"
 graph_id            , ""
-start_graph         , "1"
-end_graph           , "1"
+start_scope         , "1"
+end_scope           , "1"
