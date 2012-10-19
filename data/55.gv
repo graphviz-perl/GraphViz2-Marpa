@@ -19,7 +19,7 @@ strict digraph graph_55
 	{
 		G -> H
 		label = Outer
-		subgraph
+		subgraph cluster_inner
 		{
 			node [shape = triangle]
 			edge [color = blue]
