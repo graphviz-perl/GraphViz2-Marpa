@@ -101,7 +101,7 @@ sub _build_attribute_list
 # o node  => $node_name.
 # The sub-key's value is a hashref of its attributes.
 
-sub _build_view
+sub _build_tree
 {
 	my($self) = @_;
 
@@ -111,21 +111,20 @@ sub _build_view
 	my($i)     = - 1;
 	my($items) = $self -> items;
 
-	my(%attribute);
-	my($class_attribute, %class_attribute);
+	my($attribute, %attribute);
+	my($class);
 	my($digraph);
-	my(@graph_id);
+	my($graph_id);
 	my($j);
 	my($key);
-	my($node, $node_attribute, %node_attribute);
+	my($node_attribute);
+	my(@stack);
 	my($type);
 	my($value);
 
-	for my $class (qw/edge graph node/)
+	for $class (qw/edge graph node nodes/)
 	{
-		$attribute{class}         = {};
-		$attribute{class}{$class} = [];
-		$class_attribute{$class}  = {};
+		$attribute{$class} = {};
 	}
 
 	while ($i < $#$items)
@@ -137,8 +136,8 @@ sub _build_view
 
 		if ($type eq 'class_id')
 		{
-			($i, $class_attribute)   = $self -> _build_attribute_list($items, $i, $j);
-			$class_attribute{$value} = {%{$class_attribute{$value} }, %$class_attribute};
+			($i, $attribute)   = $self -> _build_attribute_list($items, $i, $j);
+			$attribute{$value} = {%{$attribute{$value} }, %$attribute};
 		}
 		elsif ($type eq 'digraph')
 		{
@@ -146,41 +145,43 @@ sub _build_view
 		}
 		elsif ($type eq 'graph_id')
 		{
-			push @graph_id, $value;
+			$graph_id = $value;
 		}
 		elsif ($type eq 'node_id')
 		{
-			$node = $value;
+			($i, $attribute)          = $self -> _build_attribute_list($items, $i, $j);
+			$attribute{nodes}{$value} = {} if (! $attribute{nodes}{$value});
+			$attribute{nodes}{$value} = {%{$attribute{nodes}{$value} }, %$attribute};
 
-			($i, $node_attribute) = $self -> _build_attribute_list($items, $i, $j);
+			$self -> log(notice => "$value -> $$items[$i + 2]{value}") if ($$items[$i + 1]{type} eq 'edge_id');
 
-			push @{$attribute{node}{$node} }, $node_attribute;
+			for my $node (keys %{$attribute{nodes} })
+			{
+				my(%attr) = (%{$attribute{node} }, %{$attribute{nodes}{$node} });
+
+				$self -> log(notice => "Render $node: " . join(', ', map{"$_ => $attr{$_}"} sort keys %attr) );
+			}
+
+			$self -> log;
 		}
 		elsif ($type eq 'start_scope')
 		{
-			next if (! $class_attribute);
+			next if (! $attribute); # First entry.
 
-			push @{$attribute{class}{$_} }, $class_attribute{$_} for (qw/edge graph node/);
+			push @stack, $attribute{$_} for (qw/edge graph node nodes/);
 		}
 		elsif ($type eq 'end_scope')
 		{
-			for (qw/edge graph node/)
-			{
-				$class_attribute{$_} = {};
-
-				#pop @{$attribute{class}{$_} };
-			}
+			$attribute{$_} = pop @stack for (qw/nodes node graph edge/);
 		}
 	}
 
 	$attribute{digraph}  = $digraph eq 'yes' ? 1 : 0;
-	$attribute{graph_id} = [@graph_id];
+	$attribute{graph_id} = $graph_id;
 
-	$self -> log(notice => '-' x 50, "\n" . Dumper(%attribute) . "\n" . '-' x 50);
+	$self -> tree(\@stack);
 
-	$self -> tree(\%attribute);
-
-} # End of _build_view.
+} # End of _build_tree.
 
 # --------------------------------------------------
 # This is a function, not a method.
@@ -698,6 +699,8 @@ sub _init
 sub log
 {
 	my($self, $level, $s) = @_;
+	$level = 'notice' if (! defined $level);
+	$s     = ''       if (! defined $s);
 
 	$self -> logger -> $level($s) if ($self -> logger);
 
@@ -814,9 +817,9 @@ sub run
 		$self -> generate_parsed_file($file_name);
 	}
 
-	# Build a Graphviz-live view of the data.
+	# Build a Graphviz-like tree of the data.
 
-	$self -> _build_view;
+	$self -> _build_tree;
 
 	# Pass the tokens to the renderer.
 

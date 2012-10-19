@@ -8,7 +8,7 @@ strict digraph graph_55
 	{
 		rank = same
 		B
-		node [shape = oval]
+		node [shape = square]
 		A -> B
 		{ C -> D }
 	}
