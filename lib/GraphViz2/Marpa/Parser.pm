@@ -25,6 +25,7 @@ use Text::CSV_XS;
 use Try::Tiny;
 
 fieldhash my %global       => 'global';
+fieldhash my %graph        => 'graph';
 fieldhash my %item_count   => 'item_count';
 fieldhash my %items        => 'items';
 fieldhash my %lexed_file   => 'lexed_file';
@@ -118,6 +119,7 @@ sub _build_node_list
 
 # -----------------------------------------------
 # Outputs:
+# o $self -> graph, a hashref of graph attributes.
 # o $self -> global, a hashref of (digraph => $Boolean, graph_id => $string).
 # o $self -> node, a hashref of {node => hashref of attributes}.
 # o $self -> tree, an object of type Tree.
@@ -129,14 +131,14 @@ sub _build_tree
 	# Phase 1: Find class (edge, graph and node) attributes,
 	# and find attributes of individual nodes.
 
-	my(@class) = qw/edge graph node nodes/;
-	my($i)     = - 1;
-	my($items) = $self -> items;
+	my(@class)  = qw/edge graph node nodes/;
+	my($global) = {};
+	my($i)      = - 1;
+	my($items)  = $self -> items;
 
 	my($attribute, %attribute);
 	my($child);
-	my($digraph);
-	my($graph_id, $global_graph_id);
+	my($graph_id);
 	my($node, %node);
 	my($parent);
 	my(@stack);
@@ -159,7 +161,7 @@ sub _build_tree
 		}
 		elsif ($type eq 'digraph')
 		{
-			$digraph = $value;
+			$$global{digraph} = $value eq 'yes' ? 1 : 0;
 		}
 		elsif ($type eq 'edge_id')
 		{
@@ -179,8 +181,8 @@ sub _build_tree
 		}
 		elsif ($type eq 'graph_id')
 		{
-			$global_graph_id = $value if (! defined $global_graph_id);
-			$graph_id        = $value;
+			$$global{graph_id} = $value if (! defined $$global{graph_id});
+			$graph_id          = $value;
 		}
 		elsif ($type eq 'node_id')
 		{
@@ -227,10 +229,11 @@ sub _build_tree
 		}
 	}
 
-	$self -> global({digraph => $digraph eq 'yes' ? 1 : 0, graph_id => $global_graph_id});
+	$self -> global($global);
+	$self -> graph($attribute{graph});
 	$self -> node(\%node);
 
-	my($global) = $self -> global;
+	$global = $self -> global;
 
 	$self -> log(notice => 'Globals: ' . join(', ', map{"$_ => $$global{$_}"} sort keys %$global) );
 
@@ -709,6 +712,7 @@ sub _init
 {
 	my($self, $arg)     = @_;
 	$$arg{global}       = {};
+	$$arg{graph}        = {};
 	$$arg{item_count}   = 0;
 	$$arg{items}        = Set::Array -> new;
 	$$arg{lexed_file}   ||= ''; # Caller can set.
