@@ -18,10 +18,13 @@ use Marpa::XS;
 
 use Set::Array;
 
+use Tree;
+
 use Text::CSV_XS;
 
 use Try::Tiny;
 
+fieldhash my %global       => 'global';
 fieldhash my %item_count   => 'item_count';
 fieldhash my %items        => 'items';
 fieldhash my %lexed_file   => 'lexed_file';
@@ -93,14 +96,28 @@ sub _build_attribute_list
 } # End of _build_attribute_list.
 
 # -----------------------------------------------
+
+sub _build_node_list
+{
+	my($self, $items, $i) = @_;
+
+	my($j);
+	my(@node);
+
+	for ($j = $i - 1; $$items[$j]{type} eq 'node_id'; $j += 2)
+	{
+		push @node, $$items[$j]{value};
+	}
+
+	($j, my $attribute) = $self -> _build_attribute_list($items, $j - 2);
+
+	return ($j, [@node], $attribute);
+
+} # End of _build_node_list.
+
+# -----------------------------------------------
 # Build a hashref of attributes for everything.
 # Output is a hashref: $self -> tree.
-# Keys in this hashref are class, edge and node.
-# Sub-keys:
-# o class => edge, graph, node.
-# o edge  => edge attributes for specific edges.
-# o node  => $node_name.
-# The sub-key's value is a hashref of its attributes.
 
 sub _build_tree
 {
@@ -114,9 +131,11 @@ sub _build_tree
 	my($items) = $self -> items;
 
 	my($attribute, %attribute);
+	my($child);
 	my($digraph);
 	my($graph_id);
-	my(%node);
+	my($node, %node);
+	my($parent);
 	my(@stack);
 	my($type);
 	my($value);
@@ -139,22 +158,60 @@ sub _build_tree
 		{
 			$digraph = $value;
 		}
+		elsif ($type eq 'edge_id')
+		{
+			($i, $node, $attribute) = $self -> _build_node_list($items, $i);
+			$parent                 = $self -> tree;
+
+			for (@$node)
+			{
+				$node{$_} = {attribute => {}, fixed => 0} if (! $node{$_});
+				$child    = Tree -> new($value);
+
+				$parent -> add_child($child);
+				$parent -> meta($attribute);
+
+				$parent = $child;
+			}
+		}
 		elsif ($type eq 'graph_id')
 		{
 			$graph_id = $value;
 		}
 		elsif ($type eq 'node_id')
 		{
+			# Declare this node if we haven't see it before.
+
 			$node{$value} = {attribute => {}, fixed => 0} if (! $node{$value});
+
+			# If it's followed by an edge, any attributes belong to the edge.
+			# So, don't try to update the node's attributes.
 
 			if ($$items[$i + 1]{type} eq 'edge_id')
 			{
 			}
 			else
 			{
-				($i, $attribute)         = $self -> _build_attribute_list($items, $i);
-				$node{$value}{attribute} = {%$attribute, %{$node{$value}{attribute} } };
-				$node{$value}{fixed}     = 1;
+				# If the node has been explicitly declared (fixed == 1),
+				# only update it's attributes with non-class attributes.
+
+				($i, $attribute) = $self -> _build_attribute_list($items, $i);
+
+				if ($node{$value}{fixed} == 1)
+				{
+					$node{$value}{attribute} = {%$attribute, %{$node{$value}{attribute} } };
+				}
+				else
+				{
+					# Otherwise, include class attributes.
+
+					for (@class)
+					{
+						$node{$value}{attribute} = {%{$attribute{$_} }, %$attribute, %{$node{$value}{attribute} } };
+					}
+				}
+
+				$node{$value}{fixed} = 1;
 			}
 		}
 		elsif ($type eq 'start_scope')
@@ -169,10 +226,7 @@ sub _build_tree
 		}
 	}
 
-	$attribute{digraph}  = $digraph eq 'yes' ? 1 : 0;
-	$attribute{graph_id} = $graph_id;
-
-	$self -> tree(\@stack);
+	$self -> global({digraph => $digraph eq 'yes' ? 1 : 0, graph_id => $graph_id});
 
 } # End of _build_tree.
 
@@ -641,6 +695,7 @@ sub increment_item_count
 sub _init
 {
 	my($self, $arg)     = @_;
+	$$arg{global}       = {};
 	$$arg{item_count}   = 0;
 	$$arg{items}        = Set::Array -> new;
 	$$arg{lexed_file}   ||= ''; # Caller can set.
@@ -651,7 +706,7 @@ sub _init
 	$$arg{parsed_file}  ||= '';       # Caller can set.
 	$$arg{renderer}     = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
 	$$arg{report_items} ||= 0;        # Caller can set.
-	$$arg{tree}         = {};
+	$$arg{tree}         = Tree -> new('root');
 	$$arg{tokens}       ||= [];       # Caller can set.
 	$$arg{utils}        = GraphViz2::Marpa::Utils -> new;
 	$self               = from_hash($self, $arg);
