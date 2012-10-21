@@ -137,7 +137,7 @@ sub _build_tree
 	my($items)  = $self -> items;
 
 	my($attribute, %attribute);
-	my($child);
+	my($class_attribute, %class_attribute, $child);
 	my($graph_id);
 	my($node, %node);
 	my($parent);
@@ -145,7 +145,7 @@ sub _build_tree
 	my($type);
 	my($value);
 
-	$attribute{$_} = {} for (@class);
+	$class_attribute{$_} = {} for (@class);
 
 	while ($i < $#$items)
 	{
@@ -156,8 +156,8 @@ sub _build_tree
 
 		if ($type eq 'class_id')
 		{
-			($i, $attribute)   = $self -> _build_attribute_list($items, $i);
-			$attribute{$value} = {%{$attribute{$value} }, %$attribute};
+			($i, $class_attribute)   = $self -> _build_attribute_list($items, $i);
+			$class_attribute{$value} = {%{$class_attribute{$value} }, %$class_attribute};
 		}
 		elsif ($type eq 'digraph')
 		{
@@ -211,7 +211,7 @@ sub _build_tree
 				{
 					# Otherwise, include class attributes.
 
-					$node{$value}{attribute} = {%{$attribute{node} }, %$attribute, %{$node{$value}{attribute} } };
+					$node{$value}{attribute} = {%{$class_attribute{node} }, %{$node{$value}{attribute} }, %$attribute};
 				}
 
 				$node{$value}{fixed} = 1;
@@ -221,16 +221,16 @@ sub _build_tree
 		{
 			next if ($value == 1); # First entry.
 
-			push @stack, $attribute{$_} for (@class);
+			push @stack, $class_attribute{$_} for (@class);
 		}
 		elsif ($type eq 'end_scope')
 		{
-			$attribute{$_} = pop @stack for reverse (@class);
+			$class_attribute{$_} = pop @stack for reverse (@class);
 		}
 	}
 
 	$self -> global($global);
-	$self -> graph($attribute{graph});
+	$self -> graph($class_attribute{graph});
 	$self -> node(\%node);
 
 	$global = $self -> global;
