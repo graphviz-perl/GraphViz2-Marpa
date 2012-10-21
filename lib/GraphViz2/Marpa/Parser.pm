@@ -170,7 +170,7 @@ sub _build_tree
 
 			for (@$node)
 			{
-				$node{$_} = {attribute => {}, fixed => 0} if (! $node{$_});
+				$node{$_} = {attribute => {%{$class_attribute{node} } }, fixed => 0} if (! $node{$_});
 				$child    = Tree -> new($value);
 
 				$parent -> add_child($child);
@@ -188,7 +188,7 @@ sub _build_tree
 		{
 			# Declare this node if we haven't see it before.
 
-			$node{$value} = {attribute => {}, fixed => 0} if (! $node{$value});
+			$node{$value} = {attribute => {%{$class_attribute{node} } }, fixed => 0} if (! $node{$value});
 
 			# If it's followed by an edge, any attributes belong to the edge.
 			# So, don't try to update the node's attributes.
@@ -205,7 +205,7 @@ sub _build_tree
 
 				if ($node{$value}{fixed} == 1)
 				{
-					$node{$value}{attribute} = {%$attribute, %{$node{$value}{attribute} } };
+					$node{$value}{attribute} = {%{$node{$value}{attribute} }, %$attribute};
 				}
 				else
 				{

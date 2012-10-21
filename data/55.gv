@@ -18,7 +18,7 @@ strict digraph graph_55
 		E -> F [arrowtail = odot arrowhead = dot dir = both minlen = 2 penwidth = 5]
 		{
 			node [fillcolor = darkorchid shape = pentagon]
-			G [color = coral shape = hexagon]
+			G [color = yellow penwidth = 5 shape = hexagon]
 			H [color = crimson penwidth = 7]
 			G -> H
 		}
@@ -38,7 +38,7 @@ strict digraph graph_55
 			label = Inner
 			node [fillcolor = magenta shape = triangle]
 			edge [color = blue]
-			K [color = pink shape = square]
+			K [color = yellow shape = square]
 			K -> L
 		}
 	}
