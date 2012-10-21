@@ -31,6 +31,7 @@ fieldhash my %lexed_file   => 'lexed_file';
 fieldhash my %logger       => 'logger';
 fieldhash my %maxlevel     => 'maxlevel';
 fieldhash my %minlevel     => 'minlevel';
+fieldhash my %node         => 'node';
 fieldhash my %output_file  => 'output_file';
 fieldhash my %parsed_file  => 'parsed_file';
 fieldhash my %renderer     => 'renderer';
@@ -116,8 +117,10 @@ sub _build_node_list
 } # End of _build_node_list.
 
 # -----------------------------------------------
-# Build a hashref of attributes for everything.
-# Output is a hashref: $self -> tree.
+# Outputs:
+# o $self -> global, a hashref of (digraph => $Boolean, graph_id => $string).
+# o $self -> node, a hashref of {node => hashref of attributes}.
+# o $self -> tree, an object of type Tree.
 
 sub _build_tree
 {
@@ -133,7 +136,7 @@ sub _build_tree
 	my($attribute, %attribute);
 	my($child);
 	my($digraph);
-	my($graph_id);
+	my($graph_id, $global_graph_id);
 	my($node, %node);
 	my($parent);
 	my(@stack);
@@ -176,7 +179,8 @@ sub _build_tree
 		}
 		elsif ($type eq 'graph_id')
 		{
-			$graph_id = $value;
+			$global_graph_id = $value if (! defined $global_graph_id);
+			$graph_id        = $value;
 		}
 		elsif ($type eq 'node_id')
 		{
@@ -205,10 +209,7 @@ sub _build_tree
 				{
 					# Otherwise, include class attributes.
 
-					for (@class)
-					{
-						$node{$value}{attribute} = {%{$attribute{$_} }, %$attribute, %{$node{$value}{attribute} } };
-					}
+					$node{$value}{attribute} = {%{$attribute{node} }, %$attribute, %{$node{$value}{attribute} } };
 				}
 
 				$node{$value}{fixed} = 1;
@@ -226,7 +227,19 @@ sub _build_tree
 		}
 	}
 
-	$self -> global({digraph => $digraph eq 'yes' ? 1 : 0, graph_id => $graph_id});
+	$self -> global({digraph => $digraph eq 'yes' ? 1 : 0, graph_id => $global_graph_id});
+	$self -> node(\%node);
+
+	my($global) = $self -> global;
+
+	$self -> log(notice => 'Globals: ' . join(', ', map{"$_ => $$global{$_}"} sort keys %$global) );
+
+	$node = $self -> node;
+
+	for my $name (sort keys %$node)
+	{
+		$self -> log(notice => "Node: $name. Attr: " . join(', ', map{"$_ => $$node{$name}{attribute}{$_}"} sort keys %{$$node{$name}{attribute} }) );
+	}
 
 } # End of _build_tree.
 
@@ -702,6 +715,7 @@ sub _init
 	$$arg{logger}       = defined($$arg{logger}) ? $$arg{logger} : undef; # Caller can set.
 	$$arg{maxlevel}     ||= 'notice'; # Caller can set.
 	$$arg{minlevel}     ||= 'error';  # Caller can set.
+	$$arg{node}         = {};
 	$$arg{output_file}  ||= '';       # Caller can set.
 	$$arg{parsed_file}  ||= '';       # Caller can set.
 	$$arg{renderer}     = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
