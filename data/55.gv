@@ -19,7 +19,7 @@ strict digraph graph_55
 		{
 			node [fillcolor = darkorchid shape = pentagon]
 			G [color = coral shape = hexagon]
-			H [color = crimson]
+			H [color = crimson penwidth = 7]
 			G -> H
 		}
 	}
