@@ -1,31 +1,42 @@
 strict digraph graph_55
 {
-	A [shape = oval]
+	A [color = blue]
 
 	node [shape = house]
 	edge [color = purple]
 
 	{
 		rank = same
-		B
-		node [shape = square]
+		C
+		node [shape = circle style = filled]
 		A -> B
-		{ C -> D }
+		B [color = mediumseagreen]
+		C [color = firebrick1]
+		B -> C -> D [arrowtail = odot arrowhead = dot dir = both minlen = 2]
+		{
+			node [shape = pentagon]
+			E [color = coral]
+			F [color = crimson]
+			E -> F
+		}
 	}
 
-	node [color = green style = filled]
+	B [shape = square]
+
+	node [fillcolor = lightblue fontsize = 20 style = filled]
 
 	subgraph cluster_outer
 	{
-		G -> H
 		label = Outer
+		G -> H
+
 		subgraph cluster_inner
 		{
-			node [shape = triangle]
+			label = Inner
+			node [fillcolor = magenta shape = triangle]
 			edge [color = blue]
 			I [color = pink shape = square]
 			I -> J
-			label = Inner
 		}
 	}
 	graph [rankdir = TB]

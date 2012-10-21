@@ -71,9 +71,10 @@ sub attribute_value
 
 sub _build_attribute_list
 {
-	my($self, $items, $i, $j) = @_;
+	my($self, $items, $i) = @_;
 
 	my(%attribute);
+	my($j);
 
 	if ($$items[$i + 1]{type} eq 'start_attribute')
 	{
@@ -108,24 +109,19 @@ sub _build_tree
 	# Phase 1: Find class (edge, graph and node) attributes,
 	# and find attributes of individual nodes.
 
+	my(@class) = qw/edge graph node nodes/;
 	my($i)     = - 1;
 	my($items) = $self -> items;
 
 	my($attribute, %attribute);
-	my($class);
 	my($digraph);
 	my($graph_id);
-	my($j);
-	my($key);
-	my($node_attribute);
+	my(%node);
 	my(@stack);
 	my($type);
 	my($value);
 
-	for $class (qw/edge graph node nodes/)
-	{
-		$attribute{$class} = {};
-	}
+	$attribute{$_} = {} for (@class);
 
 	while ($i < $#$items)
 	{
@@ -136,7 +132,7 @@ sub _build_tree
 
 		if ($type eq 'class_id')
 		{
-			($i, $attribute)   = $self -> _build_attribute_list($items, $i, $j);
+			($i, $attribute)   = $self -> _build_attribute_list($items, $i);
 			$attribute{$value} = {%{$attribute{$value} }, %$attribute};
 		}
 		elsif ($type eq 'digraph')
@@ -149,30 +145,27 @@ sub _build_tree
 		}
 		elsif ($type eq 'node_id')
 		{
-			($i, $attribute)          = $self -> _build_attribute_list($items, $i, $j);
-			$attribute{nodes}{$value} = {} if (! $attribute{nodes}{$value});
-			$attribute{nodes}{$value} = {%{$attribute{nodes}{$value} }, %$attribute};
+			$node{$value} = {attribute => {}, fixed => 0} if (! $node{$value});
 
-			$self -> log(notice => "$value -> $$items[$i + 2]{value}") if ($$items[$i + 1]{type} eq 'edge_id');
-
-			for my $node (keys %{$attribute{nodes} })
+			if ($$items[$i + 1]{type} eq 'edge_id')
 			{
-				my(%attr) = (%{$attribute{node} }, %{$attribute{nodes}{$node} });
-
-				$self -> log(notice => "Render $node: " . join(', ', map{"$_ => $attr{$_}"} sort keys %attr) );
 			}
-
-			$self -> log;
+			else
+			{
+				($i, $attribute)         = $self -> _build_attribute_list($items, $i);
+				$node{$value}{attribute} = {%$attribute, %{$node{$value}{attribute} } };
+				$node{$value}{fixed}     = 1;
+			}
 		}
 		elsif ($type eq 'start_scope')
 		{
-			next if (! $attribute); # First entry.
+			next if ($value == 1); # First entry.
 
-			push @stack, $attribute{$_} for (qw/edge graph node nodes/);
+			push @stack, $attribute{$_} for (@class);
 		}
 		elsif ($type eq 'end_scope')
 		{
-			$attribute{$_} = pop @stack for (qw/nodes node graph edge/);
+			$attribute{$_} = pop @stack for reverse (@class);
 		}
 	}
 
