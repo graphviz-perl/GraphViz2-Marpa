@@ -12,10 +12,11 @@ strict digraph graph_55
 		A -> B
 		B [color = mediumseagreen]
 		C [color = firebrick1]
-		B -> C -> D [arrowtail = odot arrowhead = dot dir = both minlen = 2]
+		B -> C [color = orange penwidth = 5]
+		C -> D [arrowtail = odot arrowhead = dot dir = both minlen = 2]
 		{
 			node [shape = pentagon]
-			E [color = coral]
+			E [color = coral shape = hexagon]
 			F [color = crimson]
 			E -> F
 		}
