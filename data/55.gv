@@ -8,17 +8,19 @@ strict digraph graph_55
 	{
 		rank = same
 		C
-		node [shape = circle style = filled]
+		node [fillcolor = goldenrod shape = circle style = filled]
 		A -> B
 		B [color = mediumseagreen]
 		C [color = firebrick1]
 		B -> C [color = orange penwidth = 5]
-		C -> D [arrowtail = odot arrowhead = dot dir = both minlen = 2]
+		node [fillcolor = turquoise4]
+		C -> D -> E [arrowtail = odot arrowhead = dot dir = both minlen = 2]
+		E -> F [arrowtail = odot arrowhead = dot dir = both minlen = 2 penwidth = 5]
 		{
-			node [shape = pentagon]
-			E [color = coral shape = hexagon]
-			F [color = crimson]
-			E -> F
+			node [fillcolor = darkorchid shape = pentagon]
+			G [color = coral shape = hexagon]
+			H [color = crimson]
+			G -> H
 		}
 	}
 
@@ -29,15 +31,15 @@ strict digraph graph_55
 	subgraph cluster_outer
 	{
 		label = Outer
-		G -> H
+		I -> J
 
 		subgraph cluster_inner
 		{
 			label = Inner
 			node [fillcolor = magenta shape = triangle]
 			edge [color = blue]
-			I [color = pink shape = square]
-			I -> J
+			K [color = pink shape = square]
+			K -> L
 		}
 	}
 	graph [rankdir = TB]
