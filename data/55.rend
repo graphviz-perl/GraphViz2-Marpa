@@ -2,7 +2,7 @@ strict digraph graph_55
 {
 	A
 	[
-		shape = "oval"
+		color = "blue"
 	]
 	node
 	[
@@ -17,48 +17,111 @@ strict digraph graph_55
 		[
 			rank = "same"
 		]
-		B
+		C
 		node
 		[
-			shape = "oval"
+			fillcolor = "goldenrod"
+			shape = "circle"
+			style = "filled"
 		]
 		A -> B
+		B
+		[
+			color = "mediumseagreen"
+		]
+		C
+		[
+			color = "firebrick1"
+		]
+		B -> C
+		[
+			color = "orange"
+			penwidth = "5"
+		]
+		node
+		[
+			fillcolor = "turquoise4"
+		]
+		C -> D
+		[
+			arrowtail = "obox"
+			arrowhead = "crow"
+			dir = "both"
+			minlen = "2"
+		]
+		D -> E
+		[
+			arrowtail = "odot"
+			arrowhead = "dot"
+			dir = "both"
+			minlen = "2"
+		]
+		E -> F
+		[
+			arrowtail = "odot"
+			arrowhead = "dot"
+			dir = "both"
+			minlen = "2"
+			penwidth = "5"
+		]
 		{
-			C -> D
+			node
+			[
+				fillcolor = "darkorchid"
+				shape = "pentagon"
+			]
+			G
+			[
+				color = "yellow"
+				penwidth = "5"
+				shape = "hexagon"
+			]
+			H
+			[
+				color = "crimson"
+				penwidth = "7"
+			]
+			G -> H
 		}
 	}
+	B
+	[
+		shape = "square"
+	]
 	node
 	[
-		color = "green"
+		fillcolor = "lightblue"
+		fontsize = "20"
 		style = "filled"
 	]
 	subgraph cluster_outer
 	{
-		G -> H
 		graph
 		[
 			label = "Outer"
 		]
+		I -> J
 		subgraph cluster_inner
 		{
+			graph
+			[
+				label = "Inner"
+			]
 			node
 			[
+				fillcolor = "magenta"
 				shape = "triangle"
 			]
 			edge
 			[
 				color = "blue"
 			]
-			I
+			K
 			[
-				color = "pink"
+				color = "yellow"
 				shape = "square"
 			]
-			I -> J
-			graph
-			[
-				label = "Inner"
-			]
+			K -> L
 		}
 	}
 	graph
