@@ -9,6 +9,4 @@
 #	Or, use to report the forest. E.g.: -report_forest 1
 #	Or, use for debugging. E.g.: -maxlevel debug.
 
-echo Echooooooooooooooo $1 $2 $3
-
 perl -Ilib scripts/g2m.pl -input_file data/$1.gv -lexed_file data/$1.lex -parsed_file data/$1.parse $2 $3

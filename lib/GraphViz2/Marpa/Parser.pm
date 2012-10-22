@@ -84,7 +84,7 @@ sub _build_attribute_list
 
 	if ($$items[$i + 1]{type} eq 'start_attribute')
 	{
-		for ($j = $i + 2; $$items[$j]{type} ne 'end_attribute'; $j += 2)
+		for ($j = $i + 2; ($j <= $#$items) && ($$items[$j]{type} ne 'end_attribute'); $j += 2)
 		{
 			$attribute{$$items[$j]{value} } = $$items[$j + 1]{value};
 		}
@@ -107,7 +107,7 @@ sub _build_node_list
 	my($j);
 	my(@node);
 
-	for ($j = $i - 1; $$items[$j]{type} eq 'node_id'; $j += 2)
+	for ($j = $i - 1; ($j <= $#$items) && ($$items[$j]{type}) eq 'node_id'; $j += 2)
 	{
 		push @node, $$items[$j]{value};
 	}
@@ -281,6 +281,19 @@ sub compass_id
 # --------------------------------------------------
 # This is a function, not a method.
 
+sub default_action
+{
+	my($stash, $t1, undef, $t2)  = @_;
+
+	# Return 0 for success and 1 for failure.
+
+	return 0;
+
+} # End of default_action.
+
+# --------------------------------------------------
+# This is a function, not a method.
+
 sub digraph
 {
 	my($stash, $t1, undef, $t2)  = @_;
@@ -383,31 +396,10 @@ sub grammar
 	my($self)    = @_;
 	my($grammar) = Marpa::R2::Grammar -> new
 		({
-		actions => __PACKAGE__,
-		start   => 'graph_grammar',
-		symbols =>
-		{
-			attribute_id    => {terminal => 1},
-			attribute_value => {terminal => 1},
-			class_id        => {terminal => 1},
-			close_bracket   => {terminal => 1},
-			colon           => {terminal => 1},
-			compass_point   => {terminal => 1},
-			digraph         => {terminal => 1},
-			edge_id         => {terminal => 1},
-			end_scope       => {terminal => 1},
-			end_subgraph    => {terminal => 1},
-			equals          => {terminal => 1},
-			graph_id        => {terminal => 1},
-			id              => {terminal => 1},
-			node_id         => {terminal => 1},
-			open_bracket    => {terminal => 1},
-			port_id         => {terminal => 1},
-			start_scope     => {terminal => 1},
-			start_subgraph  => {terminal => 1},
-			strict          => {terminal => 1},
-		},
-		rules =>
+		actions        => __PACKAGE__,
+		default_action => 'default_action',
+		start          => 'graph_grammar',
+		rules          =>
 			[
 			 {   # Root-level stuff.
 				 lhs => 'graph_grammar',
@@ -951,7 +943,7 @@ sub run
 	}
 
 	my($result) = $recognizer -> value;
-	$result     = $result ? ${$result} : 'Parse failed';
+	$result     = ref $result ? $$result : $result;
 	$result     = $result ? $result    : 0;
 
 	die $result if ($result);

@@ -9,7 +9,5 @@
 #	Or, use to report the forest. E.g.: -report_forest 1
 #	Or, use for debugging. E.g.: -maxlevel debug.
 
-echo Echooooooooooooooo $1 $2 $3
-
 scripts/g2m.sh $1 $2 $3
 dot -T svg data/$1.gv > $DR/$PM/$1.svg
