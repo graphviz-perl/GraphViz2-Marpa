@@ -136,7 +136,7 @@ sub run
 			 parsed_file   => $self -> parsed_file,
 			 renderer      => $self -> renderer,
 			 report_items  => $self -> report_items,
-			 report_forest => $self -> report_items,
+			 report_forest => $self -> report_forest,
 			 tokens        => $self -> lexer -> items,
 			)
 		);

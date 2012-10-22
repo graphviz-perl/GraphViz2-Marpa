@@ -103,16 +103,22 @@ sub _build_attribute_list
 sub _build_node_list
 {
 	my($self, $items, $i) = @_;
+	my($j) = $i - 1;
 
-	my($j);
 	my(@node);
 
-	for ($j = $i - 1; ($j <= $#$items) && ($$items[$j]{type}) eq 'node_id'; $j += 2)
+	while (1)
 	{
+		last if ( ($j > $#$items) || ($$items[$j]{type} ne 'node_id') );
+
 		push @node, $$items[$j]{value};
+
+		last if ($$items[$j + 1]{type} ne 'edge_id');
+
+		$j += 2;
 	}
 
-	($j, my $attribute) = $self -> _build_attribute_list($items, $j - 2);
+	($j, my $attribute) = $self -> _build_attribute_list($items, $j);
 
 	return ($j, [@node], $attribute);
 
@@ -132,7 +138,7 @@ sub _build_tree
 	# Phase 1: Find class (edge, graph and node) attributes,
 	# and find attributes of individual nodes.
 
-	my(@class)  = qw/edge graph node nodes/;
+	my(@class)  = qw/edge graph node/;
 	my($global) = {};
 	my($i)      = - 1;
 	my($items)  = $self -> items;
@@ -178,7 +184,7 @@ sub _build_tree
 				$child       = Tree -> new($node);
 
 				$parent -> add_child($child);
-				$parent -> meta($attribute);
+				$parent -> meta($attribute) if (! $parent -> is_root);
 
 				$parent = $child;
 			}
@@ -230,6 +236,7 @@ sub _build_tree
 		elsif ($type eq 'end_scope')
 		{
 			$class_attribute{$_} = pop @stack for reverse (@class);
+
 		}
 	}
 
@@ -364,9 +371,8 @@ sub format_node
 
 	return
 		$node -> value .
-		($node -> is_root
-		? ''
-		: ('. Edge attrs: ' . $self -> hashref2string($node -> meta) ) );
+		'. Edge attrs: ' .
+		$self -> hashref2string($node -> meta);
 
 } # End of format_node.
 
