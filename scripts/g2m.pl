@@ -17,20 +17,21 @@ my(%option);
 
 if ($option_parser -> getoptions
 (
- \%option,
- 'description=s',
- 'help',
- 'input_file=s',
- 'lexed_file=s',
- 'maxlevel=s',
- 'minlevel=s',
- 'output_file=s',
- 'parsed_file=s',
- 'report_items=i',
- 'report_stt=i',
- 'stt_file=s',
- 'timeout=i',
- 'type=s',
+	\%option,
+	'description=s',
+	'help',
+	'input_file=s',
+	'lexed_file=s',
+	'maxlevel=s',
+	'minlevel=s',
+	'output_file=s',
+	'parsed_file=s',
+	'report_forest=i',
+	'report_items=i',
+	'report_stt=i',
+	'stt_file=s',
+	'timeout=i',
+	'type=s',
 ) )
 {
 	pod2usage(1) if ($option{'help'});
@@ -65,6 +66,7 @@ gem.pl [options]
 	-minlevel logOption2
 	-output_file aRenderedOutputFileName
 	-parsed_file aParsedOutputFileName
+	-report_forest $Boolean
 	-report_items $Boolean
 	-report_stt $Boolean
 	-stt_file sttFileName
@@ -146,6 +148,12 @@ Specify the name of a CSV file of parsed tokens for the parser to write. This fi
 Default: ''.
 
 The default means the file is not written.
+
+=item -report_forest $Boolean
+
+Log the globals, nodes and edges recognized in the lexed file.
+
+Default: 0.
 
 =item -report_items $Boolean
 

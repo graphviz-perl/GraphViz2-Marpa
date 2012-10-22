@@ -462,6 +462,7 @@ scripts/g2m.sh
 scripts/generate.demo.sh
 scripts/generate.index.pl
 scripts/lex.1.sh
+scripts/lex.parse.sh
 scripts/lex.pl
 scripts/lex.sh
 scripts/lex2parse.pl

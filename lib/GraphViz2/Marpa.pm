@@ -10,22 +10,23 @@ use Hash::FieldHash ':all';
 
 use Log::Handler;
 
-fieldhash my %description  => 'description';
-fieldhash my %input_file   => 'input_file';
-fieldhash my %lexed_file   => 'lexed_file';
-fieldhash my %lexer        => 'lexer';
-fieldhash my %logger       => 'logger';
-fieldhash my %maxlevel     => 'maxlevel';
-fieldhash my %minlevel     => 'minlevel';
-fieldhash my %output_file  => 'output_file';
-fieldhash my %parsed_file  => 'parsed_file';
-fieldhash my %parser       => 'parser';
-fieldhash my %renderer     => 'renderer';
-fieldhash my %report_items => 'report_items';
-fieldhash my %report_stt   => 'report_stt';
-fieldhash my %stt_file     => 'stt_file';
-fieldhash my %timeout      => 'timeout';
-fieldhash my %type         => 'type';
+fieldhash my %description   => 'description';
+fieldhash my %input_file    => 'input_file';
+fieldhash my %lexed_file    => 'lexed_file';
+fieldhash my %lexer         => 'lexer';
+fieldhash my %logger        => 'logger';
+fieldhash my %maxlevel      => 'maxlevel';
+fieldhash my %minlevel      => 'minlevel';
+fieldhash my %output_file   => 'output_file';
+fieldhash my %parsed_file   => 'parsed_file';
+fieldhash my %parser        => 'parser';
+fieldhash my %renderer      => 'renderer';
+fieldhash my %report_forest => 'report_forest';
+fieldhash my %report_items  => 'report_items';
+fieldhash my %report_stt    => 'report_stt';
+fieldhash my %stt_file      => 'stt_file';
+fieldhash my %timeout       => 'timeout';
+fieldhash my %type          => 'type';
 
 our $VERSION = '1.06';
 
@@ -33,24 +34,25 @@ our $VERSION = '1.06';
 
 sub _init
 {
-	my($self, $arg)     = @_;
-	$$arg{description}  ||= ''; # Caller can set.
-	$$arg{input_file}   ||= ''; # Caller can set.
-	$$arg{lexed_file}   ||= ''; # Caller can set.
-	$$arg{lexer}        = '';
-	$$arg{logger}       = defined($$arg{logger}) ? $$arg{logger} : undef; # Caller can set.
-	$$arg{maxlevel}     ||= 'notice'; # Caller can set.
-	$$arg{minlevel}     ||= 'error';  # Caller can set.
-	$$arg{output_file}  ||= '';       # Caller can set.
-	$$arg{parsed_file}  ||= '';       # Caller can set.
-	$$arg{parser}       = '';
-	$$arg{renderer}     ||= '';       # Caller can set.
-	$$arg{report_items} ||= 0;        # Caller can set.
-	$$arg{report_stt}   ||= 0;        # Caller can set.
-	$$arg{stt_file}     ||= '';       # Caller can set.
-	$$arg{timeout}      ||= 10;       # Caller can set.
-	$$arg{type}         ||= '';       # Caller can set.
-	$self               = from_hash($self, $arg);
+	my($self, $arg)      = @_;
+	$$arg{description}   ||= ''; # Caller can set.
+	$$arg{input_file}    ||= ''; # Caller can set.
+	$$arg{lexed_file}    ||= ''; # Caller can set.
+	$$arg{lexer}         = '';
+	$$arg{logger}        = defined($$arg{logger}) ? $$arg{logger} : undef; # Caller can set.
+	$$arg{maxlevel}      ||= 'notice'; # Caller can set.
+	$$arg{minlevel}      ||= 'error';  # Caller can set.
+	$$arg{output_file}   ||= '';       # Caller can set.
+	$$arg{parsed_file}   ||= '';       # Caller can set.
+	$$arg{parser}        = '';
+	$$arg{renderer}      ||= '';       # Caller can set.
+	$$arg{report_forest} ||= 0;        # Caller can set.
+	$$arg{report_items}  ||= 0;        # Caller can set.
+	$$arg{report_stt}    ||= 0;        # Caller can set.
+	$$arg{stt_file}      ||= '';       # Caller can set.
+	$$arg{timeout}       ||= 10;       # Caller can set.
+	$$arg{type}          ||= '';       # Caller can set.
+	$self                = from_hash($self, $arg);
 
 	if (! defined $self -> logger)
 	{
@@ -126,15 +128,16 @@ sub run
 		$self -> parser
 		(GraphViz2::Marpa::Parser -> new
 			(
-			 lexed_file   => $self -> lexed_file,
-			 logger       => $self -> logger,
-			 maxlevel     => $self -> maxlevel,
-			 minlevel     => $self -> minlevel,
-			 output_file  => $self -> output_file,
-			 parsed_file  => $self -> parsed_file,
-			 renderer     => $self -> renderer,
-			 report_items => $self -> report_items,
-			 tokens       => $self -> lexer -> items,
+			 lexed_file    => $self -> lexed_file,
+			 logger        => $self -> logger,
+			 maxlevel      => $self -> maxlevel,
+			 minlevel      => $self -> minlevel,
+			 output_file   => $self -> output_file,
+			 parsed_file   => $self -> parsed_file,
+			 renderer      => $self -> renderer,
+			 report_items  => $self -> report_items,
+			 report_forest => $self -> report_items,
+			 tokens        => $self -> lexer -> items,
 			)
 		);
 

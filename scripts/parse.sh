@@ -8,7 +8,7 @@
 # 1: The name of a dot input file.
 # 2: The name of a lexed output file.
 # 3: The name of a parsed output file.
-# 4 & 5: Use for debugging. Eg -maxlevel debug
+# 4 & 5: Use for debugging. Eg -maxlevel debug or -report_forest 1
 
 echo Contents of $2:
 cat $2

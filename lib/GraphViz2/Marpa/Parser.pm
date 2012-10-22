@@ -24,22 +24,23 @@ use Text::CSV_XS;
 
 use Try::Tiny;
 
-fieldhash my %forest       => 'forest';
-fieldhash my %global       => 'global';
-fieldhash my %graph        => 'graph';
-fieldhash my %item_count   => 'item_count';
-fieldhash my %items        => 'items';
-fieldhash my %lexed_file   => 'lexed_file';
-fieldhash my %logger       => 'logger';
-fieldhash my %maxlevel     => 'maxlevel';
-fieldhash my %minlevel     => 'minlevel';
-fieldhash my %node         => 'node';
-fieldhash my %output_file  => 'output_file';
-fieldhash my %parsed_file  => 'parsed_file';
-fieldhash my %renderer     => 'renderer';
-fieldhash my %report_items => 'report_items';
-fieldhash my %tokens       => 'tokens';
-fieldhash my %utils        => 'utils';
+fieldhash my %forest        => 'forest';
+fieldhash my %global        => 'global';
+fieldhash my %graph         => 'graph';
+fieldhash my %item_count    => 'item_count';
+fieldhash my %items         => 'items';
+fieldhash my %lexed_file    => 'lexed_file';
+fieldhash my %logger        => 'logger';
+fieldhash my %maxlevel      => 'maxlevel';
+fieldhash my %minlevel      => 'minlevel';
+fieldhash my %node          => 'node';
+fieldhash my %output_file   => 'output_file';
+fieldhash my %parsed_file   => 'parsed_file';
+fieldhash my %renderer      => 'renderer';
+fieldhash my %report_forest => 'report_forest';
+fieldhash my %report_items  => 'report_items';
+fieldhash my %tokens        => 'tokens';
+fieldhash my %utils         => 'utils';
 
 # $myself is a copy of $self for use by functions called by Marpa.
 
@@ -236,19 +237,6 @@ sub _build_tree
 	$self -> graph($class_attribute{graph});
 	$self -> node(\%node);
 
-	$global = $self -> global;
-
-	$self -> log(notice => 'Globals: ' . join(', ', map{"$_ => $$global{$_}"} sort keys %$global) );
-
-	$node = $self -> node;
-
-	for my $name (sort keys %$node)
-	{
-		$self -> log(notice => "Node: $name. Attr: " . join(', ', map{"$_ => $$node{$name}{attribute}{$_}"} sort keys %{$$node{$name}{attribute} }) );
-	}
-
-	$self -> pretty_print_forest;
-
 } # End of _build_tree.
 
 # --------------------------------------------------
@@ -354,6 +342,20 @@ sub end_subgraph
 	return $t1;
 
 } # End of end_subgraph.
+
+# --------------------------------------------------
+
+sub format_node
+{
+	my($self, $node) = @_;
+
+	return
+		$node -> value .
+		($node -> is_root
+		? ''
+		: ('. Edge attrs: ' . $self -> hashref2string($node -> meta) ) );
+
+} # End of format_node.
 
 # --------------------------------------------------
 
@@ -726,25 +728,26 @@ sub increment_item_count
 
 sub _init
 {
-	my($self, $arg)     = @_;
-	$$arg{forest}       = Tree -> new('root');
-	$$arg{global}       = {};
-	$$arg{graph}        = {};
-	$$arg{item_count}   = 0;
-	$$arg{items}        = Set::Array -> new;
-	$$arg{lexed_file}   ||= ''; # Caller can set.
-	$$arg{logger}       = defined($$arg{logger}) ? $$arg{logger} : undef; # Caller can set.
-	$$arg{maxlevel}     ||= 'notice'; # Caller can set.
-	$$arg{minlevel}     ||= 'error';  # Caller can set.
-	$$arg{node}         = {};
-	$$arg{output_file}  ||= '';       # Caller can set.
-	$$arg{parsed_file}  ||= '';       # Caller can set.
-	$$arg{renderer}     = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
-	$$arg{report_items} ||= 0;        # Caller can set.
-	$$arg{tokens}       ||= [];       # Caller can set.
-	$$arg{utils}        = GraphViz2::Marpa::Utils -> new;
-	$self               = from_hash($self, $arg);
-	$myself             = $self;
+	my($self, $arg)      = @_;
+	$$arg{forest}        = Tree -> new('root');
+	$$arg{global}        = {};
+	$$arg{graph}         = {};
+	$$arg{item_count}    = 0;
+	$$arg{items}         = Set::Array -> new;
+	$$arg{lexed_file}    ||= '';       # Caller can set.
+	$$arg{logger}        = defined($$arg{logger}) ? $$arg{logger} : undef; # Caller can set.
+	$$arg{maxlevel}      ||= 'notice'; # Caller can set.
+	$$arg{minlevel}      ||= 'error';  # Caller can set.
+	$$arg{node}          = {};
+	$$arg{output_file}   ||= '';       # Caller can set.
+	$$arg{parsed_file}   ||= '';       # Caller can set.
+	$$arg{renderer}      = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
+	$$arg{report_forest} ||= 0;        # Caller can set.
+	$$arg{report_items}  ||= 0;        # Caller can set.
+	$$arg{tokens}        ||= [];       # Caller can set.
+	$$arg{utils}         = GraphViz2::Marpa::Utils -> new;
+	$self                = from_hash($self, $arg);
+	$myself              = $self;
 
 	if (! defined $self -> logger)
 	{
@@ -853,7 +856,7 @@ sub pretty_print_forest
 
 	for my $t ($self -> forest -> traverse)
 	{
-		push @out, $self -> _pretty_print_node($t, \@vert_dashes);
+		push @out, $self -> pretty_print_node($t, \@vert_dashes);
 	}
 
 	$self -> log(notice => $_) for @out;
@@ -862,7 +865,7 @@ sub pretty_print_forest
 
 # -----------------------------------------------
 
-sub _pretty_print_node
+sub pretty_print_node
 {
 	my($self, $t, $vert_dashes) = @_;
 	my($depth)         = $t -> depth;
@@ -880,13 +883,35 @@ sub _pretty_print_node
 		$$vert_dashes[$depth] = $offset;
 	}
 
-	return join('' => @indent[1 .. $#indent])
+	return
+		join('' => @indent[1 .. $#indent])
 		. ($depth ? '   |---' : '')
-		. $t -> value
-		. '. Edge attrs: '
-		. $self -> hashref2string($t -> meta);
+		. $self -> format_node($t);
 
-} # End of _pretty_print_node.
+} # End of pretty_print_node.
+
+# --------------------------------------------------
+
+sub print_forest
+{
+	my($self)   = @_;
+	my($global) = $self -> global;
+
+	$self -> log(notice => 'Globals:');
+	$self -> log(notice => join(', ', map{"$_ => $$global{$_}"} sort keys %$global) );
+	$self -> log(notice => 'Nodes:');
+
+	my($node) = $self -> node;
+
+	for my $name (sort keys %$node)
+	{
+		$self -> log(notice => "$name. Attr: " . join(', ', map{"$_ => $$node{$name}{attribute}{$_}"} sort keys %{$$node{$name}{attribute} }) );
+	}
+
+	$self -> log(notice => 'Edges:');
+	$self -> pretty_print_forest;
+
+} # End of print_forest.
 
 # --------------------------------------------------
 
@@ -948,6 +973,7 @@ sub run
 	# Build a Graphviz-like tree of the data.
 
 	$self -> _build_tree;
+	$self -> print_forest if ($self -> report_forest);
 
 	# Pass the tokens to the renderer.
 

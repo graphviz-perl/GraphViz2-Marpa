@@ -24,6 +24,7 @@ if ($option_parser -> getoptions
  'minlevel=s',
  'output_file=s',
  'parsed_file=s',
+ 'report_forest=i',
  'report_items=i',
 ) )
 {
@@ -55,6 +56,7 @@ parse.pl [options]
 	-minlevel logOption2
 	-output_file aRenderedOutputFileName
 	-parsed_file aParsedOutputFileName
+	-report_forest $Boolean
 	-report_items $Boolean
 
 Exit value: 0 for success, 1 for failure. Die upon error.
@@ -112,6 +114,12 @@ See the distro for data/*.parse.
 Default: ''.
 
 The default means the file is not written.
+
+=item -report_forest $Boolean
+
+Log the globals, nodes and edges recognized in the lexed file.
+
+Default: 0.
 
 =item -report_items $Boolean
 
