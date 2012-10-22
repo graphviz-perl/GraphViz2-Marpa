@@ -162,7 +162,7 @@ sub _build_tree
 		$type  = $$items[$i]{type};
 		$value = $$items[$i]{value};
 
-		$self -> log(notice => "$i: $type => $value");
+#		$self -> log(notice => "$i: $type => $value");
 
 		if ($type eq 'class_id')
 		{
