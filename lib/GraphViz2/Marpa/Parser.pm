@@ -162,6 +162,8 @@ sub _build_tree
 		$type  = $$items[$i]{type};
 		$value = $$items[$i]{value};
 
+		$self -> log(notice => "$i: $type => $value");
+
 		if ($type eq 'class_id')
 		{
 			($i, $class_attribute)   = $self -> _build_attribute_list($items, $i);
@@ -188,6 +190,11 @@ sub _build_tree
 
 				$parent = $child;
 			}
+		}
+		elsif ($type eq 'end_scope')
+		{
+			$class_attribute{$_} = pop @stack for reverse (@class);
+
 		}
 		elsif ($type eq 'graph_id')
 		{
@@ -233,10 +240,9 @@ sub _build_tree
 
 			push @stack, $class_attribute{$_} for (@class);
 		}
-		elsif ($type eq 'end_scope')
+		elsif ($type eq 'strict')
 		{
-			$class_attribute{$_} = pop @stack for reverse (@class);
-
+			$$global{strict} = $value eq 'yes' ? 1 : 0;
 		}
 	}
 
@@ -902,7 +908,7 @@ sub print_forest
 
 	for my $name (sort keys %$node)
 	{
-		$self -> log(notice => "$name. Attr: " . join(', ', map{"$_ => $$node{$name}{attribute}{$_}"} sort keys %{$$node{$name}{attribute} }) );
+		$self -> log(notice => "$name. Attr: " . $self -> hashref2string($$node{$name}{attribute}) );
 	}
 
 	$self -> log(notice => 'Edges:');
