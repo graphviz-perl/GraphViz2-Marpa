@@ -14,7 +14,7 @@ use IO::File;
 
 use Log::Handler;
 
-use Marpa::XS;
+use Marpa::R2;
 
 use Set::Array;
 
@@ -381,12 +381,11 @@ sub generate_parsed_file
 sub grammar
 {
 	my($self)    = @_;
-	my($grammar) = Marpa::Grammar -> new
+	my($grammar) = Marpa::R2::Grammar -> new
 		({
-		actions       => __PACKAGE__,
-		lhs_terminals => 1,
-		start         => 'graph_grammar',
-		symbols       =>
+		actions => __PACKAGE__,
+		start   => 'graph_grammar',
+		symbols =>
 		{
 			attribute_id    => {terminal => 1},
 			attribute_value => {terminal => 1},
@@ -399,7 +398,7 @@ sub grammar
 			end_scope       => {terminal => 1},
 			end_subgraph    => {terminal => 1},
 			equals          => {terminal => 1},
-			graph_id        => {null_value => '', terminal => 1},
+			graph_id        => {terminal => 1},
 			id              => {terminal => 1},
 			node_id         => {terminal => 1},
 			open_bracket    => {terminal => 1},
@@ -934,7 +933,7 @@ sub report
 sub run
 {
 	my($self)       = @_;
-	my($recognizer) = Marpa::Recognizer -> new({grammar => $self -> grammar});
+	my($recognizer) = Marpa::R2::Recognizer -> new({grammar => $self -> grammar});
 
 	if ($#{$self -> tokens} < 0)
 	{
