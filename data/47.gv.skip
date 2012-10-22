@@ -2,10 +2,10 @@
 
 digraph graph_47
 {
-#	big ->
-#	{
-#		small
-#		smaller
-#		smallest
-#	}
+	big ->
+	{
+		small
+		smaller
+		smallest
+	}
 }
