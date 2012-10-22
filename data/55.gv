@@ -15,13 +15,12 @@ strict digraph graph_55
 		B -> C [color = orange penwidth = 5]
 		node [fillcolor = turquoise4]
 		C -> D [arrowtail = obox arrowhead = crow dir = both minlen = 2]
-		D -> E [arrowtail = odot arrowhead = dot dir = both minlen = 2]
-		E -> F [arrowtail = odot arrowhead = dot dir = both minlen = 2 penwidth = 5]
+		D -> E [arrowtail = odot arrowhead = dot dir = both minlen = 2 penwidth = 5]
 		{
 			node [fillcolor = darkorchid shape = pentagon]
-			G [color = yellow penwidth = 5 shape = hexagon]
-			H [color = crimson penwidth = 7]
-			G -> H
+			F [color = darkorchid fillcolor = yellow penwidth = 5 shape = hexagon]
+			G [color = crimson penwidth = 7]
+			F -> G
 		}
 	}
 
@@ -32,15 +31,15 @@ strict digraph graph_55
 	subgraph cluster_outer
 	{
 		label = Outer
-		I -> J
+		H -> I
 
 		subgraph cluster_inner
 		{
 			label = Inner
-			node [fillcolor = magenta shape = triangle]
+			node [fillcolor = magenta fontsize = 26 shape = triangle]
 			edge [color = blue]
-			K [color = yellow shape = square]
-			K -> L
+			J [color = yellow shape = square]
+			J -> K
 		}
 	}
 	graph [rankdir = TB]

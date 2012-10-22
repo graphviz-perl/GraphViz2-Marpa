@@ -55,13 +55,6 @@ strict digraph graph_55
 			arrowhead = "dot"
 			dir = "both"
 			minlen = "2"
-		]
-		E -> F
-		[
-			arrowtail = "odot"
-			arrowhead = "dot"
-			dir = "both"
-			minlen = "2"
 			penwidth = "5"
 		]
 		{
@@ -70,18 +63,19 @@ strict digraph graph_55
 				fillcolor = "darkorchid"
 				shape = "pentagon"
 			]
-			G
+			F
 			[
-				color = "yellow"
+				color = "darkorchid"
+				fillcolor = "yellow"
 				penwidth = "5"
 				shape = "hexagon"
 			]
-			H
+			G
 			[
 				color = "crimson"
 				penwidth = "7"
 			]
-			G -> H
+			F -> G
 		}
 	}
 	B
@@ -100,7 +94,7 @@ strict digraph graph_55
 		[
 			label = "Outer"
 		]
-		I -> J
+		H -> I
 		subgraph cluster_inner
 		{
 			graph
@@ -116,12 +110,12 @@ strict digraph graph_55
 			[
 				color = "blue"
 			]
-			K
+			J
 			[
 				color = "yellow"
 				shape = "square"
 			]
-			K -> L
+			J -> K
 		}
 	}
 	graph
