@@ -14,7 +14,8 @@ strict digraph graph_55
 		C [color = firebrick1]
 		B -> C [color = orange penwidth = 5]
 		node [fillcolor = turquoise4]
-		C -> D -> E [arrowtail = odot arrowhead = dot dir = both minlen = 2]
+		C -> D [arrowtail = obox arrowhead = crow dir = both minlen = 2]
+		D -> E [arrowtail = odot arrowhead = dot dir = both minlen = 2]
 		E -> F [arrowtail = odot arrowhead = dot dir = both minlen = 2 penwidth = 5]
 		{
 			node [fillcolor = darkorchid shape = pentagon]

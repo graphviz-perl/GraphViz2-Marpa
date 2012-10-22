@@ -24,6 +24,7 @@ use Text::CSV_XS;
 
 use Try::Tiny;
 
+fieldhash my %forest       => 'forest';
 fieldhash my %global       => 'global';
 fieldhash my %graph        => 'graph';
 fieldhash my %item_count   => 'item_count';
@@ -37,7 +38,6 @@ fieldhash my %output_file  => 'output_file';
 fieldhash my %parsed_file  => 'parsed_file';
 fieldhash my %renderer     => 'renderer';
 fieldhash my %report_items => 'report_items';
-fieldhash my %tree         => 'tree';
 fieldhash my %tokens       => 'tokens';
 fieldhash my %utils        => 'utils';
 
@@ -119,10 +119,10 @@ sub _build_node_list
 
 # -----------------------------------------------
 # Outputs:
+# o $self -> forest, an object of type Tree.
 # o $self -> graph, a hashref of graph attributes.
 # o $self -> global, a hashref of (digraph => $Boolean, graph_id => $string).
 # o $self -> node, a hashref of {node => hashref of attributes}.
-# o $self -> tree, an object of type Tree.
 
 sub _build_tree
 {
@@ -139,7 +139,8 @@ sub _build_tree
 	my($attribute, %attribute);
 	my($class_attribute, %class_attribute, $child);
 	my($graph_id);
-	my($node, %node);
+	my($j);
+	my($node, $node_set, %node);
 	my($parent);
 	my(@stack);
 	my($type);
@@ -165,13 +166,15 @@ sub _build_tree
 		}
 		elsif ($type eq 'edge_id')
 		{
-			($i, $node, $attribute) = $self -> _build_node_list($items, $i);
-			$parent                 = $self -> tree;
+			($i, $node_set, $attribute) = $self -> _build_node_list($items, $i);
+			$attribute                  = {%{$class_attribute{edge} }, %$attribute};
+			$parent                     = $self -> forest;
 
-			for (@$node)
+			for $j (0 .. $#$node_set)
 			{
-				$node{$_} = {attribute => {%{$class_attribute{node} } }, fixed => 0} if (! $node{$_});
-				$child    = Tree -> new($value);
+				$node        = $$node_set[$j];
+				$node{$node} = {attribute => {%{$class_attribute{node} } }, fixed => 0} if (! $node{$node});
+				$child       = Tree -> new($node);
 
 				$parent -> add_child($child);
 				$parent -> meta($attribute);
@@ -243,6 +246,8 @@ sub _build_tree
 	{
 		$self -> log(notice => "Node: $name. Attr: " . join(', ', map{"$_ => $$node{$name}{attribute}{$_}"} sort keys %{$$node{$name}{attribute} }) );
 	}
+
+	$self -> pretty_print_forest;
 
 } # End of _build_tree.
 
@@ -677,6 +682,17 @@ sub graph_id
 
 } # End of graph_id.
 
+# -----------------------------------------------
+
+sub hashref2string
+{
+	my($self, $h) = @_;
+	$h ||= {};
+
+	return '{' . join(', ', map{"$_ => $$h{$_}"} sort keys %$h) . '}';
+
+} # End of hashref2string.
+
 # --------------------------------------------------
 # This is a function, not a method.
 
@@ -711,6 +727,7 @@ sub increment_item_count
 sub _init
 {
 	my($self, $arg)     = @_;
+	$$arg{forest}       = Tree -> new('root');
 	$$arg{global}       = {};
 	$$arg{graph}        = {};
 	$$arg{item_count}   = 0;
@@ -724,7 +741,6 @@ sub _init
 	$$arg{parsed_file}  ||= '';       # Caller can set.
 	$$arg{renderer}     = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
 	$$arg{report_items} ||= 0;        # Caller can set.
-	$$arg{tree}         = Tree -> new('root');
 	$$arg{tokens}       ||= [];       # Caller can set.
 	$$arg{utils}        = GraphViz2::Marpa::Utils -> new;
 	$self               = from_hash($self, $arg);
@@ -825,6 +841,52 @@ sub port_id
 	return $t1;
 
 } # End of port_id.
+
+# -----------------------------------------------
+
+sub pretty_print_forest
+{
+	my($self) = @_;
+
+	my(@out);
+	my(@vert_dashes);
+
+	for my $t ($self -> forest -> traverse)
+	{
+		push @out, $self -> _pretty_print_node($t, \@vert_dashes);
+	}
+
+	$self -> log(notice => $_) for @out;
+
+} # End of pretty_print_forest.
+
+# -----------------------------------------------
+
+sub _pretty_print_node
+{
+	my($self, $t, $vert_dashes) = @_;
+	my($depth)         = $t -> depth;
+	my($sibling_count) = $t -> is_root ? 1 : scalar $t -> parent -> children;
+	my($offset)        = ' ' x 4;
+	my(@indent)        = map{$$vert_dashes[$_] || $offset} 0 .. $depth - 1;
+	@$vert_dashes      =
+	(
+		@indent,
+		($sibling_count == 1 ? $offset : '   |'),
+	);
+
+	if ($sibling_count == ($t -> get_index_for($t) + 1) )
+	{
+		$$vert_dashes[$depth] = $offset;
+	}
+
+	return join('' => @indent[1 .. $#indent])
+		. ($depth ? '   |---' : '')
+		. $t -> value
+		. '. Edge attrs: '
+		. $self -> hashref2string($t -> meta);
+
+} # End of _pretty_print_node.
 
 # --------------------------------------------------
 
