@@ -155,78 +155,6 @@ sub _clean_up
 	}
 
 	# 3: This graph:
-	# digraph graph_16 {node_16:port_16:c}
-	# lexes as:                         instead of as:
-	# "type","value"                    "type","value"
-	# strict              , "no"        strict              , "no"
-	# digraph             , "yes"       digraph             , "yes"
-	# graph_id            , "graph_16"  graph_id            , "graph_16"
-	# start_scope         , "1"         start_scope         , "1"
-	# id                  , "node_16"   id                  , "node_16"
-	# colon               , ":"         colon               , ":"
-	# node_id             , "port_16"   port_id             , "port_16"  <=
-	#                                   colon               , ":"        <=
-	# compass_point       , "c"         compass_point       , "c"
-	# end_scope           , "1"         end_scope           , "1"
-	#
-	# Warning: Not this loop, but the next, converts the remaining 'id' to 'node_id'.
-
-	@old_items = ();
-
-	for (my $i = 0; $i < $#new_items; $i++)
-	{
-		if ( ($new_items[$i]{type} eq 'node_id') && ($new_items[$i + 1]{type} eq 'compass_point') )
-		{
-			push @old_items,
-			{
-				count => 0,
-				name  => '',
-				type  => 'port_id',
-				value => $new_items[$i]{value},
-			},
-			{
-				count => 0,
-				name  => '',
-				type  => 'colon',
-				value => ':',
-			};
-		}
-		else
-		{
-			push @old_items, $new_items[$i];
-		}
-	}
-
-	push @old_items, $new_items[$#new_items];
-
-	# 4: This graph:
-	# digraph graph_17 {node_17:c}
-	# lexes as:                         instead of as:
-	# "type","value"                    "type","value"
-	# strict              , "no"        strict              , "no"
-	# digraph             , "yes"       digraph             , "yes"
-	# graph_id            , "graph_17"  graph_id            , "graph_17"
-	# start_scope         , "1"         start_scope          , "1"
-	# id                  , "node_17"   node_id             , "node_17"  <=
-	# colon               , ":"         colon               , ":"
-	# compass_point       , "c"         compass_point       , "c"
-	# end_scope           , "1"         end_scope           , "1"
-
-	@new_items = ();
-
-	for my $i (0 .. $#old_items - 1)
-	{
-		if ( ($old_items[$i]{type} eq 'id') && ($old_items[$i + 1]{type} eq 'colon') )
-		{
-			$old_items[$i]{type} = 'node_id';
-		}
-
-		push @new_items, $old_items[$i];
-	}
-
-	push @new_items, $old_items[$#old_items];
-
-	# 5: This graph:
 	# digraph graph_42_01 {node_42_01 []}
 	# lexes as:                             instead of as:
 	# "type","value"                        "type","value"
@@ -700,31 +628,45 @@ sub save_id_2
 	}
 	elsif ($value =~ /^:(.+):(n|ne|se|e|se|s|sw|w|nw|c|_)$/)
 	{
-		# We got a compass point. Output 3 tokens.
+		# We got a port /and/ a compass point. Output 8 tokens.
 
-		$myself -> new_item('colon', ':');
-		$myself -> new_item('node_id', trim($1) );
-		$myself -> new_item('compass_point', trim($2) );
+		$myself -> new_item('open_bracket', '[');
+		$myself -> new_item('attribute_id', 'port_id');
+		$myself -> new_item('equals', '=');
+		$myself -> new_item('attribute_value', trim($1) );
+		$myself -> new_item('attribute_id', 'compass_point');
+		$myself -> new_item('equals', '=');
+		$myself -> new_item('attribute_value', trim($2) );
+		$myself -> new_item('close_bracket', ']');
 	}
 	elsif ($value eq '{')
 	{
 		$myself -> new_item('start_scope', $myself -> increment_brace_count);
 	}
+	elsif ($value =~ /^:(n|ne|se|e|se|s|sw|w|nw|c|_)$/)
+	{
+		# We got a compass point. Output 5 tokens.
+
+		$myself -> new_item('open_bracket', '[');
+		$myself -> new_item('attribute_id', 'compass_point');
+		$myself -> new_item('equals', '=');
+		$myself -> new_item('attribute_value', trim($1) );
+		$myself -> new_item('close_bracket', ']');
+	}
+	elsif ($value =~ /^:(.+)/)
+	{
+		# We got a port id. Output 5 tokens.
+
+		$myself -> new_item('open_bracket', '[');
+		$myself -> new_item('attribute_id', 'port_id');
+		$myself -> new_item('equals', '=');
+		$myself -> new_item('attribute_value', trim($1) );
+		$myself -> new_item('close_bracket', ']');
+	}
 	else
 	{
-		my($type) = $value =~ /^:(?:n|ne|se|e|se|s|sw|w|nw|c|_)$/ ? 'compass_point' : 'id';
-
-		# Handle id_1:id_2. Output ':' to differentiate between this and 'id_1 id_2'.
-
-		if ($value =~ /^:(.+)/)
-		{
-			$type  = 'port_id' if ($type eq 'id');
-			$value = trim($1);
-
-			$myself -> new_item('colon', ':');
-		}
-
-		$type = $value eq '=' ? 'equals' : $value eq '[' ? 'open_bracket' : $value =~ /^-/ ? 'edge_id' : $type;
+		my($type) = 'id';
+		$type     = $value eq '=' ? 'equals' : $value eq '[' ? 'open_bracket' : $value =~ /^-/ ? 'edge_id' : $type;
 
 		$myself -> new_item($type, $value);
 	}

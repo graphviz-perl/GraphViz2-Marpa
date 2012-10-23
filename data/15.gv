@@ -1,4 +1,4 @@
 digraph graph_15
 {
-	node_15:port_15
+	node_15_1:port_15_1 -> node_15_2:port_15_2
 }

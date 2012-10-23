@@ -26,7 +26,6 @@ use Try::Tiny;
 
 fieldhash my %forest        => 'forest';
 fieldhash my %global        => 'global';
-fieldhash my %graph         => 'graph';
 fieldhash my %item_count    => 'item_count';
 fieldhash my %items         => 'items';
 fieldhash my %lexed_file    => 'lexed_file';
@@ -105,20 +104,30 @@ sub _build_node_list
 	my($self, $items, $i) = @_;
 	my($j) = $i - 1;
 
-	my(@node);
+	my($attribute);
+	my($node, @node);
 
 	while (1)
 	{
 		last if ( ($j > $#$items) || ($$items[$j]{type} ne 'node_id') );
 
-		push @node, $$items[$j]{value};
+		# Get port id and compass point of node, if any.
+
+		$node            = $$items[$j]{value};
+		($j, $attribute) = $self -> _build_attribute_list($items, $j);
+
+		push @node,
+		{
+			attribute => {%$attribute},
+			name      => $node,
+		};
 
 		last if ($$items[$j + 1]{type} ne 'edge_id');
 
 		$j += 2;
 	}
 
-	($j, my $attribute) = $self -> _build_attribute_list($items, $j);
+	($j, $attribute) = $self -> _build_attribute_list($items, $j);
 
 	return ($j, [@node], $attribute);
 
@@ -162,12 +171,15 @@ sub _build_tree
 		$type  = $$items[$i]{type};
 		$value = $$items[$i]{value};
 
-#		$self -> log(notice => "$i: $type => $value");
+		$self -> log(notice => "$i: $type => $value");
 
 		if ($type eq 'class_id')
 		{
 			($i, $class_attribute)   = $self -> _build_attribute_list($items, $i);
 			$class_attribute{$value} = {%{$class_attribute{$value} }, %$class_attribute};
+
+			# TODO: graph attributes are not used yet.
+			# $self -> log(notice => "\tClass graph: " . $self -> hashref2string($class_attribute) ) if ($value eq 'graph');
 		}
 		elsif ($type eq 'digraph')
 		{
@@ -181,8 +193,8 @@ sub _build_tree
 
 			for $j (0 .. $#$node_set)
 			{
-				$node        = $$node_set[$j];
-				$node{$node} = {attribute => {%{$class_attribute{node} } }, fixed => 0} if (! $node{$node});
+				$node        = $$node_set[$j]{name};
+				$node{$node} = $self -> _init_node($class_attribute{node}) if (! $node{$node});
 				$child       = Tree -> new($node);
 
 				$parent -> add_child($child);
@@ -205,34 +217,33 @@ sub _build_tree
 		{
 			# Declare this node if we haven't see it before.
 
-			$node{$value} = {attribute => {%{$class_attribute{node} } }, fixed => 0} if (! $node{$value});
+			$node{$value} = $self -> _init_node($class_attribute{node}) if (! $node{$value});
 
 			# If it's followed by an edge, any attributes belong to the edge.
 			# So, don't try to update the node's attributes.
 
-			if ($$items[$i + 1]{type} eq 'edge_id')
+			next if ($self -> _edge_follows_node($items, $i + 1) );
+
+			($i, $attribute) = $self -> _build_attribute_list($items, $i);
+
+			# If the node has been explicitly declared (fixed == 1),
+			# only update it's attributes with non-class attributes.
+
+			if ($node{$value}{fixed} == 1)
 			{
+				$node{$value}{attribute} = {%{$node{$value}{attribute} }, %$attribute};
 			}
 			else
 			{
-				# If the node has been explicitly declared (fixed == 1),
-				# only update it's attributes with non-class attributes.
+				# Otherwise, include class attributes.
 
-				($i, $attribute) = $self -> _build_attribute_list($items, $i);
-
-				if ($node{$value}{fixed} == 1)
-				{
-					$node{$value}{attribute} = {%{$node{$value}{attribute} }, %$attribute};
-				}
-				else
-				{
-					# Otherwise, include class attributes.
-
-					$node{$value}{attribute} = {%{$class_attribute{node} }, %{$node{$value}{attribute} }, %$attribute};
-				}
-
-				$node{$value}{fixed} = 1;
+				$node{$value}{attribute} = {%{$class_attribute{node} }, %{$node{$value}{attribute} }, %$attribute};
 			}
+
+			$node{$value}{fixed} = 1;
+		}
+		elsif ($type eq 'port_id')
+		{
 		}
 		elsif ($type eq 'start_scope')
 		{
@@ -246,8 +257,10 @@ sub _build_tree
 		}
 	}
 
+	# TODO: Popping the stack means $class_attribute{graph} => {} at the moment.
+
+	$self -> forest -> meta($class_attribute{graph});
 	$self -> global($global);
-	$self -> graph($class_attribute{graph});
 	$self -> node(\%node);
 
 } # End of _build_tree.
@@ -316,6 +329,46 @@ sub digraph
 	return $t1;
 
 } # End of digraph.
+
+# -----------------------------------------------
+
+sub _edge_follows_node
+{
+	my($self, $items, $i) = @_;
+	my($edge_found)  = 0;
+	my(%node_suffix) =
+	(
+		start_attribute => 1,
+		attribute_id    => 1, # compass_point or port_id.
+		attribute_value => 1, # compass point id or port id.
+		end_attribute   => 1,
+	);
+
+	while (1)
+	{
+		# Exit if we run out of items.
+
+		last if ($i > $#$items);
+
+		# Exit if we find an edge.
+
+		if ($$items[$i]{type} eq 'edge_id')
+		{
+			$edge_found = 1;
+
+			last;
+		}
+
+		# Exit if we found neither a port nor a compass point.
+
+		last if (! $node_suffix{$$items[$i]{type} });
+
+		$i++;
+	}
+
+	return $edge_found;
+
+} # End of _edge_follows_node.
 
 # --------------------------------------------------
 # This is a function, not a method.
@@ -734,7 +787,6 @@ sub _init
 	my($self, $arg)      = @_;
 	$$arg{forest}        = Tree -> new('root');
 	$$arg{global}        = {};
-	$$arg{graph}         = {};
 	$$arg{item_count}    = 0;
 	$$arg{items}         = Set::Array -> new;
 	$$arg{lexed_file}    ||= '';       # Caller can set.
@@ -781,6 +833,20 @@ sub _init
 	return $self;
 
 } # End of _init.
+
+# --------------------------------------------------
+
+sub _init_node
+{
+	my($self, $class_attribute) = @_;
+
+	return
+	{
+		attribute => {%$class_attribute},
+		fixed     => 0,
+	};
+
+} # End of _init_node.
 
 # --------------------------------------------------
 
@@ -901,7 +967,7 @@ sub print_forest
 	my($global) = $self -> global;
 
 	$self -> log(notice => 'Globals:');
-	$self -> log(notice => join(', ', map{"$_ => $$global{$_}"} sort keys %$global) );
+	$self -> log(notice => $self -> hashref2string($self -> global) );
 	$self -> log(notice => 'Nodes:');
 
 	my($node) = $self -> node;

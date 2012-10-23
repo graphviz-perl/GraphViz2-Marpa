@@ -744,6 +744,10 @@ So, if x.gv is formatted as I do, then x.rend will be formatted identically.
 
 Because the 1st copy is printed by the lexer and the 2nd by the parser.
 
+=head2 How are custom graph attributes handled?
+
+No. Sorry. The lexer onyl supports attributes defined by Graphviz itself.
+
 =head2 How are the demo files generated?
 
 I run:
