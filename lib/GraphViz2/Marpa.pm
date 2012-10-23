@@ -492,6 +492,12 @@ Specify a renderer for the parser to use.
 
 Default: undef.
 
+=item o report_forest => $Boolean
+
+Log the forest of paths recognised by the parser.
+
+Default: 0.
+
 =item o report_items => $Boolean
 
 Log the items recognised by the lexer.
@@ -547,8 +553,6 @@ It also means that dot identifiers in (normal) double-quotes will never match th
 
 =head2 description([$graph])
 
-'description' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 The [] indicate an optional parameter.
 
 Get or set the L<Graphviz|http://www.graphviz.org/> (dot) graph definition string.
@@ -557,9 +561,9 @@ The value supplied by the 'description' option takes precedence over the value r
 
 See also L</input_file()>.
 
-=head2 input_file([$graph_file_name])
+'description' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'input_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 input_file([$graph_file_name])
 
 Here, the [] indicate an optional parameter.
 
@@ -569,17 +573,17 @@ The value supplied by the 'description' option takes precedence over the value r
 
 See also the L</description()> method.
 
-=head2 lexed_file([$lex_file_name])
+'input_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'lexed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 lexed_file([$lex_file_name])
 
 Here, the [] indicate an optional parameter.
 
 Get or set the name of the CSV file of lexed tokens for the lexer to write. This file can be input to the parser.
 
-=head2 logger([$logger_object])
+'lexed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'logger' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 logger([$logger_object])
 
 Here, the [] indicate an optional parameter.
 
@@ -589,27 +593,29 @@ To disable logging, just set 'logger' to the empty string (not undef), in the ca
 
 This logger is passed to other modules.
 
+'logger' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
 =head2 maxlevel([$string])
+
+Here, the [] indicate an optional parameter.
+
+Get or set the value used by the logger object.
+
+This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
+use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
 
 'maxlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-Here, the [] indicate an optional parameter.
-
-Get or set the value used by the logger object.
-
-This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
-use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
-
 =head2 minlevel([$string])
 
-'minlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the value used by the logger object.
 
 This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
 use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
+
+'minlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 new()
 
@@ -617,23 +623,21 @@ See L</Constructor and Initialization> for details on the parameters accepted by
 
 =head2 output_file([$file_name])
 
-'output_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the name of the file for the renderer to write.
 
-=head2 parsed_file([$file_name])
+'output_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'parsed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 parsed_file([$file_name])
 
 Here, the [] indicate an optional parameter.
 
 Get or set the name of the file of parsed tokens for the parser to write. This file can be input to the renderer.
 
-=head2 renderer([$renderer_object])
+'parsed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'renderer' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 renderer([$renderer_object])
 
 Here, the [] indicate an optional parameter.
 
@@ -641,21 +645,31 @@ Get or set the renderer object.
 
 This renderer is passed to L<GraphViz2::Marpa::Parser>.
 
-=head2 report_items([$Boolean])
+'renderer' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'report_items' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 report_forest([$Boolean])
+
+The [] indicate an optional parameter.
+
+Get or set the value which determines whether or not to log the forest of paths recognised by the parser.
+
+'report_forest' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
+=head2 report_items([$Boolean])
 
 The [] indicate an optional parameter.
 
 Get or set the value which determines whether or not to log the items recognised by the lexer and parser.
 
-=head2 report_stt([$Boolean])
+'report_items' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'report_stt' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 report_stt([$Boolean])
 
 The [] indicate an optional parameter.
 
 Get or set the value which determines whether or not to log the parsed state transition table (STT).
+
+'report_stt' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 run()
 
@@ -665,8 +679,6 @@ Returns 0 for success and 1 for failure.
 
 =head2 stt_file([$stt_file_name])
 
-'stt_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 The [] indicate an optional parameter.
 
 Get or set the name of the file containing the State Transition Table.
@@ -675,21 +687,23 @@ This option is used in conjunction with the 'type' option to L</new()>.
 
 If the file name matches /csv$/, the value of the 'type' option is set to 'csv'.
 
-=head2 timeout($seconds)
+'stt_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'timeout' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 timeout($seconds)
 
 The [] indicate an optional parameter.
 
-Get or set the timeout for how long to run the DFA.
+Get or set the timeout for how long to run the DFA and the Parser.
+
+'timeout' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 type([$type])
-
-'type' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 The [] indicate an optional parameter.
 
 Get or set the value which determines what type of 'stt_file' is read.
+
+'type' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head1 FAQ
 

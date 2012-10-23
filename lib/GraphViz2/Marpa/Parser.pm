@@ -1277,6 +1277,12 @@ Specify a renderer for the parser to use.
 
 Default: A object of type L<GraphViz2::Marpa::Renderer::GraphViz2>.
 
+=item o report_forest => $Boolean
+
+Log the forest of paths recognised by the parser.
+
+Default: 0.
+
 =item o report_items => $Boolean
 
 Log the items recognised by the lexer.
@@ -1334,13 +1340,13 @@ Usage:
 
 =head2 lexed_file([$lex_file_name])
 
-'lexed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the name of the CSV file of lexed tokens to read. This file can be output by the lexer.
 
 The value supplied by the 'tokens' option takes preference over the 'lexed_file' option.
+
+'lexed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 logger([$logger_object])
 
@@ -1352,27 +1358,29 @@ To disable logging, just set 'logger' to the empty string, in the call to L</new
 
 This logger is passed to the default renderer.
 
+'logger' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
 =head2 maxlevel([$string])
+
+Here, the [] indicate an optional parameter.
+
+Get or set the value used by the logger object.
+
+This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
+use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
 
 'maxlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-Here, the [] indicate an optional parameter.
-
-Get or set the value used by the logger object.
-
-This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
-use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
-
 =head2 minlevel([$string])
 
-'minlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the value used by the logger object.
 
 This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
 use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
+
+'minlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 new()
 
@@ -1380,23 +1388,21 @@ See L</Constructor and Initialization> for details on the parameters accepted by
 
 =head2 output_file([$file_name])
 
-'output_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the name of the file to be passed to the renderer.
 
-=head2 parsed_file([$file_name])
+'output_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'parsed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 parsed_file([$file_name])
 
 Here, the [] indicate an optional parameter.
 
 Get or set the name of the file of parsed tokens for the parser to write. This file can be input to the renderer.
 
-=head2 renderer([$renderer_object])
+'parsed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'renderer' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 renderer([$renderer_object])
 
 Here, the [] indicate an optional parameter.
 
@@ -1404,13 +1410,23 @@ Get or set the renderer object.
 
 This renderer renders the tokens output by the parser.
 
-=head2 report_items([$Boolean])
+'renderer' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'report_items' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 report_forest([$Boolean])
+
+The [] indicate an optional parameter.
+
+Get or set the value which determines whether or not to log the forest of paths recognised by the parser.
+
+'report_forest' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
+=head2 report_items([$Boolean])
 
 The [] indicate an optional parameter.
 
 Get or set the value which determines whether or not to log the items recognised by the parser.
+
+'report_items' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 run()
 
@@ -1420,13 +1436,13 @@ Returns 0 for success and 1 for failure.
 
 =head2 tokens([$arrayrefOfLexedTokens])
 
-'tokens' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the arrayref of lexed tokens to process.
 
 The value supplied by the 'tokens' option takes preference over the 'lexed_file' option.
+
+'tokens' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 utils([$aUtilsObject])
 
