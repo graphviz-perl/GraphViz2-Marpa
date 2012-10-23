@@ -871,19 +871,17 @@ Usage:
 
 =head2 lexed_file([$lex_file_name])
 
-'lexed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the name of the CSV file of lexed tokens to write. This file can be input to the parser.
+
+'lexed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 log($level, $s)
 
 Calls $self -> logger -> $level($s) if ($self -> logger).
 
 =head2 logger([$logger_object])
-
-'logger' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 Here, the [] indicate an optional parameter.
 
@@ -893,27 +891,29 @@ To disable logging, just set 'logger' to the empty string (not undef), in the ca
 
 This logger is passed to L<GraphViz2::Marpa::Lexer::DFA>.
 
+'logger' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
 =head2 maxlevel([$string])
+
+Here, the [] indicate an optional parameter.
+
+Get or set the value used by the logger object.
+
+This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
+use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
 
 'maxlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-Here, the [] indicate an optional parameter.
-
-Get or set the value used by the logger object.
-
-This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
-use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
-
 =head2 minlevel([$string])
 
-'minlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the value used by the logger object.
 
 This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
 use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
+
+'minlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 new()
 
@@ -925,21 +925,21 @@ Log the list of items recognized by the DFA.
 
 =head2 report_items([$Boolean])
 
-'report_items' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 The [] indicate an optional parameter.
 
 Get or set the value which determines whether or not to log the items recognised by the lexer.
 
-=head2 report_stt([$Boolean])
+'report_items' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'report_stt' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 report_stt([$Boolean])
 
 The [] indicate an optional parameter.
 
 Get or set the value which determines whether or not to log the parsed state transition table (STT).
 
 Calls L<Set::FA::Element/report()>. Set min and max log levels to 'info' for this.
+
+'report_stt' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 run()
 
@@ -949,8 +949,6 @@ Returns 0 for success and 1 for failure.
 
 =head2 stt_file([$stt_file_name])
 
-'stt_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 The [] indicate an optional parameter.
 
 Get or set the name of the file containing the State Transition Table.
@@ -959,21 +957,23 @@ This option is used in conjunction with the 'type' option to L</new()>.
 
 If the file name matches /csv$/, the value of the 'type' option is set to 'csv'.
 
-=head2 timeout($seconds)
+'stt_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'timeout' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 timeout($seconds)
 
 The [] indicate an optional parameter.
 
 Get or set the timeout for how long to run the DFA.
 
-=head2 type([$type])
+'timeout' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'type' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 type([$type])
 
 The [] indicate an optional parameter.
 
 Get or set the value which determines what type of 'stt_file' is read.
+
+'type' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 utils([$aUtilsObject])
 

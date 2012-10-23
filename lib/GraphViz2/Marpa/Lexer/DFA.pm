@@ -897,11 +897,11 @@ Default: 0.
 
 =head2 graph_text([$graph])
 
-'graph_text' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 The [] indicate an optional parameter.
 
 Get or set the L<Graphviz|http://www.graphviz.org/> (dot) graph definition.
+
+'graph_text' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 items()
 
@@ -954,13 +954,13 @@ See L</Constructor and Initialization> for details on the parameters accepted by
 
 =head2 report_stt([$Boolean])
 
-'report_stt' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 The [] indicate an optional parameter.
 
 Get or set the value which determines whether or not to log the parsed state transition table (STT).
 
 Calls L<Set::FA::Element/report()>. Set min and max log levels to 'info' for this.
+
+'report_stt' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 run()
 
@@ -970,27 +970,27 @@ Afterwards, you call L</items()> to retrieve the arrayref of results.
 
 =head2 start([$start_state_name])
 
-'start' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 The [] indicate an optional parameter.
 
 Get or set the name of the state in which the STT starts.
 
-=head2 state([\%state_hashref])
+'start' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'state' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 state([\%state_hashref])
 
 The [] indicate an optional parameter.
 
 Get or set the hashref defining the STT.
 
-=head2 verbose([$Boolean])
+'state' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-'verbose' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+=head2 verbose([$Boolean])
 
 The [] indicate an optional parameter.
 
 Get or set the verbosity level when calling L<Set::FA::Element>.
+
+'verbose' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head1 Machine-Readable Change Log
 

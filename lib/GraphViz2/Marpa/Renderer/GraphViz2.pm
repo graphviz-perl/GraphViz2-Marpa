@@ -456,35 +456,35 @@ Calls $self -> logger -> $level($s) if ($self -> logger).
 
 =head2 logger([$logger_object])
 
-'logger' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the logger object.
 
 To disable logging, just set 'logger' to the empty string (not undef), in the call to L</new()>.
 
+'logger' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
 =head2 maxlevel([$string])
+
+Here, the [] indicate an optional parameter.
+
+Get or set the value used by the logger object.
+
+This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
+create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
 
 'maxlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-Here, the [] indicate an optional parameter.
-
-Get or set the value used by the logger object.
-
-This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
-create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
-
 =head2 minlevel([$string])
 
-'minlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the value used by the logger object.
 
 This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
 create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
+
+'minlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 new()
 
@@ -492,13 +492,13 @@ See L</Constructor and Initialization> for details on the parameters accepted by
 
 =head2 output_file([$file_name])
 
-'output_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the name of the output file. This will contain the text string of the rendered graph.
 
 If the output file name is not set, use the L</output_string()> method to retrieve the string.
+
+'output_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 output_string()
 
@@ -508,13 +508,13 @@ To save the output in a file, use the 'output_file' parameter to L</new()>.
 
 =head2 parsed_file([$file_name])
 
-'parsed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Get or set the name of the file of parsed tokens to read.
 
 =head2 run()
+
+'parsed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 Renders the arrayref of items as a string and, optionally, writes that string to the output file.
 
@@ -526,11 +526,11 @@ Returns 0 for success and 1 for failure.
 
 =head2 tokens([$arrayref])
 
-'tokens' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 Here, the [] indicate an optional parameter.
 
 Gets or sets the arrayref of tokens to be rendered.
+
+'tokens' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 utils([$aUtilsObject])
 

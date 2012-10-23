@@ -707,6 +707,8 @@ Get or set the value which determines what type of 'stt_file' is read.
 
 =head1 FAQ
 
+The lexer and the parser each has an FAQ: L<Lexer|GraphViz2::Marpa::Lexer/FAQ>, and L<Parser|GraphViz2::Marpa::Parser/FAQ>.
+
 =head2 Why do I get error messages like the following?
 
 	Error: <stdin>:1: syntax error near line 1
@@ -760,7 +762,7 @@ Because the 1st copy is printed by the lexer and the 2nd by the parser.
 
 =head2 How are custom graph attributes handled?
 
-No. Sorry. The lexer onyl supports attributes defined by Graphviz itself.
+They are not handled at all. Sorry. The lexer only supports attributes defined by Graphviz itself.
 
 =head2 How are the demo files generated?
 
