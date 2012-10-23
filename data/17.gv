@@ -1,4 +1,9 @@
 digraph graph_17
 {
-	node_17_1:n -> node_17_2:s [arrowhead = odot]
+	node [shape = record]
+
+	node_17_1 [label="<f0> left|<f1> middle|<f2> right"];
+	node_17_2 [label="<f0> one|<f1> two"];
+
+	node_17_1:n -> node_17_2:s [arrowhead = odiamond]
 }

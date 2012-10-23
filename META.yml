@@ -48,7 +48,7 @@ requires:
   IO::File: 1.14
   List::Compare: 0.37
   Log::Handler: 0.71
-  Marpa::XS: 0.026
+  Marpa::R2: 2.022
   Perl6::Slurp: 0.03
   Pod::Usage: 1.36
   Set::Array: 0.23
