@@ -629,16 +629,13 @@ sub save_id_1
 		return;
 	}
 
-	my($type);
-
 	if ($value eq 'subgraph')
 	{
 		# Later, this tells us when an end_scope closes a subgraph. See check_end_subgraph().
 
 		$myself -> subgraph -> push($myself -> brace_count);
 
-		$value = $myself -> increment_subgraph_count;
-		$type  = 'start_subgraph';
+		$myself -> new_item('start_subgraph', $myself -> increment_subgraph_count);
 	}
 	elsif ($value =~ /^-/)
 	{

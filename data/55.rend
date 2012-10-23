@@ -104,6 +104,7 @@ strict digraph graph_55
 			node
 			[
 				fillcolor = "magenta"
+				fontsize = "26"
 				shape = "triangle"
 			]
 			edge

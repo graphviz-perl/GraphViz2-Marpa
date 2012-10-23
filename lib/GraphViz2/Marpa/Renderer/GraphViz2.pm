@@ -30,20 +30,55 @@ sub format_attributes
 {
 	my($self, $attributes) = @_;
 
-	$self -> new_item('[', 1, 0);
+	# Strip off the port attributes.
 
+	my(@edge_attributes);
 	my($name);
+	my(%port_attributes);
 	my($value);
 
 	while (@$attributes)
 	{
 		($name, $value) = (shift @$attributes, shift @$attributes);
-		$value          = qq|"$value"| if ($value !~ /^<</); # No quotes for HTML-like labels.
 
-		$self -> new_item(qq|$name = $value|, 1, 0, 0);
+		if ($name =~ /(?:compass_point|port_id)/)
+		{
+			$port_attributes{$name} = $value;
+		}
+		else
+		{
+			push @edge_attributes, $name, $value;
+		}
 	}
 
-	$self -> new_item(']', 1, 0, 0);
+	# If there are any port attributes, add them to the preceeding node.
+
+	if (scalar keys %port_attributes)
+	{
+		my($node) = $self -> items -> pop;
+		my($name) = $$node{value};
+		$name     = "$name:$port_attributes{port_id}"       if (defined $port_attributes{port_id});
+		$name     = "$name:$port_attributes{compass_point}" if (defined $port_attributes{compass_point});
+
+		$self -> new_item($name, $$node{newline}, $$node{juxtaposed}, $$node{spaced});
+	}
+
+	# Now output the edges attributes, if any.
+
+	if (scalar @edge_attributes)
+	{
+		$self -> new_item('[', 1, 0);
+
+		while (@edge_attributes)
+		{
+			($name, $value) = (shift @edge_attributes, shift @edge_attributes);
+			$value          = qq|"$value"| if ($value !~ /^<</); # No quotes for HTML-like labels.
+
+			$self -> new_item(qq|$name = $value|, 1, 0, 0);
+		}
+
+		$self -> new_item(']', 1, 0, 0);
+	}
 
 } # End of format_attributes.
 
@@ -254,9 +289,6 @@ sub run
 			when ('class_id')        {$self -> new_id($last_type, $type, $value);}
 			when ('edge_id')         {$self -> new_id($last_type, $type, $value);}
 			when ('node_id')         {$self -> new_id($last_type, $type, $value);}
-			when ('colon')           {$self -> new_item($value, 0, 1, 0);}
-			when ('port_id')         {$self -> new_item($value, 0, 1, 0);}
-			when ('compass_point')   {$self -> new_item($value, 0, 1, 0);}
 			default                  {die "Unexpected type '$type' (with value '$value') in the input";}
 		}
 

@@ -209,9 +209,6 @@ data/46.lex
 data/46.parse
 data/46.rend
 data/47.gv.skip
-data/47.lex.skip
-data/47.parse.skip
-data/47.rend.skip
 data/48.gv
 data/48.lex
 data/48.parse
@@ -244,10 +241,7 @@ data/55.gv
 data/55.lex
 data/55.parse
 data/55.rend
-data/90.abstract.gv
-data/90.abstract.lex
-data/90.abstract.parse
-data/90.abstract.rend
+data/90.abstract.gv.skip
 data/90.alf.gv
 data/90.alf.lex
 data/90.alf.parse
@@ -291,6 +285,7 @@ data/90.ER.rend
 data/90.hashtable.gv
 data/90.hashtable.lex
 data/90.hashtable.parse
+data/90.hashtable.rend
 data/90.KW91.gv
 data/90.KW91.lex
 data/90.KW91.parse
@@ -318,9 +313,11 @@ data/90.process.rend
 data/90.record2.gv
 data/90.record2.lex
 data/90.record2.parse
+data/90.record2.rend
 data/90.records.gv
 data/90.records.lex
 data/90.records.parse
+data/90.records.rend
 data/90.states.gv
 data/90.states.lex
 data/90.states.parse
@@ -328,6 +325,7 @@ data/90.states.rend
 data/90.structs.gv
 data/90.structs.lex
 data/90.structs.parse
+data/90.structs.rend
 data/90.train11.gv
 data/90.train11.lex
 data/90.train11.parse
@@ -335,6 +333,7 @@ data/90.train11.rend
 data/90.tree.gv
 data/90.tree.lex
 data/90.tree.parse
+data/90.tree.rend
 data/90.try.gv
 data/90.try.lex
 data/90.try.parse
@@ -419,6 +418,7 @@ html/90.clust5.svg
 html/90.ctext.svg
 html/90.dfa.svg
 html/90.ER.svg
+html/90.hashtable.svg
 html/90.hashtable.svg.skip
 html/90.KW91.svg
 html/90.longflat.svg
@@ -426,8 +426,12 @@ html/90.mike.svg
 html/90.nhg.svg
 html/90.Petersen.svg
 html/90.process.svg
+html/90.record2.svg
+html/90.records.svg
 html/90.states.svg
+html/90.structs.svg
 html/90.train11.svg
+html/90.tree.svg
 html/90.try.svg
 html/code.attributes.html
 html/default.stt.html

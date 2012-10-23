@@ -1,4 +1,19 @@
 digraph graph_16
 {
-	node_16:port_16:c
+	node
+	[
+		shape = "record"
+	]
+	node_16_1
+	[
+		label = "<f0> left|<f1> middle|<f2> right"
+	]
+	node_16_2
+	[
+		label = "<f0> one|<f1> two"
+	]
+	node_16_1:f0:n -> node_16_2:f1:s
+	[
+		arrowhead = "odot"
+	]
 }
