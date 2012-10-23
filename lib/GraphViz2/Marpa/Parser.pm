@@ -113,7 +113,6 @@ sub _build_node
 	my($attribute);
 	my($child);
 	my($port_attribute);
-	my($save_node, $save_port_attribute);
 	my($type);
 	my($value);
 
@@ -124,9 +123,7 @@ sub _build_node
 		$type  = $$items[$i]{type};
 		$value = $$items[$i]{value};
 
-		# Declare this node if we haven't see it before.
-
-		$$node{$value} = $self -> _init_node($$class_attribute{node}) if (! $$node{$value});
+		$self -> log(notice => "A => $i: $type => $value");
 
 		# The attributes might be:
 		# o for a stand-alone node, or
@@ -140,12 +137,22 @@ sub _build_node
 			port_id       => delete $$attribute{port_id}       || '',
 		};
 
-		if ($edge_sighted)
+		$self -> log(notice => "B => $i/$edge_sighted: " . $self -> hashref2string($port_attribute) . ' ' . $self -> hashref2string($attribute) );
+
+		# If the node has not been explicitly declared,
+		# (fixed == 0), finally add in the class attributes.
+
+		$$node{$value}            = $self -> _init_node($$class_attribute{node}) if (! $$node{$value});
+		$$node{$value}{attribute} = {%{$$node{$value}{attribute} }, %$attribute};
+		$$node{$value}{attribute} = {%{$$class_attribute{node} }, %{$$node{$value}{attribute} } } if ($$node{$value}{fixed} == 0);
+		$$node{$value}{fixed}     = 1;
+
+		if ($$items[$i + 1]{type} eq 'edge_id')
 		{
 			$attribute = {%{$$class_attribute{edge} }, %$attribute};
-			$child     = Tree -> new($save_node);
+			$child     = Tree -> new($value);
 
-			$child -> meta($save_port_attribute);
+			$child -> meta($port_attribute);
 			$parent -> add_child($child);
 			$parent -> meta({%{$parent -> meta} }, $attribute) if (! $parent -> is_root);
 
@@ -153,36 +160,13 @@ sub _build_node
 		}
 		else
 		{
-			# If the node has not been explicitly declared,
-			# (fixed == 0), finally add in the class attributes.
+			$child  = Tree -> new($value);
+			$parent = $self -> forest;
 
-			$$node{$value}{attribute} = {%{$$node{$value}{attribute} }, %$attribute};
-			$$node{$value}{attribute} = {%{$$class_attribute{node} }, %{$$node{$value}{attribute} } } if ($$node{$value}{fixed} == 0);
-			$$node{$value}{fixed}     = 1;
+			$parent -> add_child($child);
 		}
 
 		$i++;
-
-		# Are we inside a path (having found the 1st node already)?
-
-		if ($$items[$i]{type} eq 'edge_id')
-		{
-			$i++;
-
-			$edge_sighted        = 1;
-			$save_node           = $value;
-			$save_port_attribute = {%$port_attribute};
-		}
-	}
-
-	if ($edge_sighted)
-	{
-		$attribute = {%{$$class_attribute{edge} }, %$attribute, %$port_attribute};
-		$child     = Tree -> new($value);
-
-		$child -> meta($attribute);
-		$parent -> add_child($child);
-		$parent -> meta({%{$parent -> meta} }, $attribute) if (! $parent -> is_root);
 	}
 
 	return $i;
@@ -724,7 +708,7 @@ sub hashref2string
 	my($self, $h) = @_;
 	$h ||= {};
 
-	return '{' . join(', ', map{"$_ => $$h{$_}"} sort keys %$h) . '}';
+	return '{' . join(', ', map{qq|$_ => "$$h{$_}"|} sort keys %$h) . '}';
 
 } # End of hashref2string.
 

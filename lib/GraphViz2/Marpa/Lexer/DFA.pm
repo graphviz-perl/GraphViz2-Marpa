@@ -71,11 +71,6 @@ sub _clean_up
 
 	my(@old_items) = $self -> items -> print;
 
-	for my $item (@old_items)
-	{
-		$self -> log(notice => "Before: $$item{type} => $$item{value}");
-	}
-
 	for my $i (0 .. $#old_items - 2)
 	{
 		if ( ($old_items[$i]{type} eq 'id') && ($old_items[$i + 1]{type} eq 'equals') && ($old_items[$i + 2]{type} eq 'id') )
