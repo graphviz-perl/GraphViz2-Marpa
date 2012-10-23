@@ -106,24 +106,21 @@ sub _build_node
 	# Loop over nodes, which may have attributes,
 	# and may be part of a path.
 
-	my($edge_sighted) = 0;
-	my($node_count)   = 0;
 	my($parent)       = $self -> forest;
+	my($path_present) = 0;
 
 	my($attribute);
 	my($child);
+	my(@node);
 	my($port_attribute);
 	my($type);
 	my($value);
 
 	while ($$items[$i]{type} eq 'node_id')
 	{
-		$node_count++;
-
-		$type  = $$items[$i]{type};
-		$value = $$items[$i]{value};
-
-		$self -> log(notice => "A => $i: $type => $value");
+		$path_present ||= $self -> _edge_follows_node($items, $i + 1);
+		$type         = $$items[$i]{type};
+		$value        = $$items[$i]{value};
 
 		# The attributes might be:
 		# o for a stand-alone node, or
@@ -137,8 +134,6 @@ sub _build_node
 			port_id       => delete $$attribute{port_id}       || '',
 		};
 
-		$self -> log(notice => "B => $i/$edge_sighted: " . $self -> hashref2string($port_attribute) . ' ' . $self -> hashref2string($attribute) );
-
 		# If the node has not been explicitly declared,
 		# (fixed == 0), finally add in the class attributes.
 
@@ -147,26 +142,28 @@ sub _build_node
 		$$node{$value}{attribute} = {%{$$class_attribute{node} }, %{$$node{$value}{attribute} } } if ($$node{$value}{fixed} == 0);
 		$$node{$value}{fixed}     = 1;
 
-		if ($$items[$i + 1]{type} eq 'edge_id')
+		if ($path_present)
 		{
-			$attribute = {%{$$class_attribute{edge} }, %$attribute};
-			$child     = Tree -> new($value);
+			$child = Tree -> new($value);
 
-			$child -> meta($port_attribute);
+			$child -> meta({%$port_attribute});
 			$parent -> add_child($child);
-			$parent -> meta({%{$parent -> meta} }, $attribute) if (! $parent -> is_root);
+			$parent -> meta({%{$parent -> meta} }, {%{$$class_attribute{edge} }, %$attribute}) if (! $parent -> is_root);
 
 			$parent = $child;
 		}
-		else
-		{
-			$child  = Tree -> new($value);
-			$parent = $self -> forest;
-
-			$parent -> add_child($child);
-		}
 
 		$i++;
+
+		if ( ($i <= $#$items) && ($$items[$i]{type} eq 'edge_id') )
+		{
+			$i++;
+		}
+		else
+		{
+			$parent       = $self -> forest;
+			$path_present = 0;
+		}
 	}
 
 	return $i;
@@ -258,8 +255,6 @@ sub _build_tree
 		}
 	}
 
-	# TODO: Popping the stack means $class_attribute{graph} => {} at the moment.
-
 	$self -> forest -> meta($class_attribute{graph});
 	$self -> global($global);
 	$self -> node(\%node);
@@ -330,6 +325,46 @@ sub digraph
 	return $t1;
 
 } # End of digraph.
+
+# -----------------------------------------------
+
+sub _edge_follows_node
+{
+	my($self, $items, $i) = @_;
+	my($edge_found)  = 0;
+	my(%node_suffix) =
+	(
+		start_attribute => 1,
+		attribute_id    => 1, # compass_point or port_id.
+		attribute_value => 1, # compass point id or port id.
+		end_attribute   => 1,
+	);
+
+	while (1)
+	{
+		# Exit if we run out of items.
+
+		last if ($i > $#$items);
+
+		# Exit if we find an edge.
+
+		if ($$items[$i]{type} eq 'edge_id')
+		{
+			$edge_found = 1;
+
+			last;
+		}
+
+		# Exit if we found neither a port nor a compass point.
+
+		last if (! $node_suffix{$$items[$i]{type} });
+
+		$i++;
+	}
+
+	return $edge_found;
+
+} # End of _edge_follows_node.
 
 # --------------------------------------------------
 # This is a function, not a method.
