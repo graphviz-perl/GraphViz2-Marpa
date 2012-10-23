@@ -71,6 +71,11 @@ sub _clean_up
 
 	my(@old_items) = $self -> items -> print;
 
+	for my $item (@old_items)
+	{
+		$self -> log(notice => "Before: $$item{type} => $$item{value}");
+	}
+
 	for my $i (0 .. $#old_items - 2)
 	{
 		if ( ($old_items[$i]{type} eq 'id') && ($old_items[$i + 1]{type} eq 'equals') && ($old_items[$i + 2]{type} eq 'id') )
@@ -166,7 +171,6 @@ sub _clean_up
 	# open_bracket        , "["
 	# close_bracket       , "]"
 	# end_scope           , "1"             end_scope           , "1"
-	# The real problem is the Marpa grammar, which I can't get to accept [].
 
 	@old_items = ();
 
@@ -184,29 +188,70 @@ sub _clean_up
 
 	push @old_items, $new_items[$#new_items];
 
-	# 6: Convert all 'id's to 'class_id/node_id's. I /think/ this is ok.
+	# 4: This graph:
+	# digraph graph_15 {node_15_1:port_15_1 -> node_15_2:port_15_2 [arrowhead = odot]}
+	# lexes as:                             instead of as:
+	# "type","value"                        "type","value"
+	# strict              , "no"            strict              , "no"
+	# digraph             , "yes"           digraph             , "yes"
+	# graph_id            , "graph_15"      graph_id            , "graph_15"
+	# start_scope         , "1"             start_scope         , "1"
+	# node_id             , "node_15_1"     node_id             , "node_15_1"
+	# open_bracket        , "["             open_bracket        , "["
+	# attribute_id        , "port_id"       attribute_id        , "port_id"
+	# attribute_value     , "port_15_1"     attribute_value     , "port_15_1"
+	# close_bracket       , "]"             close_bracket       , "]"
+	# edge_id             , "->"            edge_id             , "->"
+	# node_id             , "node_15_2"     node_id             , "node_15_2"
+	# open_bracket        , "["             open_bracket        , "["
+	# attribute_id        , "port_id"       attribute_id        , "port_id"
+	# attribute_value     , "port_15_2"     attribute_value     , "port_15_2"
+	# close_bracket       , "]"                                                <=
+	# open_bracket        , "["                                                <=
+	# attribute_id        , "arrowhead"     attribute_id        , "arrowhead"
+	# attribute_value     , "odot"          attribute_value     , "odot"
+	# close_bracket       , "]"             close_bracket       , "]"
+	# end_scope           , "1"             end_scope           , "1"
 
 	@new_items = ();
 
-	for my $i (0 .. $#old_items)
+	for (my $i = 0; $i < $#old_items; $i++)
 	{
-		if ($old_items[$i]{type} eq 'id')
+		if ( ($old_items[$i]{type} eq 'close_bracket') && ($old_items[$i + 1]{type} eq 'open_bracket') )
 		{
-			if ($old_items[$i]{value} =~ /^edge|graph|node$/)
+			$i += 1;
+		}
+		else
+		{
+			push @new_items, $old_items[$i];
+		}
+	}
+
+	push @new_items, $old_items[$#old_items];
+
+	# 5: Convert all 'id's to 'class_id/node_id's. I /think/ this is ok.
+
+	@old_items = ();
+
+	for my $i (0 .. $#new_items)
+	{
+		if ($new_items[$i]{type} eq 'id')
+		{
+			if ($new_items[$i]{value} =~ /^edge|graph|node$/)
 			{
-				$old_items[$i]{type} = 'class_id';
+				$new_items[$i]{type} = 'class_id';
 			}
 			else
 			{
-				$old_items[$i]{type} = 'node_id';
+				$new_items[$i]{type} = 'node_id';
 			}
 		}
 
-		push @new_items, $old_items[$i];
+		push @old_items, $new_items[$i];
 	}
 
 	$self -> items -> clear;
-	$self -> items -> push(@new_items);
+	$self -> items -> push(@old_items);
 	$self -> renumber_items;
 
 } # End of _clean_up.
@@ -595,13 +640,22 @@ sub save_id_1
 		$value = $myself -> increment_subgraph_count;
 		$type  = 'start_subgraph';
 	}
+	elsif ($value =~ /^-/)
+	{
+		$myself -> new_item('edge_id', $value);
+	}
+	elsif ($value eq '{')
+	{
+		$myself -> new_item('start_scope', $myself -> increment_brace_count);
+	}
+	elsif ($value eq '[')
+	{
+		$myself -> new_item('open_bracket', $value);
+	}
 	else
 	{
-		$type  = $value =~ /^-/ ? 'edge_id' : $value eq '{' ? 'start_scope' : 'id';
-		$value = $myself -> increment_brace_count if ($type eq 'start_scope');
+		$myself -> new_item('id', $value);
 	}
-
-	$myself -> new_item($type, $value);
 
 } # End of save_id_1.
 
