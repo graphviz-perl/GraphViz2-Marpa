@@ -1557,6 +1557,11 @@ Yes. Consider these 3 situations and their corresponding lexed or parsed output:
 
 =back
 
+=head2 Do the getters forest(), global() and nodes() duplicate the input file's data?
+
+No. In particular, subgraph info is still missing, as well as info pertaining to the graph as a whole,
+e.g. it's label and size (if any).
+
 =head2 Why doesn't the lexer/parser handle my HTML-style labels?
 
 Traps for young players:
