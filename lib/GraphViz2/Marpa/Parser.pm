@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Data::Dumper::Concise; # For Dumper().
+use Data::Section::Simple 'get_data_section';
 
 use GraphViz2::Marpa::Renderer::GraphViz2;
 use GraphViz2::Marpa::Utils;
@@ -24,22 +25,23 @@ use Text::CSV_XS;
 
 use Try::Tiny;
 
-fieldhash my %forest        => 'forest';
-fieldhash my %global        => 'global';
-fieldhash my %item_count    => 'item_count';
-fieldhash my %items         => 'items';
-fieldhash my %lexed_file    => 'lexed_file';
-fieldhash my %logger        => 'logger';
-fieldhash my %maxlevel      => 'maxlevel';
-fieldhash my %minlevel      => 'minlevel';
-fieldhash my %nodes         => 'nodes';
-fieldhash my %output_file   => 'output_file';
-fieldhash my %parsed_file   => 'parsed_file';
-fieldhash my %renderer      => 'renderer';
-fieldhash my %report_forest => 'report_forest';
-fieldhash my %report_items  => 'report_items';
-fieldhash my %tokens        => 'tokens';
-fieldhash my %utils         => 'utils';
+fieldhash my %forest           => 'forest';
+fieldhash my %global           => 'global';
+fieldhash my %item_count       => 'item_count';
+fieldhash my %items            => 'items';
+fieldhash my %lexed_file       => 'lexed_file';
+fieldhash my %logger           => 'logger';
+fieldhash my %maxlevel         => 'maxlevel';
+fieldhash my %minlevel         => 'minlevel';
+fieldhash my %nodes            => 'nodes';
+fieldhash my %output_file      => 'output_file';
+fieldhash my %parsed_file      => 'parsed_file';
+fieldhash my %renderer         => 'renderer';
+fieldhash my %report_forest    => 'report_forest';
+fieldhash my %report_items     => 'report_items';
+fieldhash my %tokens           => 'tokens';
+fieldhash my %utils            => 'utils';
+fieldhash my %valid_attributes => 'valid_attributes';
 
 # $myself is a copy of $self for use by functions called by Marpa.
 
@@ -101,7 +103,9 @@ sub _build_attribute_list
 
 sub _build_node
 {
-	my($self, $items, $i, $node, $class_attribute) = @_;
+	my($self, $items, $i, $node, $class_attribute, $valid_edge_attribute) = @_;
+
+	$self -> log(notice => "Enter edge attr: " . $self -> hashref2string($$class_attribute{edge}) );
 
 	# Loop over nodes, which may have attributes,
 	# and may be part of a path.
@@ -111,8 +115,9 @@ sub _build_node
 
 	my($attribute);
 	my($child);
+	my(%edge_attribute);
 	my(@node);
-	my($port_attribute);
+	my(%port_attribute);
 	my($type);
 	my($value);
 
@@ -128,11 +133,20 @@ sub _build_node
 		# o for the previous case and for the edge.
 
 		($i, $attribute) = $self -> _build_attribute_list($items, $i);
-		$port_attribute  =
+
+		for (qw/compass_point port_id/)
 		{
-			compass_point => delete $$attribute{compass_point} || '',
-			port_id       => delete $$attribute{port_id}       || '',
-		};
+			$port_attribute{$_} = delete $$attribute{$_} if (defined $$attribute{$_});
+		}
+
+		for (@$valid_edge_attribute)
+		{
+			$edge_attribute{$_} = delete $$attribute{$_} if (defined $$attribute{$_});
+		}
+
+		#$self -> log(notice => "Node: $value. Attr: " . $self -> hashref2string($attribute) );
+		#$self -> log(notice => "Port: Attr: " . $self -> hashref2string(\%port_attribute) );
+		#$self -> log(notice => "Edge: Attr: " . $self -> hashref2string(\%edge_attribute) );
 
 		# If the node has not been explicitly declared,
 		# (fixed == 0), finally add in the class attributes.
@@ -146,9 +160,9 @@ sub _build_node
 		{
 			$child = Tree -> new($value);
 
-			$child -> meta({%$port_attribute});
+			$child -> meta({%port_attribute});
 			$parent -> add_child($child);
-			$parent -> meta({%{$parent -> meta} }, {%{$$class_attribute{edge} }, %$attribute}) if (! $parent -> is_root);
+			$parent -> meta({%{$parent -> meta}, %{$$class_attribute{edge} }, %edge_attribute}) if (! $parent -> is_root);
 
 			$parent = $child;
 		}
@@ -157,6 +171,8 @@ sub _build_node
 
 		if ( ($i <= $#$items) && ($$items[$i]{type} eq 'edge_id') )
 		{
+			# Step past the edge to the next node in the path.
+
 			$i++;
 		}
 		else
@@ -201,7 +217,9 @@ sub _build_tree
 	my($node, $node_set, %node);
 	my(@stack);
 	my($type);
-	my($value);
+	my(@valid_edge_attribute, $value);
+
+	push @valid_edge_attribute, $_ for (keys %{${$self -> valid_attributes}{edge} });
 
 	$class_attribute{$_} = {} for (@class);
 
@@ -218,6 +236,8 @@ sub _build_tree
 		{
 			($i, $class_attribute)   = $self -> _build_attribute_list($items, $i);
 			$class_attribute{$value} = {%{$class_attribute{$value} }, %$class_attribute};
+
+			$self -> log(notice => "Class edge attr: " . $self -> hashref2string($class_attribute{edge}) );
 
 			# TODO: graph attributes are not used yet.
 			# $self -> log(notice => "\tClass graph: " . $self -> hashref2string($class_attribute) ) if ($value eq 'graph');
@@ -243,7 +263,7 @@ sub _build_tree
 		{
 			# This code gobbles up edges as well as nodes.
 
-			$i = $self -> _build_node($items, $i, \%node, \%class_attribute);
+			$i = $self -> _build_node($items, $i, \%node, \%class_attribute, \@valid_edge_attribute);
 		}
 		elsif ($type eq 'port_id')
 		{
@@ -785,25 +805,28 @@ sub increment_item_count
 
 sub _init
 {
-	my($self, $arg)      = @_;
-	$$arg{forest}        = Tree -> new('root');
-	$$arg{global}        = {};
-	$$arg{item_count}    = 0;
-	$$arg{items}         = Set::Array -> new;
-	$$arg{lexed_file}    ||= '';       # Caller can set.
-	$$arg{logger}        = defined($$arg{logger}) ? $$arg{logger} : undef; # Caller can set.
-	$$arg{maxlevel}      ||= 'notice'; # Caller can set.
-	$$arg{minlevel}      ||= 'error';  # Caller can set.
-	$$arg{nodes}         = {};
-	$$arg{output_file}   ||= '';       # Caller can set.
-	$$arg{parsed_file}   ||= '';       # Caller can set.
-	$$arg{renderer}      = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
-	$$arg{report_forest} ||= 0;        # Caller can set.
-	$$arg{report_items}  ||= 0;        # Caller can set.
-	$$arg{tokens}        ||= [];       # Caller can set.
-	$$arg{utils}         = GraphViz2::Marpa::Utils -> new;
-	$self                = from_hash($self, $arg);
-	$myself              = $self;
+	my($self, $arg)         = @_;
+	$$arg{forest}           = Tree -> new('root');
+	$$arg{global}           = {};
+	$$arg{item_count}       = 0;
+	$$arg{items}            = Set::Array -> new;
+	$$arg{lexed_file}       ||= '';       # Caller can set.
+	$$arg{logger}           = defined($$arg{logger}) ? $$arg{logger} : undef; # Caller can set.
+	$$arg{maxlevel}         ||= 'notice'; # Caller can set.
+	$$arg{minlevel}         ||= 'error';  # Caller can set.
+	$$arg{nodes}            = {};
+	$$arg{output_file}      ||= '';       # Caller can set.
+	$$arg{parsed_file}      ||= '';       # Caller can set.
+	$$arg{renderer}         = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
+	$$arg{report_forest}    ||= 0;        # Caller can set.
+	$$arg{report_items}     ||= 0;        # Caller can set.
+	$$arg{tokens}           ||= [];       # Caller can set.
+	$$arg{utils}            = GraphViz2::Marpa::Utils -> new;
+	$$arg{valid_attributes} = {};
+	$self                   = from_hash($self, $arg);
+	$myself                 = $self;
+
+	$self -> load_valid_attributes;
 
 	if (! defined $self -> logger)
 	{
@@ -848,6 +871,60 @@ sub _init_node
 	};
 
 } # End of _init_node.
+
+# -----------------------------------------------
+
+sub load_valid_attributes
+{
+	my($self) = @_;
+
+	# Phase 1: Get attributes from __DATA__ section.
+
+	my($data) = get_data_section;
+
+	my(%data);
+
+	for my $key (sort keys %$data)
+	{
+		$data{$key} = [grep{! /^$/ && ! /^(?:\s*)#/} split(/\n/, $$data{$key})];
+	}
+
+	# Phase 2: Reorder them so the major key is the context and the minor key is the attribute.
+	# I.e. $attribute{global}{directed} => 1 means directed is valid in a global context.
+
+	my(%attribute);
+
+	for my $context (grep{! /common_attribute/} keys %$data)
+	{
+		for my $a (@{$data{$context} })
+		{
+			$attribute{$context}{$a} = 1;
+		}
+	}
+
+	# Common attributes are a special case, since one attribute can be valid is several contexts...
+	# Format: attribute_name => context_1, context_2.
+
+	my($attribute);
+	my($context, @context);
+
+	for my $a (@{$data{common_attribute} })
+	{
+		($attribute, $context) = split(/\s*=>\s*/, $a);
+		@context               = split(/\s*,\s*/, $context);
+
+		for my $c (@context)
+		{
+			$attribute{$c}             = {} if (! $attribute{$c});
+			$attribute{$c}{$attribute} = 1;
+		}
+	}
+
+	$self -> valid_attributes(\%attribute);
+
+	return $self;
+
+} # End of load_valid_attributes.
 
 # --------------------------------------------------
 
@@ -1323,15 +1400,20 @@ paths. So, if you call new() as new(report_forest => 1) on data/55.gv, the outpu
 
 	Edges:
 	root. Edge attrs: {}
-	   |---A. Edge attrs: {compass_point => "", port_id => ""}
-	   |   |---B. Edge attrs: {compass_point => "", port_id => ""}
-	   |---B. Edge attrs: {compass_point => "", port_id => ""}
-	   |   |---C. Edge attrs: {compass_point => "", port_id => ""}
-	   |---C. Edge attrs: {compass_point => "", port_id => ""}
-	   |   |---D. Edge attrs: {compass_point => "", port_id => ""}
-	   |---D. Edge attrs: {compass_point => "", port_id => ""}
-	   |   |---E. Edge attrs: {compass_point => "", port_id => ""}
-	...
+	   |---A. Edge attrs: {color => "purple"}
+	   |   |---B. Edge attrs: {}
+	   |---B. Edge attrs: {color => "orange", penwidth => "5"}
+	   |   |---C. Edge attrs: {}
+	   |---C. Edge attrs: {arrowhead => "crow", arrowtail => "obox", color => "purple", dir => "both", minlen => "2"}
+	   |   |---D. Edge attrs: {}
+	   |---D. Edge attrs: {arrowhead => "dot", arrowtail => "odot", color => "purple", dir => "both", minlen => "2", penwidth => "5"}
+	   |   |---E. Edge attrs: {}
+	   |---F. Edge attrs: {color => "crimson", penwidth => "7"}
+	   |   |---G. Edge attrs: {}
+	   |---H. Edge attrs: {color => "purple"}
+	   |   |---I. Edge attrs: {}
+	   |---J. Edge attrs: {color => "yellow"}
+	   |   |---K. Edge attrs: {}
 
 This structure is used by L<GraphViz2::Marpa::PathUtils/find_clusters()>.
 
@@ -1458,28 +1540,17 @@ The graph of data/55.gv then, is expected to have just these 3 nodes in the shap
 So, if you call new() as new(report_forest => 1) on data/55.gv, the output will include:
 
 	Nodes:
-	A. Attr: {color => "blue"}
-	B. Attr: {color => "mediumseagreen", fillcolor => "goldenrod",
-		shape => "square", style => "filled"}
-	C. Attr: {color => "orange", penwidth => "5", shape => "house"}
-	D. Attr: {arrowhead => "crow", arrowtail => "obox", dir => "both",
-		fillcolor => "turquoise4", minlen => "2", shape => "circle",
-		style => "filled"}
-	E. Attr: {arrowhead => "dot", arrowtail => "odot", dir => "both",
-		fillcolor => "turquoise4", minlen => "2", penwidth => "5",
-		shape => "circle", style => "filled"}
-	F. Attr: {color => "darkorchid", fillcolor => "yellow", penwidth => "5",
-		shape => "hexagon", style => "filled"}
-	G. Attr: {color => "crimson", fillcolor => "darkorchid", penwidth => "7",
-		shape => "pentagon", style => "filled"}
-	H. Attr: {fillcolor => "lightblue", fontsize => "20", shape => "house",
-		style => "filled"}
-	I. Attr: {fillcolor => "lightblue", fontsize => "20", shape => "house",
-		style => "filled"}
-	J. Attr: {color => "yellow", fillcolor => "magenta", fontsize => "26",
-		shape => "square", style => "filled"}
-	K. Attr: {fillcolor => "magenta", fontsize => "26", shape => "triangle",
-		style => "filled"}
+	A. Attr: {}
+	B. Attr: {fillcolor => "goldenrod", shape => "square", style => "filled"}
+	C. Attr: {shape => "house"}
+	D. Attr: {fillcolor => "turquoise4", shape => "circle", style => "filled"}
+	E. Attr: {fillcolor => "turquoise4", shape => "circle", style => "filled"}
+	F. Attr: {fillcolor => "yellow", shape => "hexagon", style => "filled"}
+	G. Attr: {fillcolor => "darkorchid", shape => "pentagon", style => "filled"}
+	H. Attr: {fillcolor => "lightblue", fontsize => "20", shape => "house", style => "filled"}
+	I. Attr: {fillcolor => "lightblue", fontsize => "20", shape => "house", style => "filled"}
+	J. Attr: {fillcolor => "magenta", fontsize => "26", shape => "square", style => "filled"}
+	K. Attr: {fillcolor => "magenta", fontsize => "26", shape => "triangle", style => "filled"}
 
 See also L</forest()> and L</global()>.
 
@@ -1769,3 +1840,263 @@ Australian copyright (c) 2012, Ron Savage.
 	http://www.opensource.org/licenses/index.html
 
 =cut
+
+__DATA__
+@@ arrow_modifier
+l
+o
+r
+
+@@ arrow
+box
+crow
+diamond
+dot
+inv
+none
+normal
+tee
+vee
+
+@@ common_attribute
+Damping => graph
+K => graph, cluster
+URL => edge, node, graph, cluster
+area => node, cluster
+arrowhead => edge
+arrowsize => edge
+arrowtail => edge
+aspect => graph
+bb => graph
+bgcolor => graph, cluster
+center => graph
+charset => graph
+clusterrank => graph
+color => edge, node, cluster
+colorscheme => edge, node, cluster, graph
+comment => edge, node, graph
+compound => graph
+concentrate => graph
+constraint => edge
+decorate => edge
+defaultdist => graph
+dim => graph
+dimen => graph
+dir => edge
+diredgeconstraints => graph
+distortion => node
+dpi => graph
+edgeURL => edge
+edgehref => edge
+edgetarget => edge
+edgetooltip => edge
+epsilon => graph
+esep => graph
+fillcolor => node, cluster
+fixedsize => node
+fontcolor => edge, node, graph, cluster
+fontname => edge, node, graph, cluster
+fontnames => graph
+fontpath => graph
+fontsize => edge, node, graph, cluster
+group => node
+headURL => edge
+headclip => edge
+headhref => edge
+headlabel => edge
+headport => edge
+headtarget => edge
+headtooltip => edge
+height => node
+href => graph, cluster, node, edge
+id => graph, node, edge
+image => node
+imagescale => node
+label => edge, node, graph, cluster
+labelURL => edge
+label_scheme => graph
+labelangle => edge
+labeldistance => edge
+labelfloat => edge
+labelfontcolor => edge
+labelfontname => edge
+labelfontsize => edge
+labelhref => edge
+labeljust => graph, cluster
+labelloc => node, graph, cluster
+labeltarget => edge
+labeltooltip => edge
+landscape => graph
+layer => edge, node
+layers => graph
+layersep => graph
+layout => graph
+len => edge
+levels => graph
+levelsgap => graph
+lhead => edge
+lheight => graph, cluster
+lp => edge, graph, cluster
+ltail => edge
+lwidth => graph, cluster
+margin => node, graph
+maxiter => graph
+mclimit => graph
+mindist => graph
+minlen => edge
+mode => graph
+model => graph
+mosek => graph
+nodesep => graph
+nojustify => graph, cluster, node, edge
+normalize => graph
+nslimit => graph
+ordering => graph, node
+orientation => node
+orientation => graph
+outputorder => graph
+overlap => graph
+overlap_scaling => graph
+pack => graph
+packmode => graph
+pad => graph
+page => graph
+pagedir => graph
+pencolor => cluster
+penwidth => cluster, node, edge
+peripheries => node, cluster
+pin => node
+pos => edge, node
+quadtree => graph
+quantum => graph
+rank => subgraph
+rankdir => graph
+ranksep => graph
+ratio => graph
+rects => node
+regular => node
+remincross => graph
+repulsiveforce => graph
+resolution => graph
+root => graph, node
+rotate => graph
+rotation => graph
+samehead => edge
+sametail => edge
+samplepoints => node
+scale => graph
+searchsize => graph
+sep => graph
+shape => node
+shapefile => node
+showboxes => edge, node, graph
+sides => node
+size => graph
+skew => node
+smoothing => graph
+sortv => graph, cluster, node
+splines => graph
+start => graph
+style => edge, node, cluster
+stylesheet => graph
+tailURL => edge
+tailclip => edge
+tailhref => edge
+taillabel => edge
+tailport => edge
+tailtarget => edge
+tailtooltip => edge
+target => edge, node, graph, cluster
+tooltip => node, edge, cluster
+truecolor => graph
+vertices => node
+viewport => graph
+voro_margin => graph
+weight => edge
+width => node
+z => node
+
+@@ global
+directed
+driver
+format
+label
+name
+record_orientation
+record_shape
+strict
+timeout
+
+@@ node
+Mcircle
+Mdiamond
+Msquare
+box
+box3d
+circle
+component
+diamond
+doublecircle
+doubleoctagon
+egg
+ellipse
+folder
+hexagon
+house
+invhouse
+invtrapezium
+invtriangle
+none
+note
+octagon
+oval
+parallelogram
+pentagon
+plaintext
+point
+polygon
+rect
+rectangle
+septagon
+square
+tab
+trapezium
+triangle
+tripleoctagon
+
+@@ output_format
+bmp
+canon
+cmap
+cmapx
+cmapx_np
+dot
+eps
+fig
+gd
+gd2
+gif
+gtk
+ico
+imap
+imap_np
+ismap
+jpe
+jpeg
+jpg
+pdf
+plain
+plain-ext
+png
+ps
+ps2
+svg
+svgz
+tif
+tiff
+vml
+vmlz
+vrml
+wbmp
+xdot
+xlib
