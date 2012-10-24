@@ -1,5 +1,7 @@
 strict digraph graph_55
 {
+	label = "Complex Syntax Test"
+
 	A [color = blue]
 
 	node [shape = house]

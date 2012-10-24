@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Data::Dumper::Concise; # For Dumper().
-use Data::Section::Simple 'get_data_section';
 
 use GraphViz2::Marpa::Renderer::GraphViz2;
 use GraphViz2::Marpa::Utils;
@@ -41,7 +40,6 @@ fieldhash my %report_forest    => 'report_forest';
 fieldhash my %report_items     => 'report_items';
 fieldhash my %tokens           => 'tokens';
 fieldhash my %utils            => 'utils';
-fieldhash my %valid_attributes => 'valid_attributes';
 
 # $myself is a copy of $self for use by functions called by Marpa.
 
@@ -119,8 +117,6 @@ sub _build_path
 {
 	my($self, $items, $i, $node, $class_attribute) = @_;
 
-	$self -> log(notice => "Start node $$items[$i]{value}");
-
 	# Loop over nodes, which may have attributes,
 	# and may be part of a path.
 
@@ -133,7 +129,7 @@ sub _build_path
 	my($type);
 	my($value);
 
-	while ($$items[$i]{type} eq 'node_id')
+	while ( ($i <= $#$items) && ($$items[$i]{type} eq 'node_id') )
 	{
 		$type  = $$items[$i]{type};
 		$value = $$items[$i]{value};
@@ -205,7 +201,7 @@ sub _build_tree
 
 	my($attribute);
 	my($class_attribute, %class_attribute);
-	my($graph_id);
+	my($graph_id, $graph_attribute);
 	my(%node);
 	my(@stack);
 	my($type);
@@ -226,11 +222,6 @@ sub _build_tree
 		{
 			($i, $class_attribute)   = $self -> _build_attribute_list($items, $i);
 			$class_attribute{$value} = {%{$class_attribute{$value} }, %$class_attribute};
-
-			$self -> log(notice => "Class edge attr: " . $self -> hashref2string($class_attribute{edge}) );
-
-			# TODO: graph attributes are not used yet.
-			# $self -> log(notice => "\tClass graph: " . $self -> hashref2string($class_attribute) ) if ($value eq 'graph');
 		}
 		elsif ($type eq 'digraph')
 		{
@@ -242,7 +233,15 @@ sub _build_tree
 		}
 		elsif ($type eq 'end_scope')
 		{
+			# TODO. Use $class_attribute{graph} upon exit.
+
+			if ($value eq '1')
+			{
+				$self -> log(notice => 'Graph attributes: ' . $#stack); # $self -> hashref2string({%{$stack[1]} }) );
+			}
+
 			$class_attribute{$_} = pop @stack for reverse (@class);
+
 		}
 		elsif ($type eq 'graph_id')
 		{
@@ -251,7 +250,7 @@ sub _build_tree
 		}
 		elsif ($type eq 'node_id')
 		{
-			if ($self -> _edge_follows_node($items, $i) )
+			if ($self -> _edge_follows_node($items, $i + 1) )
 			{
 				# This code gobbles up edges as well as nodes.
 
@@ -358,7 +357,6 @@ sub _edge_follows_node
 	my($edge_found)  = 0;
 	my(%node_suffix) =
 	(
-		node_id         => 1,
 		start_attribute => 1,
 		attribute_id    => 1, # 'compass_point' or 'port_id'.
 		attribute_value => 1, # compass point id or port id.
@@ -388,8 +386,6 @@ sub _edge_follows_node
 
 		$i++;
 	}
-
-	$self -> log(notice => "Node $node. Edge found: $edge_found");
 
 	return $edge_found;
 
@@ -826,11 +822,8 @@ sub _init
 	$$arg{report_items}     ||= 0;        # Caller can set.
 	$$arg{tokens}           ||= [];       # Caller can set.
 	$$arg{utils}            = GraphViz2::Marpa::Utils -> new;
-	$$arg{valid_attributes} = {};
 	$self                   = from_hash($self, $arg);
 	$myself                 = $self;
-
-	$self -> load_valid_attributes;
 
 	if (! defined $self -> logger)
 	{
@@ -875,60 +868,6 @@ sub _init_node
 	};
 
 } # End of _init_node.
-
-# -----------------------------------------------
-
-sub load_valid_attributes
-{
-	my($self) = @_;
-
-	# Phase 1: Get attributes from __DATA__ section.
-
-	my($data) = get_data_section;
-
-	my(%data);
-
-	for my $key (sort keys %$data)
-	{
-		$data{$key} = [grep{! /^$/ && ! /^(?:\s*)#/} split(/\n/, $$data{$key})];
-	}
-
-	# Phase 2: Reorder them so the major key is the context and the minor key is the attribute.
-	# I.e. $attribute{global}{directed} => 1 means directed is valid in a global context.
-
-	my(%attribute);
-
-	for my $context (grep{! /common_attribute/} keys %$data)
-	{
-		for my $a (@{$data{$context} })
-		{
-			$attribute{$context}{$a} = 1;
-		}
-	}
-
-	# Common attributes are a special case, since one attribute can be valid is several contexts...
-	# Format: attribute_name => context_1, context_2.
-
-	my($attribute);
-	my($context, @context);
-
-	for my $a (@{$data{common_attribute} })
-	{
-		($attribute, $context) = split(/\s*=>\s*/, $a);
-		@context               = split(/\s*,\s*/, $context);
-
-		for my $c (@context)
-		{
-			$attribute{$c}             = {} if (! $attribute{$c});
-			$attribute{$c}{$attribute} = 1;
-		}
-	}
-
-	$self -> valid_attributes(\%attribute);
-
-	return $self;
-
-} # End of load_valid_attributes.
 
 # --------------------------------------------------
 
@@ -1844,263 +1783,3 @@ Australian copyright (c) 2012, Ron Savage.
 	http://www.opensource.org/licenses/index.html
 
 =cut
-
-__DATA__
-@@ arrow_modifier
-l
-o
-r
-
-@@ arrow
-box
-crow
-diamond
-dot
-inv
-none
-normal
-tee
-vee
-
-@@ common_attribute
-Damping => graph
-K => graph, cluster
-URL => edge, node, graph, cluster
-area => node, cluster
-arrowhead => edge
-arrowsize => edge
-arrowtail => edge
-aspect => graph
-bb => graph
-bgcolor => graph, cluster
-center => graph
-charset => graph
-clusterrank => graph
-color => edge, node, cluster
-colorscheme => edge, node, cluster, graph
-comment => edge, node, graph
-compound => graph
-concentrate => graph
-constraint => edge
-decorate => edge
-defaultdist => graph
-dim => graph
-dimen => graph
-dir => edge
-diredgeconstraints => graph
-distortion => node
-dpi => graph
-edgeURL => edge
-edgehref => edge
-edgetarget => edge
-edgetooltip => edge
-epsilon => graph
-esep => graph
-fillcolor => node, cluster
-fixedsize => node
-fontcolor => edge, node, graph, cluster
-fontname => edge, node, graph, cluster
-fontnames => graph
-fontpath => graph
-fontsize => edge, node, graph, cluster
-group => node
-headURL => edge
-headclip => edge
-headhref => edge
-headlabel => edge
-headport => edge
-headtarget => edge
-headtooltip => edge
-height => node
-href => graph, cluster, node, edge
-id => graph, node, edge
-image => node
-imagescale => node
-label => edge, node, graph, cluster
-labelURL => edge
-label_scheme => graph
-labelangle => edge
-labeldistance => edge
-labelfloat => edge
-labelfontcolor => edge
-labelfontname => edge
-labelfontsize => edge
-labelhref => edge
-labeljust => graph, cluster
-labelloc => node, graph, cluster
-labeltarget => edge
-labeltooltip => edge
-landscape => graph
-layer => edge, node
-layers => graph
-layersep => graph
-layout => graph
-len => edge
-levels => graph
-levelsgap => graph
-lhead => edge
-lheight => graph, cluster
-lp => edge, graph, cluster
-ltail => edge
-lwidth => graph, cluster
-margin => node, graph
-maxiter => graph
-mclimit => graph
-mindist => graph
-minlen => edge
-mode => graph
-model => graph
-mosek => graph
-nodesep => graph
-nojustify => graph, cluster, node, edge
-normalize => graph
-nslimit => graph
-ordering => graph, node
-orientation => node
-orientation => graph
-outputorder => graph
-overlap => graph
-overlap_scaling => graph
-pack => graph
-packmode => graph
-pad => graph
-page => graph
-pagedir => graph
-pencolor => cluster
-penwidth => cluster, node, edge
-peripheries => node, cluster
-pin => node
-pos => edge, node
-quadtree => graph
-quantum => graph
-rank => subgraph
-rankdir => graph
-ranksep => graph
-ratio => graph
-rects => node
-regular => node
-remincross => graph
-repulsiveforce => graph
-resolution => graph
-root => graph, node
-rotate => graph
-rotation => graph
-samehead => edge
-sametail => edge
-samplepoints => node
-scale => graph
-searchsize => graph
-sep => graph
-shape => node
-shapefile => node
-showboxes => edge, node, graph
-sides => node
-size => graph
-skew => node
-smoothing => graph
-sortv => graph, cluster, node
-splines => graph
-start => graph
-style => edge, node, cluster
-stylesheet => graph
-tailURL => edge
-tailclip => edge
-tailhref => edge
-taillabel => edge
-tailport => edge
-tailtarget => edge
-tailtooltip => edge
-target => edge, node, graph, cluster
-tooltip => node, edge, cluster
-truecolor => graph
-vertices => node
-viewport => graph
-voro_margin => graph
-weight => edge
-width => node
-z => node
-
-@@ global
-directed
-driver
-format
-label
-name
-record_orientation
-record_shape
-strict
-timeout
-
-@@ node
-Mcircle
-Mdiamond
-Msquare
-box
-box3d
-circle
-component
-diamond
-doublecircle
-doubleoctagon
-egg
-ellipse
-folder
-hexagon
-house
-invhouse
-invtrapezium
-invtriangle
-none
-note
-octagon
-oval
-parallelogram
-pentagon
-plaintext
-point
-polygon
-rect
-rectangle
-septagon
-square
-tab
-trapezium
-triangle
-tripleoctagon
-
-@@ output_format
-bmp
-canon
-cmap
-cmapx
-cmapx_np
-dot
-eps
-fig
-gd
-gd2
-gif
-gtk
-ico
-imap
-imap_np
-ismap
-jpe
-jpeg
-jpg
-pdf
-plain
-plain-ext
-png
-ps
-ps2
-svg
-svgz
-tif
-tiff
-vml
-vmlz
-vrml
-wbmp
-xdot
-xlib
