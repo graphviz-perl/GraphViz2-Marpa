@@ -166,6 +166,11 @@ sub _build_node
 		}
 	}
 
+	# Step back past the item which caused us to exit the loop,
+	# because the calling code will do $i++ at the top of its loop.
+
+	$i--;
+
 	return $i;
 
 } # End of _build_node.
@@ -207,7 +212,7 @@ sub _build_tree
 		$type  = $$items[$i]{type};
 		$value = $$items[$i]{value};
 
-		$self -> log(debug => "$i: $type => $value");
+		$self -> log(notice => "$i: $type => $value");
 
 		if ($type eq 'class_id')
 		{
@@ -236,7 +241,7 @@ sub _build_tree
 		}
 		elsif ($type eq 'node_id')
 		{
-			# This code gobbles up edges as well as stand-alone nodes.
+			# This code gobbles up edges as well as nodes.
 
 			$i = $self -> _build_node($items, $i, \%node, \%class_attribute);
 		}
@@ -1454,16 +1459,27 @@ So, if you call new() as new(report_forest => 1) on data/55.gv, the output will 
 
 	Nodes:
 	A. Attr: {color => "blue"}
-	B. Attr: {color => "mediumseagreen", shape => "square"}
-	C. Attr: {color => "orange", penwidth => "5"}
-	D. Attr: {arrowhead => "crow", arrowtail => "obox", dir => "both", minlen => "2"}
-	E. Attr: {arrowhead => "dot", arrowtail => "odot", dir => "both", minlen => "2", penwidth => "5"}
-	F. Attr: {color => "darkorchid", fillcolor => "yellow", penwidth => "5", shape => "hexagon"}
-	G. Attr: {color => "crimson", fillcolor => "darkorchid", penwidth => "7", shape => "pentagon"}
-	H. Attr: {}
-	I. Attr: {}
-	J. Attr: {color => "yellow", fillcolor => "magenta", fontsize => "26", shape => "square"}
-	K. Attr: {fillcolor => "magenta", fontsize => "26", shape => "triangle"}
+	B. Attr: {color => "mediumseagreen", fillcolor => "goldenrod",
+		shape => "square", style => "filled"}
+	C. Attr: {color => "orange", penwidth => "5", shape => "house"}
+	D. Attr: {arrowhead => "crow", arrowtail => "obox", dir => "both",
+		fillcolor => "turquoise4", minlen => "2", shape => "circle",
+		style => "filled"}
+	E. Attr: {arrowhead => "dot", arrowtail => "odot", dir => "both",
+		fillcolor => "turquoise4", minlen => "2", penwidth => "5",
+		shape => "circle", style => "filled"}
+	F. Attr: {color => "darkorchid", fillcolor => "yellow", penwidth => "5",
+		shape => "hexagon", style => "filled"}
+	G. Attr: {color => "crimson", fillcolor => "darkorchid", penwidth => "7",
+		shape => "pentagon", style => "filled"}
+	H. Attr: {fillcolor => "lightblue", fontsize => "20", shape => "house",
+		style => "filled"}
+	I. Attr: {fillcolor => "lightblue", fontsize => "20", shape => "house",
+		style => "filled"}
+	J. Attr: {color => "yellow", fillcolor => "magenta", fontsize => "26",
+		shape => "square", style => "filled"}
+	K. Attr: {fillcolor => "magenta", fontsize => "26", shape => "triangle",
+		style => "filled"}
 
 See also L</forest()> and L</global()>.
 
