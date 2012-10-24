@@ -4,6 +4,11 @@ digraph graph_15
 	[
 		shape = "record"
 	]
+	edge
+	[
+		color = "red"
+		penwidth = "5"
+	]
 	node_15_1
 	[
 		label = "<f0> left|<f1> middle|<f2> right"

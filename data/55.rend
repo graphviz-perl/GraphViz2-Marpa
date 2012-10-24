@@ -1,5 +1,9 @@
 strict digraph graph_55
 {
+	graph
+	[
+		label = "Complex Syntax Test"
+	]
 	A
 	[
 		color = "blue"
