@@ -233,15 +233,10 @@ sub _build_tree
 		}
 		elsif ($type eq 'end_scope')
 		{
-			# TODO. Use $class_attribute{graph} upon exit.
-
-			if ($value eq '1')
+			if ($value > 1)
 			{
-				$self -> log(notice => 'Graph attributes: ' . $#stack); # $self -> hashref2string({%{$stack[1]} }) );
+				$class_attribute{$_} = pop @stack for reverse (@class);
 			}
-
-			$class_attribute{$_} = pop @stack for reverse (@class);
-
 		}
 		elsif ($type eq 'graph_id')
 		{
@@ -277,6 +272,9 @@ sub _build_tree
 			$$global{strict} = $value eq 'yes' ? 1 : 0;
 		}
 	}
+
+	# TODO. Use $class_attribute{graph} upon exit.
+	$self -> log(notice => 'Graph attributes: ' . $self -> hashref2string($class_attribute{graph}) );
 
 	$self -> forest -> meta($class_attribute{graph});
 	$self -> global($global);
