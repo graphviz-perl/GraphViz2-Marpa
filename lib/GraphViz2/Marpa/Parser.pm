@@ -25,7 +25,6 @@ use Text::CSV_XS;
 use Try::Tiny;
 
 fieldhash my %forest           => 'forest';
-fieldhash my %global           => 'global';
 fieldhash my %item_count       => 'item_count';
 fieldhash my %items            => 'items';
 fieldhash my %lexed_file       => 'lexed_file';
@@ -38,7 +37,9 @@ fieldhash my %parsed_file      => 'parsed_file';
 fieldhash my %renderer         => 'renderer';
 fieldhash my %report_forest    => 'report_forest';
 fieldhash my %report_items     => 'report_items';
+fieldhash my %style            => 'style';
 fieldhash my %tokens           => 'tokens';
+fieldhash my %type             => 'type';
 fieldhash my %utils            => 'utils';
 
 # $myself is a copy of $self for use by functions called by Marpa.
@@ -125,10 +126,10 @@ sub _build_tree
 	# and find attributes of individual nodes.
 
 	my(@class)  = qw/edge graph node/;
-	my($global) = {};
 	my($i)      = - 1;
 	my($items)  = $self -> items;
 	my($parent) = $self -> forest;
+	my($tipe)   = {};
 
 	my($attribute);
 	my($class_attribute, %class_attribute, $child);
@@ -142,6 +143,8 @@ sub _build_tree
 
 	$class_attribute{$_} = {} for (@class);
 
+	$self -> log(info => 'Tokens processed during _build_tree:');
+
 	while ($i < $#$items)
 	{
 		$i++;
@@ -149,7 +152,7 @@ sub _build_tree
 		$type  = $$items[$i]{type};
 		$value = $$items[$i]{value};
 
-		$self -> log(notice => "\t$i: $type => $value");
+		$self -> log(info => "$i: $type => $value");
 
 		if ($type eq 'class_id')
 		{
@@ -158,7 +161,7 @@ sub _build_tree
 		}
 		elsif ($type eq 'digraph')
 		{
-			$$global{digraph} = $value eq 'yes' ? 1 : 0;
+			$$tipe{digraph} = $value eq 'yes' ? 1 : 0;
 		}
 		elsif ($type eq 'edge_id')
 		{
@@ -173,8 +176,8 @@ sub _build_tree
 		}
 		elsif ($type eq 'graph_id')
 		{
-			$$global{graph_id} = $value if (! defined $$global{graph_id});
-			$graph_id          = $value;
+			$$tipe{graph_id} = $value if (! defined $$tipe{graph_id});
+			$graph_id         = $value;
 		}
 		elsif ($type eq 'node_id')
 		{
@@ -215,15 +218,12 @@ sub _build_tree
 		}
 		elsif ($type eq 'strict')
 		{
-			$$global{strict} = $value eq 'yes' ? 1 : 0;
+			$$tipe{strict} = $value eq 'yes' ? 1 : 0;
 		}
 	}
 
-	# TODO. Use $class_attribute{graph} upon exit.
-	$self -> log(notice => 'Graph attributes: ' . $self -> hashref2string($class_attribute{graph}) );
-
-	$self -> forest -> meta($class_attribute{graph});
-	$self -> global($global);
+	$self -> style($class_attribute{graph});
+	$self -> type($tipe);
 	$self -> nodes(\%node);
 
 } # End of _build_tree.
@@ -751,7 +751,6 @@ sub _init
 {
 	my($self, $arg)         = @_;
 	$$arg{forest}           = Tree -> new('root');
-	$$arg{global}           = {};
 	$$arg{item_count}       = 0;
 	$$arg{items}            = Set::Array -> new;
 	$$arg{lexed_file}       ||= '';       # Caller can set.
@@ -764,7 +763,9 @@ sub _init
 	$$arg{renderer}         = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
 	$$arg{report_forest}    ||= 0;        # Caller can set.
 	$$arg{report_items}     ||= 0;        # Caller can set.
+	$$arg{style}            = {};
 	$$arg{tokens}           ||= [];       # Caller can set.
+	$$arg{type}             = {};
 	$$arg{utils}            = GraphViz2::Marpa::Utils -> new;
 	$self                   = from_hash($self, $arg);
 	$myself                 = $self;
@@ -926,13 +927,14 @@ sub pretty_print_node
 
 # --------------------------------------------------
 
-sub print_forest
+sub print_structure
 {
-	my($self)   = @_;
-	my($global) = $self -> global;
+	my($self) = @_;
 
-	$self -> log(notice => 'Globals:');
-	$self -> log(notice => $self -> hashref2string($self -> global) );
+	$self -> log(notice => 'Type:');
+	$self -> log(notice => $self -> hashref2string($self -> type) );
+	$self -> log(notice => 'Style:');
+	$self -> log(notice => $self -> hashref2string($self -> style) );
 	$self -> log(notice => 'Nodes:');
 
 	my($node) = $self -> nodes;
@@ -945,7 +947,7 @@ sub print_forest
 	$self -> log(notice => 'Edges:');
 	$self -> pretty_print_forest;
 
-} # End of print_forest.
+} # End of print_structure.
 
 # --------------------------------------------------
 
@@ -999,15 +1001,12 @@ sub run
 
 	my($file_name) = $self -> parsed_file;
 
-	if ($file_name)
-	{
-		$self -> generate_parsed_file($file_name);
-	}
+	$self -> generate_parsed_file($file_name) if ($file_name);
 
 	# Build a Graphviz-like tree of the data.
 
 	$self -> _build_tree;
-	$self -> print_forest if ($self -> report_forest);
+	$self -> print_structure if ($self -> report_forest);
 
 	# Pass the tokens to the renderer.
 
@@ -1268,6 +1267,14 @@ The value supplied by the 'tokens' option takes preference over the 'lexed_file'
 
 =head1 Methods
 
+=head2 format_node($node)
+
+Returns a string.
+
+Called by L</pretty_print_node($node)>.
+
+Only override this in a sub-class if you wish to print a node differently.
+
 =head2 forest()
 
 Returns an object of type L<Tree>, where the root element is not used, but the children of this root are each
@@ -1304,18 +1311,27 @@ paths. So, if you call new() as new(report_forest => 1) on data/55.gv, the outpu
 
 This structure is used by L<GraphViz2::Marpa::PathUtils/find_clusters()>.
 
-See also L</global()> and L</nodes()>.
+See also L</nodes()>, L</style()> and L</type()>.
 
-=head2 global()
+=head2 generate_parsed_file($file_name)
 
-Returns a hashref of attributes belonging to the graph as a whole:
+Returns nothing.
 
-So, if you call new() as new(report_forest => 1) on data/55.gv, the output will include:
+Outputs the CSV file of parsed items, if new() was called as new(parsed_file => $string).
 
-	Globals:
-	{digraph => "1", graph_id => "graph_55", strict => "1"}
+=head2 grammar()
 
-See also L</forest()> and L</nodes()>.
+Returns the L<Marpa::R2::Recognizer> object.
+
+Called by L</run()>.
+
+=head2 hashref2string($h)
+
+Returns a string representation of the hashref.
+
+=head2 increment_item_count()
+
+Returns the next value of the internal item counter.
 
 =head2 items()
 
@@ -1366,6 +1382,12 @@ The value supplied by the 'tokens' option takes preference over the 'lexed_file'
 
 'lexed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
+=head2 log($level, $s)
+
+Logs the given string $s at the given log level $level.
+
+For levels, see L<Log::Handler::Levels>.
+
 =head2 logger([$logger_object])
 
 Here, the [] indicate an optional parameter.
@@ -1402,7 +1424,15 @@ use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
 
 =head2 new()
 
+Returns a object of type GraphViz2::Marpa::Parser.
+
 See L</Constructor and Initialization> for details on the parameters accepted by L</new()>.
+
+=head2 new_item($type, $value)
+
+Adds a new item to the internal list of parsed items.
+
+At the end of the run, call L</items()> to retrieve this list.
 
 =head2 nodes()
 
@@ -1439,7 +1469,7 @@ So, if you call new() as new(report_forest => 1) on data/55.gv, the output will 
 	J. Attr: {fillcolor => "magenta", fontsize => "26", shape => "square", style => "filled"}
 	K. Attr: {fillcolor => "magenta", fontsize => "26", shape => "triangle", style => "filled"}
 
-See also L</forest()> and L</global()>.
+See also L</forest()>, L</style()> and L</type()>.
 
 =head2 output_file([$file_name])
 
@@ -1457,6 +1487,30 @@ Get or set the name of the file of parsed tokens for the parser to write. This f
 
 'parsed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
+=head2 pretty_print_forest()
+
+Returns nothing.
+
+Calls L</pretty_print_node($t, $vert_dashes)>.
+
+Called by L</print_structure()>.
+
+Only override this in a sub-class if you wish to print the forest differently.
+
+=head2 pretty_print_node($t, $vert_dashes)
+
+Returns a string.
+
+Called by L</pretty_print_forest()>.
+
+Only override this in a sub-class if you wish to print a node differently.
+
+=head2 print_structure()
+
+Called by L</run()> at the end of the run, if new() was called as new(report_forest => 1).
+
+Logs all details stored in the getters L</forest()>, L</nodes()>, L</style()> and L</type()>.
+
 =head2 renderer([$renderer_object])
 
 Here, the [] indicate an optional parameter.
@@ -1466,6 +1520,12 @@ Get or set the renderer object.
 This renderer renders the tokens output by the parser.
 
 'renderer' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
+=head2 report()
+
+Called by L</run()>.
+
+Logs the list of parsed items if new() was called as new(report_items => 1).
 
 =head2 report_forest([$Boolean])
 
@@ -1485,9 +1545,28 @@ Get or set the value which determines whether or not to log the items recognised
 
 =head2 run()
 
+Returns 0 for success and 1 for failure.
+
 This is the only method the caller needs to call. All parameters are supplied to L</new()> (or other methods).
 
-Returns 0 for success and 1 for failure.
+At the end of the run, you can call any or all of these:
+
+L</items()>, L</forest()>, L</nodes()>, L</style()> and L</type()>.
+
+If you called new() without setting any report options, you could also call:
+
+L</print_structure()> and L</report()>.
+
+=head2 style()
+
+Returns a hashref of attributes used to style the rendered graph:
+
+So, if you call new() as new(report_forest => 1) on data/55.gv, the output will include:
+
+	Style:
+	{label => "Complex Syntax Test", rankdir => "TB"}
+
+See also L</forest()>, L</nodes()> and L</type()>.
 
 =head2 tokens([$arrayrefOfLexedTokens])
 
@@ -1498,6 +1577,19 @@ Get or set the arrayref of lexed tokens to process.
 The value supplied by the 'tokens' option takes preference over the 'lexed_file' option.
 
 'tokens' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
+=head2 type()
+
+Returns a hashref of attributes describing what type of graph it is.
+
+So, if you call new() as new(report_forest => 1) on data/55.gv, the output will include:
+
+	Type:
+	{digraph => "1", graph_id => "graph_55", strict => "1"}
+
+This hashref always has the same 3 keys.
+
+See also L</forest()>, L</nodes()> and L</style()>.
 
 =head2 utils([$aUtilsObject])
 
@@ -1557,10 +1649,9 @@ Yes. Consider these 3 situations and their corresponding lexed or parsed output:
 
 =back
 
-=head2 Do the getters forest(), global() and nodes() duplicate the input file's data?
+=head2 Do the getters forest(), nodes(), style() and type() duplicate all of the input file's data?
 
-No. In particular, subgraph info is still missing, as well as info pertaining to the graph as a whole,
-e.g. it's label and size (if any).
+No. In particular, subgraph info is still missing.
 
 =head2 Why doesn't the lexer/parser handle my HTML-style labels?
 
@@ -1721,6 +1812,12 @@ L<https://rt.cpan.org/Public/Dist/Display.html?Name=GraphViz2::Marpa>.
 L<GraphViz2::Marpa> was written by Ron Savage I<E<lt>ron@savage.net.auE<gt>> in 2012.
 
 Home page: L<http://savage.net.au/index.html>.
+
+=head1 Acknowledgements
+
+The code to print the tree was adapted from L<Forest::Tree::Writer::ASCIIWithBranches>.
+
+See the source for L</pretty_print_node($t, $vert_dashes)>, which is called from L</pretty_print_forest()>.
 
 =head1 Copyright
 
