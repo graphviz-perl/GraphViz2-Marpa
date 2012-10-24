@@ -1299,6 +1299,35 @@ The value supplied by the 'tokens' option takes preference over the 'lexed_file'
 
 =head1 Methods
 
+=head2 forest()
+
+Returns an object of type L<Tree>, where the root element is not used, but the children of this root are each
+the first node in a path. Here, path means each separately specified path in the input file.
+
+Consider part of data/55.gv:
+
+	A -> B
+	...
+	B -> C [color = orange penwidth = 5]
+	...
+	C -> D [arrowtail = obox arrowhead = crow dir = both minlen = 2]
+	D -> E [arrowtail = odot arrowhead = dot dir = both minlen = 2 penwidth = 5]
+
+So, even though Graphviz will link A -> B -> C -> D when drawring the image, forest() returns 4 separate paths. So, if you call new() as
+new(report_forest => 1), the output will include:
+
+	Edges:
+	root. Edge attrs: {}
+	   |---A. Edge attrs: {compass_point => "", port_id => ""}
+	   |   |---B. Edge attrs: {compass_point => "", port_id => ""}
+	   |---B. Edge attrs: {compass_point => "", port_id => ""}
+	   |   |---C. Edge attrs: {compass_point => "", port_id => ""}
+	   |---C. Edge attrs: {compass_point => "", port_id => ""}
+	   |   |---D. Edge attrs: {compass_point => "", port_id => ""}
+	   |---D. Edge attrs: {compass_point => "", port_id => ""}
+	   |   |---E. Edge attrs: {compass_point => "", port_id => ""}
+	...
+
 =head2 items()
 
 Returns an arrayref of parsed tokens. Each element of this arrayref is a hashref. See L</How is the parsed graph stored in RAM?> for details.

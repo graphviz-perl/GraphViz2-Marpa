@@ -827,7 +827,7 @@ See also the L</description()> method.
 
 =head2 items()
 
-Returns an arrayref of lexed tokens. Each element of this arrayref is a hashref. See L</How is the lexed graph stored in RAM?> for details.
+Returns an arrayref of lexed tokens. Each element of this arrayref is a hashref.
 
 These lexed tokens do I<not> bear a one-to-one relationship to the parsed tokens returned by the parser's L<items()/GraphViz2::Marpa::Parser> method.
 However, they are (necessarily) very similar.
@@ -868,6 +868,153 @@ Usage:
 	{
 		my(@items) = @{$lexer -> items};
 	}
+
+See also L</How is the lexed graph stored in RAM?> in the L</FAQ> below.
+And see any data/*.lex file for sample data.
+
+And now for a real graph:
+
+Input: data/15.gv:
+
+	digraph graph_15
+	{
+		node
+		[
+			shape = "record"
+		]
+		edge
+		[
+			color = "red"
+			penwidth = 5
+		]
+		node_15_1
+		[
+			label = "<f0> left|<f1> middle|<f2> right"
+		]
+		node_15_2
+		[
+			label = "<f0> one|<f1> two"
+		]
+		node_15_1:f0 -> node_15_2:f1
+		[
+			arrowhead = "obox"
+		]
+	}
+
+Output: data/15.lex:
+
+	"type","value"
+	strict              , "no"
+	digraph             , "yes"
+	graph_id            , "graph_15"
+	start_scope         , "1"
+	class_id            , "node"
+	open_bracket        , "["
+	attribute_id        , "shape"
+	equals              , "="
+	attribute_value     , "record"
+	close_bracket       , "]"
+	class_id            , "edge"
+	open_bracket        , "["
+	attribute_id        , "color"
+	equals              , "="
+	attribute_value     , "red"
+	attribute_id        , "penwidth"
+	equals              , "="
+	attribute_value     , "5"
+	close_bracket       , "]"
+	node_id             , "node_15_1"
+	open_bracket        , "["
+	attribute_id        , "label"
+	equals              , "="
+	attribute_value     , "<f0> left|<f1> middle|<f2> right"
+	close_bracket       , "]"
+	node_id             , "node_15_2"
+	open_bracket        , "["
+	attribute_id        , "label"
+	equals              , "="
+	attribute_value     , "<f0> one|<f1> two"
+	close_bracket       , "]"
+	node_id             , "node_15_1"
+	open_bracket        , "["
+	attribute_id        , "port_id"
+	equals              , "="
+	attribute_value     , "f0"
+	close_bracket       , "]"
+	edge_id             , "->"
+	node_id             , "node_15_2"
+	open_bracket        , "["
+	attribute_id        , "port_id"
+	equals              , "="
+	attribute_value     , "f1"
+	attribute_id        , "arrowhead"
+	equals              , "="
+	attribute_value     , "obox"
+	close_bracket       , "]"
+	end_scope           , "1"
+
+Note the pair:
+
+	open_bracket        , "["
+	...
+	close_bracket       , "]"
+
+They start and end each set of attributes, which are of 3 types:
+
+=over 4
+
+=item o Node
+
+Node attributes can be specified both at the class (all subsequent nodes) level, or for a specific node.
+
+Class:
+
+	node
+	[
+		shape = "record" # Attribute.
+	]
+
+Node:
+
+	node_15_1
+	[
+		label = "<f0> left|<f1> middle|<f2> right" # Attribute.
+	]
+
+Edge:
+
+	node_15_1:f0 -> node_15_2:f1 # Attributes.
+	[
+		arrowhead = "obox"
+	]
+
+=item o Edge
+
+Edge attributes can be specified both at the class level and after the second of 2 nodes on an edge.
+
+	edge
+	[
+		color = "red" # Attribute.
+		penwidth = 5  # Attribute.
+	]
+
+and
+
+	node_15_1:f0 -> node_15_2:f1
+	[
+		arrowhead = "obox" # Attribute.
+	]
+
+=item o Port/compass point
+
+These only ever occur for one or both of the 2 nodes on an edge, i.e. not at the class or node level:
+
+	node_15_1:f0 -> node_15_2:f1 # Attributes.
+	[
+		arrowhead = "obox"
+	]
+
+=back
 
 =head2 lexed_file([$lex_file_name])
 
@@ -1069,7 +1216,8 @@ In L<GraphViz2::Marpa::Lexer::DFA>.
 
 =head2 How is the lexed graph stored in RAM?
 
-Items are stored in an arrayref. This arrayref is available via the L</items()> method.
+Items are stored in an arrayref. This arrayref is available via the L</items()> method, which also has a
+long explanation of this subject.
 
 These items have the same format as the arrayref of items returned by the items() method in
 L<GraphViz2::Marpa::Parser>, and the same as in L<GraphViz2::Marpa::Lexer::DFA>.
@@ -1100,7 +1248,7 @@ edge, graph, or node, to specify attributes which apply to all such cases. So:
 
 	node [shape = Msquare]
 
-means all nodes after this point in the input stream default to having a square shape. Of course this
+means all nodes after this point in the input stream default to having an Msquare shape. Of course this
 can be overidden by another such line, or by any specific node having a shape as part of its list of
 attributes.
 
@@ -1109,12 +1257,6 @@ See data/51.* for sample code.
 =item o close_bracket => ']'
 
 This indicates the end of a set of attributes.
-
-=item o colon => ':'
-
-This separates nodes from ports and ports from compass points.
-
-=item o compass_point => $id
 
 =item o digraph => $yes_no
 
@@ -1140,11 +1282,23 @@ $subgraph_count increments by 1 each time 'subgraph' is detected in the input st
 
 This separates 'attribute_id' from 'attribute_value'.
 
+The parser does not output this token.
+
 =item o graph_id => $id
 
 This indicates both the graph's $id and each subgraph's $id.
 
-For graphs and subgraphs, the $id may be '' (the empty string).
+For graphs and subgraphs, the $id may be '' (the empty string), and in a case such as:
+
+	{
+		rank = same
+		A
+		B
+	}
+
+The $id will definitely be ''.
+
+See data/18.gv, data/19.gv, data/53.gv and data/55.gv.
 
 =item o node_id => $id
 
@@ -1157,8 +1311,6 @@ $brace_count increments by 1 each time '{' is detected in the input string, and 
 =item o open_bracket => '['
 
 This indicates the start of a set of attributes.
-
-=item o port_id => $id
 
 =item o start_subgraph => $subgraph_count
 
