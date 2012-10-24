@@ -103,19 +103,31 @@ sub _build_attribute_list
 
 sub _build_node
 {
-	my($self, $items, $i, $node, $class_attribute, $valid_edge_attribute) = @_;
+	my($self, $items, $i, $node, $class_attribute, $attribute) = @_;
+	my($value) = $$items[$i]{value};
 
-	$self -> log(notice => "Enter edge attr: " . $self -> hashref2string($$class_attribute{edge}) );
+	$$node{$value}            = $self -> _init_node($$class_attribute{node}) if (! $$node{$value});
+	$$node{$value}{attribute} = {%{$$node{$value}{attribute} }, %$attribute};
+	$$node{$value}{attribute} = {%{$$class_attribute{node} }, %{$$node{$value}{attribute} } } if ($$node{$value}{fixed} == 0);
+	$$node{$value}{fixed}     = 1;
+
+} # End of _build_node.
+
+# -----------------------------------------------
+
+sub _build_path
+{
+	my($self, $items, $i, $node, $class_attribute) = @_;
+
+	$self -> log(notice => "Start node $$items[$i]{value}");
 
 	# Loop over nodes, which may have attributes,
 	# and may be part of a path.
 
-	my($parent)       = $self -> forest;
-	my($path_present) = 0;
+	my($parent) = $self -> forest;
 
 	my($attribute);
 	my($child);
-	my(%edge_attribute);
 	my(@node);
 	my(%port_attribute);
 	my($type);
@@ -123,9 +135,8 @@ sub _build_node
 
 	while ($$items[$i]{type} eq 'node_id')
 	{
-		$path_present ||= $self -> _edge_follows_node($items, $i + 1);
-		$type         = $$items[$i]{type};
-		$value        = $$items[$i]{value};
+		$type  = $$items[$i]{type};
+		$value = $$items[$i]{value};
 
 		# The attributes might be:
 		# o for a stand-alone node, or
@@ -133,39 +144,22 @@ sub _build_node
 		# o for the previous case and for the edge.
 
 		($i, $attribute) = $self -> _build_attribute_list($items, $i);
+		%port_attribute  = ();
 
 		for (qw/compass_point port_id/)
 		{
 			$port_attribute{$_} = delete $$attribute{$_} if (defined $$attribute{$_});
 		}
 
-		for (@$valid_edge_attribute)
-		{
-			$edge_attribute{$_} = delete $$attribute{$_} if (defined $$attribute{$_});
-		}
+		$self -> _build_node($items, $i, $node, $class_attribute, $attribute);
 
-		#$self -> log(notice => "Node: $value. Attr: " . $self -> hashref2string($attribute) );
-		#$self -> log(notice => "Port: Attr: " . $self -> hashref2string(\%port_attribute) );
-		#$self -> log(notice => "Edge: Attr: " . $self -> hashref2string(\%edge_attribute) );
+		$child = Tree -> new($value);
 
-		# If the node has not been explicitly declared,
-		# (fixed == 0), finally add in the class attributes.
+		$child -> meta({%port_attribute});
+		$parent -> add_child($child);
+		$parent -> meta({%{$parent -> meta}, %{$$class_attribute{edge} }, %$attribute}) if (! $parent -> is_root);
 
-		$$node{$value}            = $self -> _init_node($$class_attribute{node}) if (! $$node{$value});
-		$$node{$value}{attribute} = {%{$$node{$value}{attribute} }, %$attribute};
-		$$node{$value}{attribute} = {%{$$class_attribute{node} }, %{$$node{$value}{attribute} } } if ($$node{$value}{fixed} == 0);
-		$$node{$value}{fixed}     = 1;
-
-		if ($path_present)
-		{
-			$child = Tree -> new($value);
-
-			$child -> meta({%port_attribute});
-			$parent -> add_child($child);
-			$parent -> meta({%{$parent -> meta}, %{$$class_attribute{edge} }, %edge_attribute}) if (! $parent -> is_root);
-
-			$parent = $child;
-		}
+		$parent = $child;
 
 		$i++;
 
@@ -177,8 +171,7 @@ sub _build_node
 		}
 		else
 		{
-			$parent       = $self -> forest;
-			$path_present = 0;
+			last;
 		}
 	}
 
@@ -189,7 +182,7 @@ sub _build_node
 
 	return $i;
 
-} # End of _build_node.
+} # End of _build_path.
 
 # -----------------------------------------------
 # Outputs:
@@ -210,16 +203,13 @@ sub _build_tree
 	my($i)      = - 1;
 	my($items)  = $self -> items;
 
-	my($attribute, %attribute);
+	my($attribute);
 	my($class_attribute, %class_attribute);
 	my($graph_id);
-	my($j);
-	my($node, $node_set, %node);
+	my(%node);
 	my(@stack);
 	my($type);
-	my(@valid_edge_attribute, $value);
-
-	push @valid_edge_attribute, $_ for (keys %{${$self -> valid_attributes}{edge} });
+	my($value);
 
 	$class_attribute{$_} = {} for (@class);
 
@@ -230,7 +220,7 @@ sub _build_tree
 		$type  = $$items[$i]{type};
 		$value = $$items[$i]{value};
 
-		$self -> log(notice => "$i: $type => $value");
+		$self -> log(notice => "\t$i: $type => $value");
 
 		if ($type eq 'class_id')
 		{
@@ -261,9 +251,18 @@ sub _build_tree
 		}
 		elsif ($type eq 'node_id')
 		{
-			# This code gobbles up edges as well as nodes.
+			if ($self -> _edge_follows_node($items, $i) )
+			{
+				# This code gobbles up edges as well as nodes.
 
-			$i = $self -> _build_node($items, $i, \%node, \%class_attribute, \@valid_edge_attribute);
+				$i = $self -> _build_path($items, $i, \%node, \%class_attribute);
+			}
+			else
+			{
+				($i, $attribute) = $self -> _build_attribute_list($items, $i);
+
+				$self -> _build_node($items, $i, \%node, \%class_attribute, $attribute);
+			}
 		}
 		elsif ($type eq 'port_id')
 		{
@@ -359,11 +358,14 @@ sub _edge_follows_node
 	my($edge_found)  = 0;
 	my(%node_suffix) =
 	(
+		node_id         => 1,
 		start_attribute => 1,
-		attribute_id    => 1, # compass_point or port_id.
+		attribute_id    => 1, # 'compass_point' or 'port_id'.
 		attribute_value => 1, # compass point id or port id.
 		end_attribute   => 1,
 	);
+
+	my($node) = $$items[$i]{value};
 
 	while (1)
 	{
@@ -386,6 +388,8 @@ sub _edge_follows_node
 
 		$i++;
 	}
+
+	$self -> log(notice => "Node $node. Edge found: $edge_found");
 
 	return $edge_found;
 
