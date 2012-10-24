@@ -101,8 +101,7 @@ sub _build_attribute_list
 
 sub _build_node
 {
-	my($self, $items, $i, $node, $class_attribute, $attribute) = @_;
-	my($value) = $$items[$i]{value};
+	my($self, $items, $value, $node, $class_attribute, $attribute) = @_;
 
 	$$node{$value}            = $self -> _init_node($$class_attribute{node}) if (! $$node{$value});
 	$$node{$value}{attribute} = {%{$$node{$value}{attribute} }, %$attribute};
@@ -110,75 +109,6 @@ sub _build_node
 	$$node{$value}{fixed}     = 1;
 
 } # End of _build_node.
-
-# -----------------------------------------------
-
-sub _build_path
-{
-	my($self, $items, $i, $node, $class_attribute) = @_;
-
-	# Loop over nodes, which may have attributes,
-	# and may be part of a path.
-
-	my($parent) = $self -> forest;
-
-	my($attribute);
-	my($child);
-	my(@node);
-	my(%port_attribute);
-	my($type);
-	my($value);
-
-	while ( ($i <= $#$items) && ($$items[$i]{type} eq 'node_id') )
-	{
-		$type  = $$items[$i]{type};
-		$value = $$items[$i]{value};
-
-		# The attributes might be:
-		# o for a stand-alone node, or
-		# o for a node's port and compass point within a path, or
-		# o for the previous case and for the edge.
-
-		($i, $attribute) = $self -> _build_attribute_list($items, $i);
-		%port_attribute  = ();
-
-		for (qw/compass_point port_id/)
-		{
-			$port_attribute{$_} = delete $$attribute{$_} if (defined $$attribute{$_});
-		}
-
-		$self -> _build_node($items, $i, $node, $class_attribute, $attribute);
-
-		$child = Tree -> new($value);
-
-		$child -> meta({%port_attribute});
-		$parent -> add_child($child);
-		$parent -> meta({%{$parent -> meta}, %{$$class_attribute{edge} }, %$attribute}) if (! $parent -> is_root);
-
-		$parent = $child;
-
-		$i++;
-
-		if ( ($i <= $#$items) && ($$items[$i]{type} eq 'edge_id') )
-		{
-			# Step past the edge to the next node in the path.
-
-			$i++;
-		}
-		else
-		{
-			last;
-		}
-	}
-
-	# Step back past the item which caused us to exit the loop,
-	# because the calling code will do $i++ at the top of its loop.
-
-	$i--;
-
-	return $i;
-
-} # End of _build_path.
 
 # -----------------------------------------------
 # Outputs:
@@ -198,11 +128,14 @@ sub _build_tree
 	my($global) = {};
 	my($i)      = - 1;
 	my($items)  = $self -> items;
+	my($parent) = $self -> forest;
 
 	my($attribute);
-	my($class_attribute, %class_attribute);
+	my($class_attribute, %class_attribute, $child);
+	my($edge_follows);
 	my($graph_id, $graph_attribute);
 	my(%node);
+	my(%port_attribute, $previous_type);
 	my(@stack);
 	my($type);
 	my($value);
@@ -245,18 +178,31 @@ sub _build_tree
 		}
 		elsif ($type eq 'node_id')
 		{
-			if ($self -> _edge_follows_node($items, $i + 1) )
-			{
-				# This code gobbles up edges as well as nodes.
+			$previous_type   = $$items[$i - 1]{type};
+			($i, $attribute) = $self -> _build_attribute_list($items, $i);
+			$edge_follows    = $self -> _edge_follows_node($items, $i + 1);
+			%port_attribute  = ();
 
-				$i = $self -> _build_path($items, $i, \%node, \%class_attribute);
-			}
-			else
+			for (qw/compass_point port_id/)
 			{
-				($i, $attribute) = $self -> _build_attribute_list($items, $i);
-
-				$self -> _build_node($items, $i, \%node, \%class_attribute, $attribute);
+				$port_attribute{$_} = delete $$attribute{$_} if (defined $$attribute{$_});
 			}
+
+			$self -> _build_node($items, $value, \%node, \%class_attribute, $attribute);
+
+			if ( ($previous_type eq 'edge_id') || $edge_follows)
+			{
+				$child = Tree -> new($value);
+
+				$child -> meta({%port_attribute});
+				$parent -> add_child($child);
+
+				$parent -> meta({%{$parent -> meta}, %{$class_attribute{edge} }, %$attribute}) if (! $parent -> is_root);
+
+				$parent = $child;
+			}
+
+			$parent = $self -> forest if (! $edge_follows);
 		}
 		elsif ($type eq 'port_id')
 		{
