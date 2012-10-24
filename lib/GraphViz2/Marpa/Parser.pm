@@ -32,7 +32,7 @@ fieldhash my %lexed_file    => 'lexed_file';
 fieldhash my %logger        => 'logger';
 fieldhash my %maxlevel      => 'maxlevel';
 fieldhash my %minlevel      => 'minlevel';
-fieldhash my %node          => 'node';
+fieldhash my %nodes         => 'nodes';
 fieldhash my %output_file   => 'output_file';
 fieldhash my %parsed_file   => 'parsed_file';
 fieldhash my %renderer      => 'renderer';
@@ -257,7 +257,7 @@ sub _build_tree
 
 	$self -> forest -> meta($class_attribute{graph});
 	$self -> global($global);
-	$self -> node(\%node);
+	$self -> nodes(\%node);
 
 } # End of _build_tree.
 
@@ -789,7 +789,7 @@ sub _init
 	$$arg{logger}        = defined($$arg{logger}) ? $$arg{logger} : undef; # Caller can set.
 	$$arg{maxlevel}      ||= 'notice'; # Caller can set.
 	$$arg{minlevel}      ||= 'error';  # Caller can set.
-	$$arg{node}          = {};
+	$$arg{nodes}         = {};
 	$$arg{output_file}   ||= '';       # Caller can set.
 	$$arg{parsed_file}   ||= '';       # Caller can set.
 	$$arg{renderer}      = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
@@ -966,7 +966,7 @@ sub print_forest
 	$self -> log(notice => $self -> hashref2string($self -> global) );
 	$self -> log(notice => 'Nodes:');
 
-	my($node) = $self -> node;
+	my($node) = $self -> nodes;
 
 	for my $name (sort keys %$node)
 	{
@@ -1313,8 +1313,8 @@ Consider part of data/55.gv:
 	C -> D [arrowtail = obox arrowhead = crow dir = both minlen = 2]
 	D -> E [arrowtail = odot arrowhead = dot dir = both minlen = 2 penwidth = 5]
 
-So, even though Graphviz will link A -> B -> C -> D when drawring the image, forest() returns 4 separate paths. So, if you call new() as
-new(report_forest => 1), the output will include:
+But then, even though Graphviz will link A -> B -> C -> D when drawing the image, I<forest()> returns 4 separate
+paths. So, if you call new() as new(report_forest => 1) on data/55.gv, the output will include:
 
 	Edges:
 	root. Edge attrs: {}
@@ -1327,6 +1327,21 @@ new(report_forest => 1), the output will include:
 	   |---D. Edge attrs: {compass_point => "", port_id => ""}
 	   |   |---E. Edge attrs: {compass_point => "", port_id => ""}
 	...
+
+This structure is used by L<GraphViz2::Marpa::PathUtils/find_clusters()>.
+
+See also L</global()> and L</nodes()>.
+
+=head2 global()
+
+Returns a hashref of attributes belonging to the graph as a whole:
+
+So, if you call new() as new(report_forest => 1) on data/55.gv, the output will include:
+
+	Globals:
+	{digraph => "1", graph_id => "graph_55", strict => "1"}
+
+See also L</forest()> and L</nodes()>.
 
 =head2 items()
 
@@ -1414,6 +1429,43 @@ use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
 =head2 new()
 
 See L</Constructor and Initialization> for details on the parameters accepted by L</new()>.
+
+=head2 nodes()
+
+Returns a hashref of nodes, keyed by node name, with the value of each entry being a hashref of node
+attributes. These attributes include those specified at the class level, with (from data/55.gv):
+
+	node [shape = house]
+
+And those specified for nodes with explicitly defined attributes:
+
+	A [color = blue]
+
+But, be warned, Graphviz does not apply class-level attributes to nodes with explicitly declared attributes,
+but only to nodes defined with no attributes, or declared implicitly by appearing in the declaration of an edge:
+
+	C
+	...
+	H -> I
+
+The graph of data/55.gv then, is expected to have just these 3 nodes in the shape of houses.
+
+So, if you call new() as new(report_forest => 1) on data/55.gv, the output will include:
+
+	Nodes:
+	A. Attr: {color => "blue"}
+	B. Attr: {color => "mediumseagreen", shape => "square"}
+	C. Attr: {color => "orange", penwidth => "5"}
+	D. Attr: {arrowhead => "crow", arrowtail => "obox", dir => "both", minlen => "2"}
+	E. Attr: {arrowhead => "dot", arrowtail => "odot", dir => "both", minlen => "2", penwidth => "5"}
+	F. Attr: {color => "darkorchid", fillcolor => "yellow", penwidth => "5", shape => "hexagon"}
+	G. Attr: {color => "crimson", fillcolor => "darkorchid", penwidth => "7", shape => "pentagon"}
+	H. Attr: {}
+	I. Attr: {}
+	J. Attr: {color => "yellow", fillcolor => "magenta", fontsize => "26", shape => "square"}
+	K. Attr: {fillcolor => "magenta", fontsize => "26", shape => "triangle"}
+
+See also L</forest()> and L</global()>.
 
 =head2 output_file([$file_name])
 
