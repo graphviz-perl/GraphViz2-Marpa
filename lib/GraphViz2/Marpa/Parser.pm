@@ -102,10 +102,10 @@ sub _build_node
 {
 	my($self, $items, $value, $node, $class_attribute, $attribute) = @_;
 
-	$$node{$value}            = $self -> _init_node($$class_attribute{node}) if (! $$node{$value});
-	$$node{$value}{attribute} = {%{$$node{$value}{attribute} }, %$attribute};
-	$$node{$value}{attribute} = {%{$$class_attribute{node} }, %{$$node{$value}{attribute} } } if ($$node{$value}{fixed} == 0);
-	$$node{$value}{fixed}     = 1;
+	$$node{$value}             = $self -> _init_node($$class_attribute{node}) if (! $$node{$value});
+	$$node{$value}{attributes} = {%{$$node{$value}{attributes} }, %$attribute};
+	$$node{$value}{attributes} = {%{$$class_attribute{node} }, %{$$node{$value}{attributes} } } if ($$node{$value}{fixed} == 0);
+	$$node{$value}{fixed}      = 1;
 
 } # End of _build_node.
 
@@ -935,7 +935,7 @@ sub print_structure
 
 	for my $name (sort keys %$node)
 	{
-		$self -> log(notice => "$name. Attr: " . $self -> hashref2string($$node{$name}{attribute}) );
+		$self -> log(notice => "$name. Attr: " . $self -> hashref2string($$node{$name}{attributes}) );
 	}
 
 	$self -> log(notice => 'Edges:');
@@ -1463,8 +1463,14 @@ At the end of the run, call L</items()> to retrieve this list.
 
 =head2 nodes()
 
-Returns a hashref of all nodes, keyed by node name, with the value of each entry being a hashref of node
-attributes. These attributes include those specified at the class level, with (from data/55.gv):
+Returns a hashref of all nodes, keyed by node name, with the value of each entry being a hashref of node-specific
+data. The keys to this hashref are:
+
+=over 4
+
+=item o attributes
+
+These attributes include those specified at the class level, with (from data/55.gv):
 
 	node [shape = house]
 
@@ -1478,6 +1484,8 @@ but only to nodes defined with no attributes, or declared implicitly by appearin
 	C
 	...
 	H -> I
+
+See I<fixed> just below.
 
 The graph of data/55.gv then, is expected to have just these 3 nodes in the shape of houses.
 
@@ -1495,6 +1503,12 @@ So, if you call new() as new(report_forest => 1) on data/55.gv, the output will 
 	I. Attr: {fillcolor => "lightblue", fontsize => "20", shape => "house", style => "filled"}
 	J. Attr: {fillcolor => "magenta", fontsize => "26", shape => "square", style => "filled"}
 	K. Attr: {fillcolor => "magenta", fontsize => "26", shape => "triangle", style => "filled"}
+
+=item o fixed
+
+This is a Boolean which records whether or not Graphviz will apply class-level attributes to nodes.
+
+=back
 
 See also L</forest()>, L</style()> and L</type()>.
 
