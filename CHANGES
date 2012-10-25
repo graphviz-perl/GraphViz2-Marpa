@@ -17,6 +17,9 @@ Revision history for Perl extension GraphViz2::Marpa.
 	- Add option report_forest for new() and as a mutator. Calling new(report_forest => 1) prints all the
 		information provided with those 4 new getters.
 	- Expand the POD for the lexer and the parse giving details on input and output stream content.
+	- Move the template for the demo from html/graphviz2.marpa.index.tx to htdocs/assets/templates/graphviz/marpa/
+		where it should have been all along. Patch scripts/generate.index.pl to match.
+	- Add cache control metadata to that template.
 
 1.05  Tue Oct 16 09:49:00 2012
 	- Fix a bug in the lexer where it used to combine multiple lines in the input file by, basically, using

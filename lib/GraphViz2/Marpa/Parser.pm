@@ -307,12 +307,8 @@ sub _edge_follows_node
 
 	my($node) = $$items[$i]{value};
 
-	while (1)
+	while ($i <= $#$items)
 	{
-		# Exit if we run out of items.
-
-		last if ($i > $#$items);
-
 		# Exit if we find an edge.
 
 		if ($$items[$i]{type} eq 'edge_id')

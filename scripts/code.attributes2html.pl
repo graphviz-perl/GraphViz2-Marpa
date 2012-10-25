@@ -21,8 +21,8 @@ my($code_file_name)  = File::Spec -> catfile($data_dir_name, 'code.attributes.cs
 my($code_attributes) = GraphViz2::Marpa::Utils -> new -> read_csv_file($code_file_name);
 my($templater)       = Text::Xslate -> new
 (
- input_layer => '',
- path        => File::Spec -> catdir('htdocs', 'assets', 'templates', 'graphviz2', 'marpa'),
+	input_layer => '',
+	path        => File::Spec -> catdir('htdocs', 'assets', 'templates', 'graphviz2', 'marpa'),
 );
 
 my($column, @column);

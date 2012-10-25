@@ -52,8 +52,8 @@ for my $file_name (@dot_file)
 
 my($templater) = Text::Xslate -> new
 (
-  input_layer => '',
-  path        => 'html',
+	input_layer => '',
+	path        => File::Spec -> catdir('htdocs', 'assets', 'templates', 'graphviz2', 'marpa'),
 );
 my($count) = 0;
 my($index) = $templater -> render
