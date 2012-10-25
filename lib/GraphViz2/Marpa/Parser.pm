@@ -802,8 +802,8 @@ sub _init_node
 
 	return
 	{
-		attribute => {%$class_attribute},
-		fixed     => 0,
+		attributes => {%$class_attribute},
+		fixed      => 0,
 	};
 
 } # End of _init_node.
