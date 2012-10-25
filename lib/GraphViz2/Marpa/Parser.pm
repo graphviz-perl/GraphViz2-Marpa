@@ -1273,7 +1273,7 @@ Returns a string.
 
 Called by L</pretty_print_node($node)>.
 
-Only override this in a sub-class if you wish to print a node differently.
+Only override this in a sub-class if you wish to log a node in a different format.
 
 =head2 forest()
 
@@ -1289,8 +1289,8 @@ Consider part of data/55.gv:
 	C -> D [arrowtail = obox arrowhead = crow dir = both minlen = 2]
 	D -> E [arrowtail = odot arrowhead = dot dir = both minlen = 2 penwidth = 5]
 
-But then, even though Graphviz will link A -> B -> C -> D when drawing the image, I<forest()> returns 4 separate
-paths. So, if you call new() as new(report_forest => 1) on data/55.gv, the output will include:
+Even though Graphviz will link A -> B -> C -> D when drawing the image, I<forest()> returns 4 separate
+paths. If you call new() as new(report_forest => 1) on data/55.gv, the output will include:
 
 	Edges:
 	root. Edge attrs: {}
@@ -1302,12 +1302,27 @@ paths. So, if you call new() as new(report_forest => 1) on data/55.gv, the outpu
 	   |   |---D. Edge attrs: {}
 	   |---D. Edge attrs: {arrowhead => "dot", arrowtail => "odot", color => "purple", dir => "both", minlen => "2", penwidth => "5"}
 	   |   |---E. Edge attrs: {}
-	   |---F. Edge attrs: {color => "crimson", penwidth => "7"}
-	   |   |---G. Edge attrs: {}
-	   |---H. Edge attrs: {color => "purple"}
-	   |   |---I. Edge attrs: {}
-	   |---J. Edge attrs: {color => "yellow"}
-	   |   |---K. Edge attrs: {}
+	...
+
+This says:
+
+=over 4
+
+=item o Each path starts from a child of the root
+
+=item o The attributes of an edge are stored in the parent of the 2 nodes making up each edge's segment
+
+=back
+
+If the last path was:
+
+	D -> E -> F [arrowtail = odot arrowhead = dot dir = both minlen = 2 penwidth = 5]
+
+Then the output would be:
+
+	   |---D. Edge attrs: {arrowhead => "dot", arrowtail => "odot", color => "purple", dir => "both", minlen => "2", penwidth => "5"}
+	   |   |---E. Edge attrs: {}
+	   |       |---F. Edge attrs: {}
 
 This structure is used by L<GraphViz2::Marpa::PathUtils/find_clusters()>.
 
@@ -1436,7 +1451,7 @@ At the end of the run, call L</items()> to retrieve this list.
 
 =head2 nodes()
 
-Returns a hashref of nodes, keyed by node name, with the value of each entry being a hashref of node
+Returns a hashref of all nodes, keyed by node name, with the value of each entry being a hashref of node
 attributes. These attributes include those specified at the class level, with (from data/55.gv):
 
 	node [shape = house]
@@ -1495,7 +1510,7 @@ Calls L</pretty_print_node($t, $vert_dashes)>.
 
 Called by L</print_structure()>.
 
-Only override this in a sub-class if you wish to print the forest differently.
+Only override this in a sub-class if you wish to log the forest in a different format.
 
 =head2 pretty_print_node($t, $vert_dashes)
 
@@ -1503,9 +1518,11 @@ Returns a string.
 
 Called by L</pretty_print_forest()>.
 
-Only override this in a sub-class if you wish to print a node differently.
+Only override this in a sub-class if you wish to log a node in a different format.
 
 =head2 print_structure()
+
+Calls L</pretty_print_forest()>.
 
 Called by L</run()> at the end of the run, if new() was called as new(report_forest => 1).
 
