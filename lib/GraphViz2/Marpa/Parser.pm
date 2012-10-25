@@ -3,8 +3,6 @@ package GraphViz2::Marpa::Parser;
 use strict;
 use warnings;
 
-use Data::Dumper::Concise; # For Dumper().
-
 use GraphViz2::Marpa::Renderer::GraphViz2;
 use GraphViz2::Marpa::Utils;
 
