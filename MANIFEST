@@ -350,6 +350,7 @@ data/default.stt.csv
 data/default.stt.ods
 data/Marpa.Grammar.dat
 htdocs/assets/templates/graphviz2/marpa/code.attributes.tx
+htdocs/assets/templates/graphviz2/marpa/graphviz2.marpa.index.tx
 htdocs/assets/templates/graphviz2/marpa/rainbow.page.tx
 htdocs/assets/templates/graphviz2/marpa/rainbow.row.tx
 htdocs/assets/templates/graphviz2/marpa/rainbow.table.tx
@@ -442,7 +443,6 @@ html/90.tree.svg
 html/90.try.svg
 html/code.attributes.html
 html/default.stt.html
-html/graphviz2.marpa.index.tx
 html/index.html
 html/Marpa.Grammar.svg
 lib/GraphViz2/Marpa.pm
