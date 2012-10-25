@@ -324,9 +324,35 @@ Convert all data/*.gv files to data/*.lex and data/*.parse and data/*.rend using
 
 Run the lexer, and then run the parser on the output of the lexer. Try running with -h.
 
+=item o g2m.sh
+
+Simplifies running g2m.pl.
+
+=item o generate.demo.sh
+
+Runs dot2rend.pl, rend2svg.pl and generate.index.pl.
+
+Then it copies html/*.html and html/*.svg to my web server's doc root, $DR/Perl-modules/html/graphviz2.marpa/.
+
 =item o generate.index.pl
 
 Generates html/index.html from data/*.gv and html/*.svg.
+
+=item o lex.1.sh
+
+Simplifies running lex.sh.
+
+=item o lex.parse.sh
+
+Simplifies running g2m.sh, and ensures the *.svg version of the tested data file is up-to-date.
+
+=item o lex.pl
+
+Run the lexer. Try running with -h.
+
+=item o lex.sh
+
+Simplifies running lex.pl.
 
 =item o lex2parse.pl
 
@@ -336,29 +362,46 @@ Convert all data/*.lex to data/*.parse using parse.pl.
 
 Convert all data/*.lex to data/*.parse and data/*.rend using parse.pl.
 
-=item o lex.pl
-
-Run the lexer. Try running with -h.
-
 =item o marpa.grammar2svg.pl
 
-I extracted the L<Marpa::XS> grammar from Parser.pm and saved it as data/Marpa.Grammar.dat. The program coverts it into html/Marpa.Grammar.svg.
+I extracted the L<Marpa::XS> grammar from Parser.pm and saved it as data/Marpa.Grammar.dat.
+The program coverts it into html/Marpa.Grammar.svg.
 
-=item o parse2rend.pl
+=item o parse.1.sh
 
-Convert all data/*.parse to data/*.rend using rend.pl.
+Simplifies running parse.sh.
 
 =item o parse.pl
 
 Run the parser. Try running with -h.
 
-=item o rend2svg.pl
+=item o parse.sh
 
-Convert all data/*.rend to html/*.svg using dot.
+Simplifies running parse.pl.
+
+=item o parse2rend.pl
+
+Convert all data/*.parse to data/*.rend using rend.pl.
+
+=item o pod2html.sh
+
+Converts all *.pm files to *.html, and copies them in my web server's dir structure.
+
+=item o rend.1.sh
+
+Simplifies running read.sh.
 
 =item o rend.pl Try running with -h.
 
 Run the default renderer.
+
+=item o rend.sh
+
+Simplifies running rend.pl.
+
+=item o rend2svg.pl
+
+Convert all data/*.rend to html/*.svg using dot.
 
 =item o stt2html.pl
 
