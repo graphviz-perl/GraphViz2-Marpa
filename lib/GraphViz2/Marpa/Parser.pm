@@ -1326,6 +1326,24 @@ Then the output would be:
 
 This structure is used by L<GraphViz2::Marpa::PathUtils/find_clusters()>.
 
+Warning: The forest of paths is faulty for graphs such as:
+
+	digraph graph_47
+	{
+		big ->
+		{
+			small
+			smaller
+			smallest
+		}
+	}
+
+The result will be:
+
+	Edges:
+	root. Edge attrs: {}
+	   |---big. Edge attrs: {}
+
 See also L</nodes()>, L</style()> and L</type()>.
 
 =head2 generate_parsed_file($file_name)
