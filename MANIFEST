@@ -208,7 +208,10 @@ data/46.gv
 data/46.lex
 data/46.parse
 data/46.rend
-data/47.gv.skip
+data/47.gv
+data/47.lex
+data/47.parse
+data/47.rend
 data/48.gv
 data/48.lex
 data/48.parse
@@ -241,7 +244,10 @@ data/55.gv
 data/55.lex
 data/55.parse
 data/55.rend
-data/90.abstract.gv.skip
+data/90.abstract.gv
+data/90.abstract.lex
+data/90.abstract.parse
+data/90.abstract.rend
 data/90.alf.gv
 data/90.alf.lex
 data/90.alf.parse
@@ -398,6 +404,7 @@ html/43.svg
 html/44.svg
 html/45.svg
 html/46.svg
+html/47.svg
 html/47.svg.skip
 html/48.svg
 html/49.svg
@@ -437,6 +444,7 @@ html/code.attributes.html
 html/default.stt.html
 html/graphviz2.marpa.index.tx
 html/index.html
+html/Marpa.Grammar.svg
 lib/GraphViz2/Marpa.pm
 lib/GraphViz2/Marpa/Lexer.pm
 lib/GraphViz2/Marpa/Lexer/DFA.pm
