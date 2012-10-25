@@ -349,7 +349,10 @@ data/code.attributes.ods
 data/default.stt.csv
 data/default.stt.ods
 data/Marpa.Grammar.dat
+htdocs/assets/templates/graphviz2/marpa/basic.column.tx
+htdocs/assets/templates/graphviz2/marpa/basic.table.tx
 htdocs/assets/templates/graphviz2/marpa/code.attributes.tx
+htdocs/assets/templates/graphviz2/marpa/fancy.table.tx
 htdocs/assets/templates/graphviz2/marpa/graphviz2.marpa.index.tx
 htdocs/assets/templates/graphviz2/marpa/rainbow.page.tx
 htdocs/assets/templates/graphviz2/marpa/rainbow.row.tx
