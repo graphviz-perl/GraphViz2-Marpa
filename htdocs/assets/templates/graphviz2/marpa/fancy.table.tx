@@ -1,5 +1,4 @@
-<h3 align="center">About</h3>
-<table align="center" cellspacing="0" cellpadding="0">
+<table align="center" cellspacing="0">
 : for $data -> $item {
 <tr>
 <!-- Left -->

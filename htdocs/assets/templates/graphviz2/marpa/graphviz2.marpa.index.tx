@@ -18,8 +18,6 @@
 
 	<p>The files with names like 90.*.gv are copies of the corresponding files *.gv from the <a href="http://www.graphviz.org/content/dot-language">Graphviz</a> distro.</p>
 
-<hr />
-
 <table border = "1">
 <tr>
   <td>Result of GraphViz2::Marpa processing *.gv</td><td>Result of dot processing the same file</td>
@@ -41,8 +39,6 @@ Dot result: Error.<br />
 </tr>
 :}
 </table>
-
-<hr />
 
 <h3 class="global_toc_text">Environment</h3>
 
