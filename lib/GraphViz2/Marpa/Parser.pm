@@ -22,7 +22,7 @@ use Text::CSV_XS;
 
 use Try::Tiny;
 
-fieldhash my %forest           => 'forest';
+fieldhash my %edges            => 'edges';
 fieldhash my %item_count       => 'item_count';
 fieldhash my %items            => 'items';
 fieldhash my %lexed_file       => 'lexed_file';
@@ -111,7 +111,7 @@ sub _build_node
 
 # -----------------------------------------------
 # Outputs:
-# o $self -> forest, an object of type Tree.
+# o $self -> edges, an object of type Tree.
 # o $self -> graph, a hashref of graph attributes.
 # o $self -> global, a hashref of (digraph => $Boolean, graph_id => $string).
 # o $self -> node, a hashref of {node => hashref of attributes}.
@@ -126,7 +126,7 @@ sub _build_tree
 	my(@class)  = qw/edge graph node/;
 	my($i)      = - 1;
 	my($items)  = $self -> items;
-	my($parent) = $self -> forest;
+	my($parent) = $self -> edges;
 	my($tipe)   = {};
 
 	my($attribute);
@@ -203,7 +203,7 @@ sub _build_tree
 				$parent = $child;
 			}
 
-			$parent = $self -> forest if (! $edge_follows);
+			$parent = $self -> edges if (! $edge_follows);
 		}
 		elsif ($type eq 'port_id')
 		{
@@ -778,7 +778,7 @@ sub increment_item_count
 sub _init
 {
 	my($self, $arg)         = @_;
-	$$arg{forest}           = Tree -> new('root');
+	$$arg{edges}            = Tree -> new('root');
 	$$arg{item_count}       = 0;
 	$$arg{items}            = Set::Array -> new;
 	$$arg{lexed_file}       ||= '';       # Caller can set.
@@ -917,7 +917,7 @@ sub pretty_print_forest
 	my(@out);
 	my(@vert_dashes);
 
-	for my $t ($self -> forest -> traverse)
+	for my $t ($self -> edges -> traverse)
 	{
 		push @out, $self -> pretty_print_node($t, \@vert_dashes);
 	}
@@ -1303,7 +1303,7 @@ Called by L</pretty_print_node($node)>.
 
 Only override this in a sub-class if you wish to log a node in a different format.
 
-=head2 forest()
+=head2 edges()
 
 Returns an object of type L<Tree>, where the root element is not used, but the children of this root are each
 the first node in a path. Here, path means each separately specified path in the input file.
@@ -1317,7 +1317,7 @@ Consider part of data/55.gv:
 	C -> D [arrowtail = obox arrowhead = crow dir = both minlen = 2]
 	D -> E [arrowtail = odot arrowhead = dot dir = both minlen = 2 penwidth = 5]
 
-Even though Graphviz will link A -> B -> C -> D when drawing the image, I<forest()> returns 4 separate
+Even though Graphviz will link A -> B -> C -> D when drawing the image, I<edges()> returns 4 separate
 paths. If you call new() as new(report_forest => 1) on data/55.gv, the output will include:
 
 	Edges:
@@ -1544,7 +1544,7 @@ This is a Boolean which records whether or not Graphviz will apply class-level a
 
 =back
 
-See also L</forest()>, L</style()> and L</type()>.
+See also L</edges()>, L</style()> and L</type()>.
 
 =head2 output_file([$file_name])
 
@@ -1586,7 +1586,7 @@ Calls L</pretty_print_forest()>.
 
 Called by L</run()> at the end of the run, if new() was called as new(report_forest => 1).
 
-Logs all details stored in the getters L</forest()>, L</nodes()>, L</style()> and L</type()>.
+Logs all details stored in the getters L</edges()>, L</nodes()>, L</style()> and L</type()>.
 
 =head2 renderer([$renderer_object])
 
@@ -1628,7 +1628,7 @@ This is the only method the caller needs to call. All parameters are supplied to
 
 At the end of the run, you can call any or all of these:
 
-L</items()>, L</forest()>, L</nodes()>, L</style()> and L</type()>.
+L</edges()>, L</items()>, L</nodes()>, L</style()> and L</type()>.
 
 If you called new() without setting any report options, you could also call:
 
@@ -1643,7 +1643,7 @@ So, if you call new() as new(report_forest => 1) on data/55.gv, the output will 
 	Style:
 	{label => "Complex Syntax Test", rankdir => "TB"}
 
-See also L</forest()>, L</nodes()> and L</type()>.
+See also L</edges()>, L</nodes()> and L</type()>.
 
 =head2 tokens([$arrayrefOfLexedTokens])
 
@@ -1666,7 +1666,7 @@ So, if you call new() as new(report_forest => 1) on data/55.gv, the output will 
 
 This hashref always has the same 3 keys.
 
-See also L</forest()>, L</nodes()> and L</style()>.
+See also L</edges()>, L</nodes()> and L</style()>.
 
 =head2 utils([$aUtilsObject])
 
@@ -1726,7 +1726,7 @@ Yes. Consider these 3 situations and their corresponding lexed or parsed output:
 
 =back
 
-=head2 Do the getters forest(), nodes(), style() and type() duplicate all of the input file's data?
+=head2 Do the getters edges(), nodes(), style() and type() duplicate all of the input file's data?
 
 No. In particular, subgraph info is still missing.
 

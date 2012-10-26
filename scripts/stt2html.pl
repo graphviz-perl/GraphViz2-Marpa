@@ -1,75 +1,63 @@
 #!/usr/bin/env perl
 
+use feature qw/say unicode_strings/;
+use open qw(:std :utf8);
 use strict;
 use warnings;
+use warnings qw(FATAL utf8);
 
-use File::Spec;
+use Getopt::Long;
 
-use GraphViz2::Marpa;
-use GraphViz2::Marpa::Utils;
+use GraphViz2::Marpa::Demo;
 
-use IO::File;
-
-use Text::CSV_XS;
-use Text::Xslate 'mark_raw';
+use Pod::Usage;
 
 # -----------------------------------------------
 
-my(@heading)       = qw/Start Accept State Event Next Entry Exit Regexp Interpretation/;
-my($data_dir_name) = 'data';
-my($stt_file_name) = File::Spec -> catfile($data_dir_name, 'default.stt.csv');
-my($stt)           = GraphViz2::Marpa::Utils -> new -> read_csv_file($stt_file_name);
-my($templater)     = Text::Xslate -> new
+my($option_parser) = Getopt::Long::Parser -> new();
+
+my(%option);
+
+if ($option_parser -> getoptions
 (
- input_layer => '',
- path        => File::Spec -> catdir('htdocs', 'assets', 'templates', 'graphviz2', 'marpa'),
-);
-
-my($column, @column);
-my(@row);
-
-for $column (@heading)
+	\%option,
+	'help',
+) )
 {
-	push @column, {td => $column};
+	pod2usage(1) if ($option{'help'});
+
+	exit GraphViz2::Marpa::Demo -> new(%option) -> generate_stt_index;
+}
+else
+{
+	pod2usage(2);
 }
 
-push @row, [@column];
+__END__
 
-for my $item (@$stt)
-{
-	@column = ();
+=pod
 
-	for $column (@heading)
-	{
-		push @column, {td => mark_raw($$item{$column} || '.')};
-	}
+=head1 NAME
 
-	push @row, [@column];
-}
+generate.stt.pl - Generate GraphViz2::Marpa's html/stt.html.
 
-@column = ();
+=head1 SYNOPSIS
 
-for $column (@heading)
-{
-	push @column, {td => $column};
-}
+generate.stt.pl [options]
 
-push @row, [@column];
+	Options:
+	-help
 
-my($table) =
-{
-	border  => 0,
-	row     => [@row],
-	size    => $#row + 1,
-	summary => 'STT',
-};
+Exit value: 0 for success, 1 for failure. Die upon error.
 
-print $templater -> render
-(
- 'stt.tx',
- {
-	 title   => 'State Transition Table for GraphViz2::Marpa::Lexer',
-	 table   => $table,
-	 version => $GraphViz2::Marpa::VERSION,
- },
-);
+=head1 OPTIONS
+
+=over 4
+
+=item o -help
+
+Print help and exit.
+
+=back
+
+=cut

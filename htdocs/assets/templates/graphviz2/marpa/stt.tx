@@ -1,6 +1,10 @@
 <html>
 <head>
-<title><: $title :></title>
+	<title><: $title :></title>
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="pragma" content="no-cache">
+	<link rel="stylesheet" type="text/css" href="<: $default_css :>">
+	<link rel="stylesheet" type="text/css" href="<: $fancy_table_css :>">
 </head>
 <body>
 

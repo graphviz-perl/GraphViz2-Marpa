@@ -26,7 +26,7 @@ if ($option_parser -> getoptions
 {
 	pod2usage(1) if ($option{'help'});
 
-	exit GraphViz2::Marpa::Demo -> new(%option) -> generate_demo;
+	exit GraphViz2::Marpa::Demo -> new(%option) -> generate_demo_index;
 }
 else
 {

@@ -1,17 +1,316 @@
 package GraphViz2::Marpa::Utils;
 
+use feature qw/say unicode_strings/;
+use open qw(:std :utf8);
 use strict;
 use warnings;
+use warnings qw(FATAL utf8);
 
-use File::Slurp; # For read_dir.
+use Config;
+
+use Date::Format; # For time2str().
+use Date::Simple;
+
+use File::Spec;
+use File::Slurp; # For read_dir() and slurp().
+
+use GraphViz2::Marpa::Config;
 
 use Hash::FieldHash ':all';
+
+use HTML::Entities::Interpolate;
 
 use IO::File;
 
 use Text::CSV_XS;
+use Text::Xslate 'mark_raw';
+
+fieldhash my %config => 'config';
 
 our $VERSION = '1.06';
+
+# -----------------------------------------------
+
+sub generate_code_attributes_csv
+{
+	my($self, $heading)  = @_;
+	my($data_dir_name)   = 'data';
+	my($code_file_name)  = File::Spec -> catfile($data_dir_name, 'code.attributes.csv');
+
+	my(@script)          = grep{/pl$/} @heading;
+	my($script_dir_name) = 'scripts';
+
+	my(@lines);
+	my(@mutators);
+	my($script_file_name);
+
+	for my $script (@script)
+	{
+		$script_file_name = File::Spec -> catfile($script_dir_name, $script);
+		@lines            = slurp($script_file_name, {chomp => 1});
+		@mutators         = grep{s/^\t'(.+)'.+/$1/; $1} @lines;
+
+		print "$script_file_name: \n";
+		print join("\n", @mutators), "\n";
+	}
+
+} # End of generate_code_attributes_csv.
+
+# -----------------------------------------------
+
+sub generate_code_attributes_index
+{
+	my($self)    = @_;
+	my(@heading) = qw/Name Usage lex.pl Lexer.pm DFA.pm parse.pl Parser.pm rend.pl g2m.pl Marpa.pm Renderer.pm/;
+
+	$self -> generate_code_attributes_csv;
+
+	return;
+
+	my($data_dir_name)   = 'data';
+	my($code_file_name)  = File::Spec -> catfile($data_dir_name, 'code.attributes.csv');
+	my($code_attributes) = $self -> read_csv_file($code_file_name);
+
+	my($column, @column);
+	my(@row);
+
+	for $column (@heading)
+	{
+		push @column, {td => $column};
+	}
+
+	push @row, [@column];
+
+	for my $item (@$code_attributes)
+	{
+		@column = ();
+
+		for $column (@heading)
+		{
+			push @column, {td => mark_raw($$item{$column} || '.')};
+		}
+
+		push @row, [@column];
+	}
+
+	@column = ();
+
+	for $column (@heading)
+	{
+		push @column, {td => $column};
+	}
+
+	push @row, [@column];
+
+	my($config) = $self -> config;
+	my($table)  =
+	{
+		border  => 0,
+		row     => [@row],
+		size    => $#row + 1,
+		summary => 'Code attributes',
+	};
+	my($templater) = Text::Xslate -> new
+	(
+		input_layer => '',
+		path        => $$config{template_path},
+	);
+	my($html_dir_name) = 'html';
+	my($file_name)     = File::Spec -> catfile($html_dir_name, 'code.attributes.html');
+
+	open(OUT, '>', $file_name);
+	print OUT $templater -> render
+	(
+	 'code.attributes.tx',
+	 {
+		 title   => 'Code and Command Line Attributes for GraphViz2::Marpa',
+		 table   => $table,
+		 version => $GraphViz2::Marpa::VERSION,
+	 },
+	);
+	close OUT;
+
+} # End of generate_code_attributes_index.
+
+# -----------------------------------------------
+
+sub generate_demo_index
+{
+	my($self)          = @_;
+	my($data_dir_name) = 'data';
+	my($html_dir_name) = 'html';
+	my($format)        = 'svg';
+	my(@dot_file)      = $self -> get_files($data_dir_name, 'gv');
+
+	my(@content);
+	my($dot_file);
+	my($image_file, %image_file);
+	my($lex_file);
+
+	for my $file_name (@dot_file)
+	{
+		$dot_file               = File::Spec -> catfile($data_dir_name, "$file_name.gv");
+		$lex_file               = File::Spec -> catfile($data_dir_name, "$file_name.lex");
+		$image_file             = File::Spec -> catfile($html_dir_name, "$file_name.$format");
+		@content                = map{$Entitize{$_} } slurp($dot_file);
+		$image_file{$file_name} =
+		{
+			image_file   => -e $image_file ? $image_file : '',
+			image_size   => -e $image_file ? -s $image_file : 0,
+			input        => $dot_file,
+			input_bytes  => 'byte' . (-s $dot_file == 1 ? '' : 's'),
+			input_size   => -s $dot_file,
+			lex_result   => -e $lex_file ? 'OK' : 'Error',
+			object_file  => "./$file_name.$format",
+			output       => -e $image_file && -s $image_file ? $image_file : '',
+			output_bytes => 'byte' . (-e $image_file && -s $image_file == 1 ? '' : 's'),
+			output_size  => -s $image_file,
+			raw          => join('<br />', @content),
+		};
+	}
+
+	my($config)    = $self -> config;
+	my($templater) = Text::Xslate -> new
+	(
+		input_layer => '',
+		path        => $$config{template_path},
+	);
+	my($count) = 0;
+	my($index) = $templater -> render
+	(
+	'graphviz2.marpa.index.tx',
+	{
+		data =>
+		[
+			map
+			{
+				{
+					count        => ++$count,
+					image_file   => mark_raw($image_file{$_}{image_file}),
+					image_size   => $image_file{$_}{image_size},
+					input        => mark_raw($image_file{$_}{input}),
+					input_bytes  => $image_file{$_}{input_bytes},
+					input_size   => mark_raw($image_file{$_}{input_size}),
+					lex_result   => $image_file{$_}{lex_result},
+					object_file  => $image_file{$_}{object_file},
+					output       => mark_raw($image_file{$_}{output}),
+					output_bytes => $image_file{$_}{output_bytes},
+					output_size  => $image_file{$_}{output_size},
+					raw          => mark_raw($image_file{$_}{raw}),
+				}
+			} @dot_file
+		],
+		default_css     => "$$config{css_url}/default.css",
+		environment     => $self -> generate_demo_environment,
+		fancy_table_css => "$$config{css_url}/fancy.table.css",
+		version         => $VERSION,
+	}
+	);
+	my($file_name) = File::Spec -> catfile($html_dir_name, 'index.html');
+
+	open(OUT, '>', $file_name);
+	print OUT $index;
+	close OUT;
+
+	print "Wrote: $file_name\n";
+
+} # End of generate_demo_index.
+
+# ------------------------------------------------
+
+sub generate_demo_environment
+{
+	my($self) = @_;
+
+	my(@environment);
+
+	# mark_raw() is needed because of the HTML tag <a>.
+
+	push @environment,
+	{left => 'Author', right => mark_raw(qq|<a href="http://savage.net.au/">Ron Savage</a>|)},
+	{left => 'Date',   right => Date::Simple -> today},
+	{left => 'OS',     right => 'Debian V 6'},
+	{left => 'Perl',   right => $Config{version} };
+
+	return \@environment;
+
+} # End of generate_demo_environment.
+
+# ------------------------------------------------
+
+sub generate_stt_index
+{
+	my($self) = @_;
+	my(@heading)       = qw/Start Accept State Event Next Entry Exit Regexp Interpretation/;
+	my($data_dir_name) = 'data';
+	my($stt_file_name) = File::Spec -> catfile($data_dir_name, 'default.stt.csv');
+	my($stt)           = $self -> read_csv_file($stt_file_name);
+	my($templater)     = Text::Xslate -> new
+	(
+		input_layer => '',
+		path        => File::Spec -> catdir('htdocs', 'assets', 'templates', 'graphviz2', 'marpa'),
+	);
+
+	my($column, @column);
+	my(@row);
+
+	for $column (@heading)
+	{
+		push @column, {td => $column};
+	}
+
+	push @row, [@column];
+
+	for my $item (@$stt)
+	{
+		@column = ();
+
+		for $column (@heading)
+		{
+			push @column, {td => mark_raw($$item{$column} || '.')};
+		}
+
+		push @row, [@column];
+	}
+
+	@column = ();
+
+	for $column (@heading)
+	{
+		push @column, {td => $column};
+	}
+
+	push @row, [@column];
+
+	my($config) = $self -> config;
+	my($table)  =
+	{
+		border  => 0,
+		row     => [@row],
+		size    => $#row + 1,
+		summary => 'STT',
+	};
+	my($templater) = Text::Xslate -> new
+	(
+		input_layer => '',
+		path        => $$config{template_path},
+	);
+	my($html_dir_name) = 'html';
+	my($file_name)     = File::Spec -> catfile($html_dir_name, 'stt.html');
+
+	open(OUT, '>', $file_name) || die "Can't open(> $file_name): $!";
+	print OUT $templater -> render
+	(
+	'stt.tx',
+	{
+		title   => 'State Transition Table for GraphViz2::Marpa::Lexer',
+		table   => $table,
+		version => $GraphViz2::Marpa::VERSION,
+	},
+	);
+	close OUT;
+
+} # End of generate_stt_index.
 
 # ------------------------------------------------
 
@@ -28,7 +327,8 @@ sub get_files
 sub _init
 {
 	my($self, $arg) = @_;
-	$self = from_hash($self, $arg);
+	$$arg{config}   = GraphViz2::Marpa::Config -> new -> config;
+	$self           = from_hash($self, $arg);
 
 	return $self;
 
@@ -139,6 +439,30 @@ Key-value pairs accepted in the parameter list:
 =back
 
 =head1 Methods
+
+=head2 generate_code_attributes_csv()
+
+Generate data/code.attributes.csv, for conversion into html/code.attributes.html.
+
+=head2 generate_code_attributes_index()
+
+Generate html/code.attributes.html.
+
+=head2 generate_demo_index()
+
+Generates html/index.html.
+
+Does not run any programs to generate other files, e.g. html/*.svg. See scripts/generate.demo.sh for that.
+
+=head2 generate_demo_environment()
+
+Called by generate_demo_index().
+
+Generates a table to be inserted into html/index.html.
+
+=head2 generate_stt_index()
+
+Generate html/stt.html.
 
 =head2 get_files($dir_name, $type)
 
