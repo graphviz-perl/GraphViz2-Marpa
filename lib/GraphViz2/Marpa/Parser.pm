@@ -100,10 +100,10 @@ sub _build_attribute_list
 
 sub _build_node
 {
-	my($self, $items, $value, $node, $class_attribute, $attribute) = @_;
+	my($self, $items, $value, $node, $class_attribute, $attribute, $within_path) = @_;
 
-	$$node{$value}             = $self -> _init_node($$class_attribute{node}) if (! $$node{$value});
-	$$node{$value}{attributes} = {%{$$node{$value}{attributes} }, %$attribute};
+	$$node{$value}             = $self -> _init_node($$class_attribute{node})                   if (! $$node{$value});
+	$$node{$value}{attributes} = {%{$$node{$value}{attributes} }, %$attribute}                  if (! $within_path);
 	$$node{$value}{attributes} = {%{$$class_attribute{node} }, %{$$node{$value}{attributes} } } if ($$node{$value}{fixed} == 0);
 	$$node{$value}{fixed}      = 1;
 
@@ -131,10 +131,10 @@ sub _build_tree
 
 	my($attribute);
 	my($class_attribute, %class_attribute, $child);
-	my($edge_follows);
+	my($edge_preceeds, $edge_follows);
 	my($graph_id, $graph_attribute);
 	my(%node);
-	my(%port_attribute, $previous_type);
+	my(%port_attribute);
 	my(@stack);
 	my($type);
 	my($value);
@@ -179,9 +179,9 @@ sub _build_tree
 		}
 		elsif ($type eq 'node_id')
 		{
-			$previous_type   = $$items[$i - 1]{type};
-			($i, $attribute) = $self -> _build_attribute_list($items, $i);
+			$edge_preceeds   = $self -> _edge_preceeds_node($items, $i - 1);
 			$edge_follows    = $self -> _edge_follows_node($items, $i + 1);
+			($i, $attribute) = $self -> _build_attribute_list($items, $i);
 			%port_attribute  = ();
 
 			for (qw/compass_point port_id/)
@@ -189,9 +189,9 @@ sub _build_tree
 				$port_attribute{$_} = delete $$attribute{$_} if (defined $$attribute{$_});
 			}
 
-			$self -> _build_node($items, $value, \%node, \%class_attribute, $attribute);
+			$self -> _build_node($items, $value, \%node, \%class_attribute, $attribute, $edge_preceeds || $edge_follows);
 
-			if ( ($previous_type eq 'edge_id') || $edge_follows)
+			if ( ($edge_preceeds) || $edge_follows)
 			{
 				$child = Tree -> new($value);
 
@@ -305,8 +305,6 @@ sub _edge_follows_node
 		end_attribute   => 1,
 	);
 
-	my($node) = $$items[$i]{value};
-
 	while ($i <= $#$items)
 	{
 		# Exit if we find an edge.
@@ -328,6 +326,42 @@ sub _edge_follows_node
 	return $edge_found;
 
 } # End of _edge_follows_node.
+
+# -----------------------------------------------
+
+sub _edge_preceeds_node
+{
+	my($self, $items, $i) = @_;
+	my($edge_found)  = 0;
+	my(%node_suffix) =
+	(
+		start_attribute => 1,
+		attribute_id    => 1, # 'compass_point' or 'port_id'.
+		attribute_value => 1, # compass point id or port id.
+		end_attribute   => 1,
+	);
+
+	while ($i >= 0)
+	{
+		# Exit if we find an edge.
+
+		if ($$items[$i]{type} eq 'edge_id')
+		{
+			$edge_found = 1;
+
+			last;
+		}
+
+		# Exit if we found neither a port nor a compass point.
+
+		last if (! $node_suffix{$$items[$i]{type} });
+
+		$i--;
+	}
+
+	return $edge_found;
+
+} # End of _edge_preceeds_node.
 
 # --------------------------------------------------
 # This is a function, not a method.
