@@ -28,7 +28,7 @@ with the latter being incorporated into this HTML.</p>
 <p>Lastly, the default rendering engine GraphViz2::Marpa::Renderer::GraphViz2 uses this data structure to re-create the input to the lexer,
 although the formatting might be slightly different.</p>
 
-: include "rainbow.table.tx" { table => $table };
+: include "basic.table.tx" { row => $table };
 
 </body>
 </html>

@@ -1,4 +1,4 @@
-<table align="center" border = "<: $border :>" summary = "PathUtils">
+<table align="center" border = "<: $border :>" summary = "GraphViz2::Marpa">
 : for $row -> $item {
 <tr>
 		: include "basic.column.tx" { column => $item };

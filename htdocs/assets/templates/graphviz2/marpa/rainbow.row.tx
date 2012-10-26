@@ -1,3 +1,0 @@
-: for $row -> $item {
-<td><div style="border: thin solid; margin: 0; padding: 0"><: $item.td :></div></td>
-: }

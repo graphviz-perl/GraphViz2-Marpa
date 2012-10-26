@@ -2,11 +2,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>Index of sample files created by GraphViz2::Marpa</title>
-  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-  <meta http-equiv="cache-control" content="no-cache">
-  <meta http-equiv="pragma" content="no-cache">
-  <link rel="stylesheet" type="text/css" href="/assets/css/local/default.css" />
+	<title>Index of sample files created by GraphViz2::Marpa</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="pragma" content="no-cache">
+	<link rel="stylesheet" type="text/css" href="<: $default_css :>">
+	<link rel="stylesheet" type="text/css" href="<: $fancy_table_css :>">
 </head>
 <body>
   <h1>Index of sample files created by <a href="http://metacpan.org/release/GraphViz2-Marpa">GraphViz2::Marpa</a> V <: $version :>.</h1>
@@ -16,6 +17,8 @@
 	<p>Some sample data is deliberately faulty, and so does not produce an image, or produces a faulty one (e.g. data/42.*.gv)</p>
 
 	<p>The files with names like 90.*.gv are copies of the corresponding files *.gv from the <a href="http://www.graphviz.org/content/dot-language">Graphviz</a> distro.</p>
+
+<hr />
 
 <table border = "1">
 <tr>
@@ -39,20 +42,13 @@ Dot result: Error.<br />
 :}
 </table>
 
-<table align="center">
-	<tr>
-		<td>Last updated</td><td><: $date_stamp :></td>
-	</tr>
-	<tr>
-		<td align="center" colspan="2"><a href="http://savage.net.au/">Ron's Home page</td>
-	</tr>
-	<tr>
-		<td align="center" colspan="2"><a href="http://savage.net.au/Graph-module-demos.html">Graph demo index</td>
-	</tr>
-	<tr>
-		<td align="center" colspan="2"><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0 Strict" height="31" width="88" /></a></td>
-	</tr>
-</table>
+<hr />
+
+<h3 class="global_toc_text">Environment</h3>
+
+: include "fancy.table.tx" { data => $environment };
+
+<hr />
 
 </body>
 </html>
