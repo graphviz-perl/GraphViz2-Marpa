@@ -1,8 +1,8 @@
 #!/bin/bash
 
-perl scripts/dot2rend.pl
-perl scripts/rend2svg.pl
-perl scripts/generate.demo.pl
+perl -Ilib scripts/dot2rend.pl
+perl -Ilib scripts/rend2svg.pl
+perl -Ilib scripts/generate.demo.pl
 
 cp html/*.html html/*.svg $DR/Perl-modules/html/graphviz2.marpa/
 
