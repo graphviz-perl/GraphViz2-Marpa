@@ -18,6 +18,9 @@ provides:
   GraphViz2::Marpa:
     file: lib/GraphViz2/Marpa.pm
     version: 1.06
+  GraphViz2::Marpa::Config:
+    file: lib/GraphViz2/Marpa/Config.pm
+    version: 1.01
   GraphViz2::Marpa::Lexer:
     file: lib/GraphViz2/Marpa/Lexer.pm
     version: 1.06
