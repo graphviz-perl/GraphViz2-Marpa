@@ -208,7 +208,7 @@ Both the lexer and the parser must be run to parse the dot file. See L</Scripts>
 
 Demo lexer/parser output: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/index.html>.
 
-State Transition Table: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/default.stt.html>.
+State Transition Table: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/stt.html>.
 
 Command line options and object attributes: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/code.attributes.html>.
 
@@ -288,15 +288,15 @@ The html/*.svg files are output by 'dot'.
 
 =item o Data for the State Transition Table
 
-See data/default.stt.ods (LibreOffice), data/default.stt.csv (CSV file) and html/default.stt.html.
+See data/stt.csv (CSV file) and html/stt.html.
 
-Also, data/default.stt.csv has been incorporated into the source code of L<GraphViz2::Marpa::Lexer>.
+Also, data/stt.csv has been incorporated into the source code of L<GraphViz2::Marpa::Lexer>.
 
 The CSV file was converted to HTML with scripts/stt2html.pl.
 
 =item o Documentation for the command line options and object attributes
 
-See data/code.attributes.ods (LibreOffice), data/code.attributes.csv (CSV file) and data/code.attributes.html.
+See data/code.attributes.csv (CSV file) and data/code.attributes.html.
 
 The CSV file was converted to HTML with scripts/code.attributes2html.pl.
 
@@ -331,6 +331,8 @@ Simplifies running g2m.pl.
 =item o generate.demo.sh
 
 Runs dot2rend.pl, rend2svg.pl and generate.index.pl.
+
+Then runs code.attributes2html.pl and stt2html.pl.
 
 Then it copies html/*.html and html/*.svg to my web server's doc root, $DR/Perl-modules/html/graphviz2.marpa/.
 
@@ -405,7 +407,7 @@ Convert all data/*.rend to html/*.svg using dot.
 
 =item o stt2html.pl
 
-Convert data/default.stt.csv to html/default.stt.html.
+Convert data/stt.csv to html/stt.html.
 
 =back
 
@@ -563,7 +565,7 @@ Default: ''.
 
 The default value means the STT is read from the source code of L<GraphViz2::Marpa::Lexer>.
 
-Candidate files are '' and 'data/default.stt.csv'.
+Candidate files are '' and 'data/stt.csv'.
 
 The type of this file must be specified by the 'type' option.
 

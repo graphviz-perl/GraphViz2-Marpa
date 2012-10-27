@@ -57,7 +57,7 @@ sub generate_code_attributes_csv
 	{
 		$script_file_name      = File::Spec -> catfile($script_dir_name, $script);
 		@lines                 = read_file($script_file_name, {chomp => 1});
-		@mutators              = grep{s/=.//; $_} grep{! /help/} grep{s/^\t'(.+)'.+/$1/; $1} @lines;
+		@mutators              = grep{s/=.//; $_} grep{s/^\t'(.+)'.+/$1/; $1} @lines;
 		$mutators{$script}     = {} if (! $mutators{$script});
 		$mutators{$script}{$_} = 1 for @mutators;
 	}
@@ -78,7 +78,7 @@ sub generate_code_attributes_csv
 	{
 		$module_file_name      = module_path($module_name{$module}) || die "Unable to find $module\n";
 		@lines                 = read_file($module_file_name, {chomp => 1});
-		@mutators              = grep{s/=.//; $_} grep{! /help/} grep{s/^fieldhash my %([^\s]+).+/$1/; $1} @lines;
+		@mutators              = grep{s/=.//; $_} grep{s/^fieldhash my %([^\s]+).+/$1/; $1} @lines;
 		$mutators{$module}     = {} if (! $mutators{$module});
 		$mutators{$module}{$_} = 1 for @mutators;
 	}
@@ -142,7 +142,7 @@ sub generate_code_attributes_index
 	my($column, @column);
 	my(@row);
 
-	for $column (@heading)
+	for $column ('Mutator', @heading)
 	{
 		push @column, {td => $column};
 	}
@@ -153,7 +153,7 @@ sub generate_code_attributes_index
 	{
 		@column = ();
 
-		for $column (@heading)
+		for $column ('Mutator', @heading)
 		{
 			push @column, {td => $$item{$column} };
 		}
@@ -163,7 +163,7 @@ sub generate_code_attributes_index
 
 	@column = ();
 
-	for $column (@heading)
+	for $column ('Mutator', @heading)
 	{
 		push @column, {td => $column};
 	}
@@ -184,11 +184,14 @@ sub generate_code_attributes_index
 	(
 	'code.attributes.tx',
 	{
-		border  => 0,
-		title   => 'Code and Command Line Attributes for GraphViz2::Marpa',
-		row     => [@row],
-		summary => 'Code attributes',
-		version => $GraphViz2::Marpa::VERSION,
+		border          => 1,
+		default_css     => "$$config{css_url}/default.css",
+		environment     => $self -> generate_demo_environment,
+		fancy_table_css => "$$config{css_url}/fancy.table.css",
+		title           => 'Code and Command Line Attributes for GraphViz2::Marpa',
+		row             => \@row,
+		summary         => 'Code attributes',
+		version         => $GraphViz2::Marpa::VERSION,
 	},
 	);
 	close OUT;
@@ -348,14 +351,7 @@ sub generate_stt_index
 
 	push @row, [@column];
 
-	my($config) = $self -> config;
-	my($table)  =
-	{
-		border  => 0,
-		row     => [@row],
-		size    => $#row + 1,
-		summary => 'STT',
-	};
+	my($config)    = $self -> config;
 	my($templater) = Text::Xslate -> new
 	(
 		input_layer => '',
@@ -369,9 +365,14 @@ sub generate_stt_index
 	(
 	'stt.tx',
 	{
-		title   => 'State Transition Table for GraphViz2::Marpa::Lexer',
-		table   => $table,
-		version => $GraphViz2::Marpa::VERSION,
+		border          => 1,
+		default_css     => "$$config{css_url}/default.css",
+		environment     => $self -> generate_demo_environment,
+		fancy_table_css => "$$config{css_url}/fancy.table.css",
+		title           => 'State Transition Table for GraphViz2::Marpa::Lexer',
+		row             => \@row,
+		summary         => 'STT',
+		version         => $GraphViz2::Marpa::VERSION,
 	},
 	);
 	close OUT;
@@ -529,6 +530,8 @@ Does not run any programs to generate other files, e.g. html/*.svg. See scripts/
 Called by generate_demo_index().
 
 Generates a table to be inserted into html/index.html.
+
+See scripts/generate.demo.pl.
 
 =head2 generate_stt_index()
 

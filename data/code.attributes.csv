@@ -5,6 +5,7 @@ description,Y,Y,,,,,Y,Y,
 dfa,,Y,Y,,,,,,
 edges,,,,,Y,,,,
 graph_text,,Y,Y,,,,,,
+help,Y,,,Y,,Y,Y,,
 input_file,Y,Y,,,,,Y,Y,
 item_count,,,Y,,Y,,,,
 items,,Y,Y,,Y,,,,Y
