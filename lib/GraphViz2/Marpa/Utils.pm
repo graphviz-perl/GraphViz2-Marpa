@@ -12,9 +12,18 @@ use Date::Format; # For time2str().
 use Date::Simple;
 
 use File::Spec;
-use File::Slurp; # For read_dir() and slurp().
+use File::Slurp; # For read_dir() and read_file().
 
+# Apart from GraphViz2::Marpa::Config, the next 4 modules are 'use'd
+# in order to get them into @INC, where Module::Path finds them.
+# This means for the search for mutators to work, they need to be
+# both up-to-date and installed.
+
+use GraphViz2::Marpa;
 use GraphViz2::Marpa::Config;
+use GraphViz2::Marpa::Lexer;
+use GraphViz2::Marpa::Lexer::DFA;
+use GraphViz2::Marpa::Parser;
 
 use Hash::FieldHash ':all';
 
@@ -22,7 +31,9 @@ use HTML::Entities::Interpolate;
 
 use IO::File;
 
-use Text::CSV_XS;
+use Module::Path 'module_path';
+
+use Text::CSV;
 use Text::Xslate 'mark_raw';
 
 fieldhash my %config => 'config';
@@ -34,25 +45,64 @@ our $VERSION = '1.06';
 sub generate_code_attributes_csv
 {
 	my($self, $heading)  = @_;
-	my($data_dir_name)   = 'data';
-	my($code_file_name)  = File::Spec -> catfile($data_dir_name, 'code.attributes.csv');
-
-	my(@script)          = grep{/pl$/} @heading;
+	my(@script)          = grep{/pl$/} @$heading;
 	my($script_dir_name) = 'scripts';
 
 	my(@lines);
-	my(@mutators);
+	my(@mutators, %mutators);
+	my($name);
 	my($script_file_name);
 
 	for my $script (@script)
 	{
-		$script_file_name = File::Spec -> catfile($script_dir_name, $script);
-		@lines            = slurp($script_file_name, {chomp => 1});
-		@mutators         = grep{s/^\t'(.+)'.+/$1/; $1} @lines;
-
-		print "$script_file_name: \n";
-		print join("\n", @mutators), "\n";
+		$script_file_name      = File::Spec -> catfile($script_dir_name, $script);
+		@lines                 = read_file($script_file_name, {chomp => 1});
+		@mutators              = grep{s/=.//; $_} grep{! /help/} grep{s/^\t'(.+)'.+/$1/; $1} @lines;
+		$mutators{$script}     = {} if (! $mutators{$script});
+		$mutators{$script}{$_} = 1 for @mutators;
 	}
+
+	my(@module)      = grep{/pm$/} @$heading;
+	my(%module_name) =
+	(
+		'DFA.pm'      => 'GraphViz2::Marpa::Lexer::DFA',
+		'Lexer.pm'    => 'GraphViz2::Marpa::Lexer',
+		'Marpa.pm'    => 'GraphViz2::Marpa',
+		'Parser.pm'   => 'GraphViz2::Marpa::Parser',
+		'Renderer.pm' => 'GraphViz2::Marpa::Renderer::GraphViz2',
+	);
+	my(@heading) = qw/Mutator lex.pl Lexer.pm DFA.pm parse.pl Parser.pm rend.pl g2m.pl Marpa.pm Renderer.pm/;
+
+	my($module_file_name);
+
+	for my $module (@module)
+	{
+		$module_file_name      = module_path($module_name{$module}) || die "Unable to find $module\n";
+		@lines                 = read_file($module_file_name, {chomp => 1});
+		@mutators              = grep{s/=.//; $_} grep{! /help/} grep{s/^fieldhash my\(%(.+)\.+/$1/; $1} @lines;
+		$mutators{$module}     = {} if (! $mutators{$module});
+		$mutators{$module}{$_} = 1 for @mutators;
+	}
+
+	my(%names);
+
+	for $name (keys %mutators)
+	{
+		for (keys %{$mutators{$name} })
+		{
+			$names{$_}        = {} if (! $names{$_});
+			$names{$_}{$name} = 1  if ($mutators{$name}{$_});
+		}
+	}
+
+	my($data_dir_name)  = 'data';
+	my($code_file_name) = File::Spec -> catfile($data_dir_name, 'code.attributes.csv');
+	my($csv)            = Text::CSV -> new;
+
+	open(OUT, '>', $code_file_name) || die "Can't open(> $code_file_name)";
+
+
+	close OUT;
 
 } # End of generate_code_attributes_csv.
 
@@ -61,11 +111,11 @@ sub generate_code_attributes_csv
 sub generate_code_attributes_index
 {
 	my($self)    = @_;
-	my(@heading) = qw/Name Usage lex.pl Lexer.pm DFA.pm parse.pl Parser.pm rend.pl g2m.pl Marpa.pm Renderer.pm/;
+	my(@heading) = qw/Mutator lex.pl Lexer.pm DFA.pm parse.pl Parser.pm rend.pl g2m.pl Marpa.pm Renderer.pm/;
 
-	$self -> generate_code_attributes_csv;
+	$self -> generate_code_attributes_csv(\@heading);
 
-	return;
+	return 0;
 
 	my($data_dir_name)   = 'data';
 	my($code_file_name)  = File::Spec -> catfile($data_dir_name, 'code.attributes.csv');
@@ -130,6 +180,10 @@ sub generate_code_attributes_index
 	);
 	close OUT;
 
+	# Return 0 for success and 1 for failure.
+
+	return 0;
+
 } # End of generate_code_attributes_index.
 
 # -----------------------------------------------
@@ -152,7 +206,7 @@ sub generate_demo_index
 		$dot_file               = File::Spec -> catfile($data_dir_name, "$file_name.gv");
 		$lex_file               = File::Spec -> catfile($data_dir_name, "$file_name.lex");
 		$image_file             = File::Spec -> catfile($html_dir_name, "$file_name.$format");
-		@content                = map{$Entitize{$_} } slurp($dot_file);
+		@content                = map{$Entitize{$_} } read_file($dot_file);
 		$image_file{$file_name} =
 		{
 			image_file   => -e $image_file ? $image_file : '',
@@ -214,6 +268,10 @@ sub generate_demo_index
 
 	print "Wrote: $file_name\n";
 
+	# Return 0 for success and 1 for failure.
+
+	return 0;
+
 } # End of generate_demo_index.
 
 # ------------------------------------------------
@@ -245,11 +303,6 @@ sub generate_stt_index
 	my($data_dir_name) = 'data';
 	my($stt_file_name) = File::Spec -> catfile($data_dir_name, 'default.stt.csv');
 	my($stt)           = $self -> read_csv_file($stt_file_name);
-	my($templater)     = Text::Xslate -> new
-	(
-		input_layer => '',
-		path        => File::Spec -> catdir('htdocs', 'assets', 'templates', 'graphviz2', 'marpa'),
-	);
 
 	my($column, @column);
 	my(@row);
@@ -309,6 +362,10 @@ sub generate_stt_index
 	},
 	);
 	close OUT;
+
+	# Return 0 for success and 1 for failure.
+
+	return 0;
 
 } # End of generate_stt_index.
 

@@ -17,18 +17,18 @@ my(%option);
 
 if ($option_parser -> getoptions
 (
- \%option,
- 'description=s',
- 'help',
- 'input_file=s',
- 'lexed_file=s',
- 'maxlevel=s',
- 'minlevel=s',
- 'report_items=i',
- 'report_stt=i',
- 'stt_file=s',
- 'timeout=i',
- 'type=s',
+	\%option,
+	'description=s',
+	'help',
+	'input_file=s',
+	'lexed_file=s',
+	'maxlevel=s',
+	'minlevel=s',
+	'report_items=i',
+	'report_stt=i',
+	'stt_file=s',
+	'timeout=i',
+	'type=s',
 ) )
 {
 	pod2usage(1) if ($option{'help'});
