@@ -170,13 +170,7 @@ sub generate_code_attributes_index
 
 	push @row, [@column];
 
-	my($config) = $self -> config;
-	my($table)  =
-	{
-		border  => 0,
-		row     => [\@row],
-		summary => 'Code attributes',
-	};
+	my($config)    = $self -> config;
 	my($templater) = Text::Xslate -> new
 	(
 		input_layer => '',
@@ -188,12 +182,14 @@ sub generate_code_attributes_index
 	open(OUT, '>', $file_name);
 	print OUT $templater -> render
 	(
-	 'code.attributes.tx',
-	 {
-		 title   => 'Code and Command Line Attributes for GraphViz2::Marpa',
-		 row     => $table,
-		 version => $GraphViz2::Marpa::VERSION,
-	 },
+	'code.attributes.tx',
+	{
+		border  => 0,
+		title   => 'Code and Command Line Attributes for GraphViz2::Marpa',
+		row     => [@row],
+		summary => 'Code attributes',
+		version => $GraphViz2::Marpa::VERSION,
+	},
 	);
 	close OUT;
 
