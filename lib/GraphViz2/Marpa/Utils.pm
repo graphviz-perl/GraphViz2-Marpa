@@ -71,7 +71,6 @@ sub generate_code_attributes_csv
 		'Parser.pm'   => 'GraphViz2::Marpa::Parser',
 		'Renderer.pm' => 'GraphViz2::Marpa::Renderer::GraphViz2',
 	);
-	my(@heading) = qw/Mutator lex.pl Lexer.pm DFA.pm parse.pl Parser.pm rend.pl g2m.pl Marpa.pm Renderer.pm/;
 
 	my($module_file_name);
 
@@ -79,19 +78,18 @@ sub generate_code_attributes_csv
 	{
 		$module_file_name      = module_path($module_name{$module}) || die "Unable to find $module\n";
 		@lines                 = read_file($module_file_name, {chomp => 1});
-		@mutators              = grep{s/=.//; $_} grep{! /help/} grep{s/^fieldhash my\(%(.+)\.+/$1/; $1} @lines;
+		@mutators              = grep{s/=.//; $_} grep{! /help/} grep{s/^fieldhash my %([^\s]+).+/$1/; $1} @lines;
 		$mutators{$module}     = {} if (! $mutators{$module});
 		$mutators{$module}{$_} = 1 for @mutators;
 	}
 
 	my(%names);
 
-	for $name (keys %mutators)
+	for my $row (keys %mutators)
 	{
-		for (keys %{$mutators{$name} })
+		for my $column (keys %{$mutators{$row} })
 		{
-			$names{$_}        = {} if (! $names{$_});
-			$names{$_}{$name} = 1  if ($mutators{$name}{$_});
+			$names{$column}{$row} = defined($mutators{$row}{$column}) ? 'Y' : '.';
 		}
 	}
 
@@ -99,8 +97,30 @@ sub generate_code_attributes_csv
 	my($code_file_name) = File::Spec -> catfile($data_dir_name, 'code.attributes.csv');
 	my($csv)            = Text::CSV -> new;
 
+	my($status);
+
 	open(OUT, '>', $code_file_name) || die "Can't open(> $code_file_name)";
 
+	$csv -> combine('Mutator', @$heading) || die "Can't combine headings\n";
+
+	print OUT $csv -> string, "\n";
+
+	my(@column);
+
+	for my $mutator (sort keys %names)
+	{
+		@column = ();
+
+		for $name (@$heading)
+		{
+			push @column, $mutator if ($#column < 0);
+			push @column, $names{$mutator}{$name};
+		}
+
+		$csv -> combine(@column) || die "Can't combine columns\n";
+
+		print OUT $csv -> string, "\n";
+	}
 
 	close OUT;
 
@@ -111,11 +131,9 @@ sub generate_code_attributes_csv
 sub generate_code_attributes_index
 {
 	my($self)    = @_;
-	my(@heading) = qw/Mutator lex.pl Lexer.pm DFA.pm parse.pl Parser.pm rend.pl g2m.pl Marpa.pm Renderer.pm/;
+	my(@heading) = qw/lex.pl Lexer.pm DFA.pm parse.pl Parser.pm rend.pl g2m.pl Marpa.pm Renderer.pm/;
 
 	$self -> generate_code_attributes_csv(\@heading);
-
-	return 0;
 
 	my($data_dir_name)   = 'data';
 	my($code_file_name)  = File::Spec -> catfile($data_dir_name, 'code.attributes.csv');
@@ -137,7 +155,7 @@ sub generate_code_attributes_index
 
 		for $column (@heading)
 		{
-			push @column, {td => mark_raw($$item{$column} || '.')};
+			push @column, {td => $$item{$column} };
 		}
 
 		push @row, [@column];
@@ -156,8 +174,7 @@ sub generate_code_attributes_index
 	my($table)  =
 	{
 		border  => 0,
-		row     => [@row],
-		size    => $#row + 1,
+		row     => [\@row],
 		summary => 'Code attributes',
 	};
 	my($templater) = Text::Xslate -> new
@@ -174,7 +191,7 @@ sub generate_code_attributes_index
 	 'code.attributes.tx',
 	 {
 		 title   => 'Code and Command Line Attributes for GraphViz2::Marpa',
-		 table   => $table,
+		 row     => $table,
 		 version => $GraphViz2::Marpa::VERSION,
 	 },
 	);
