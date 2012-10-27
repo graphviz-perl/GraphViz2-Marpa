@@ -445,9 +445,9 @@ html/90.train11.svg
 html/90.tree.svg
 html/90.try.svg
 html/code.attributes.html
-html/default.stt.html
 html/index.html
 html/Marpa.Grammar.svg
+html/stt.html
 lib/GraphViz2/Marpa.pm
 lib/GraphViz2/Marpa/Config.pm
 lib/GraphViz2/Marpa/Lexer.pm
