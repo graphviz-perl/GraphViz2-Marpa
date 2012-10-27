@@ -18,8 +18,9 @@ Revision history for Perl extension GraphViz2::Marpa.
 		information provided with those 4 new getters.
 	- Expand the POD for the lexer and the parse giving details on input and output stream content.
 	- Move the template for the demo from html/graphviz2.marpa.index.tx to htdocs/assets/templates/graphviz/marpa/
-		where it should have been all along. Patch scripts/generate.index.pl to match.
-	- Add cache control metadata to that template.
+		where it should have been all along. Patch scripts/generate.demo.pl to match.
+	- Add cache control metadata to all templates.
+	- Link each template to the others, and to the index page for all graph module demos.
 	- Add code to GraphViz2::Marpa::Utils to extract mutator names from modules and some programs,
 		and output to data/code.attributes.csv, for use by scripts/code.attributes2html.pl.
 	- Incorporate code from scripts/code.attributes2html.pl into GraphViz2::Marpa::Utils.
