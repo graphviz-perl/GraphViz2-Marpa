@@ -198,7 +198,11 @@ sub _build_tree
 				$child -> meta({%port_attribute});
 				$parent -> add_child($child);
 
-				$parent -> meta({%{$parent -> meta}, %{$class_attribute{edge} }, %$attribute}) if (! $parent -> is_root);
+				if (! $parent -> is_root)
+				{
+					$parent -> meta({%{$parent -> meta}, %{$class_attribute{edge} }, %$attribute});
+					$self -> _hoist_parental_attributes($parent);
+				}
 
 				$parent = $child;
 			}
@@ -743,6 +747,29 @@ sub hashref2string
 	return '{' . join(', ', map{qq|$_ => "$$h{$_}"|} sort keys %$h) . '}';
 
 } # End of hashref2string.
+
+# --------------------------------------------------
+# Handle cases such as A -> B -> C -> D [attributes],
+# where the attributes have just be stored in C's meta,
+# and now must be hoisted into the metas of A and B.
+# This is called with C as the value of $start_node.
+
+sub _hoist_parental_attributes
+{
+	my($self, $start_node)  = @_;
+	my($node) = $start_node -> parent;
+
+	my($meta);
+
+	while (! $node -> is_root)
+	{
+		$node -> meta({%{$start_node -> meta} });
+
+		$start_node = $node;
+		$node       = $node -> parent;
+	}
+
+} # End of _hoist_parental_attributes.
 
 # --------------------------------------------------
 # This is a function, not a method.
