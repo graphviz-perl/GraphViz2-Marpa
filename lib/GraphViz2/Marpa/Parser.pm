@@ -141,16 +141,12 @@ sub _build_tree
 
 	$class_attribute{$_} = {} for (@class);
 
-	$self -> log(info => 'Tokens processed during _build_tree:');
-
 	while ($i < $#$items)
 	{
 		$i++;
 
 		$type  = $$items[$i]{type};
 		$value = $$items[$i]{value};
-
-		$self -> log(info => "$i: $type => $value");
 
 		if ($type eq 'class_id')
 		{
