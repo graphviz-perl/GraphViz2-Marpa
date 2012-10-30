@@ -16,7 +16,7 @@ use Marpa::R2;
 
 use Set::Array;
 
-use Tree;
+use Tree::DAG_Node;
 
 use Text::CSV_XS;
 
@@ -114,56 +114,84 @@ sub _build_node
 # Output:
 # $self -> paths, which combines all edges in $self -> edges.
 
-sub _build_paths
+sub _build_path_helper
 {
-	my($self) = @_;
+	my($self)      = @_;
+	my(@ancestors) = map{$_ -> name} $self -> paths -> daughters;
 
-	# Phase 1: Clone the tree of edges, so we'll operate on a copy.
+	my(%ancestors);
 
-	$self -> paths($self -> edges -> clone);
-	$self -> paths -> root -> value('paths');
+	@ancestors{@ancestors} = (1) x @ancestors;
 
-	my($child_1_value, $child_2_value);
-	my(%seen);
-	my($value);
+	my($attributes);
+	my($name);
+	my(@stack);
 
-	# Loop over all children the first time.
-
-	for my $child_1 ($self -> paths -> children)
-	{
-		$child_1_value = $child_1 -> value;
-
-		$seen{$child_1_value} = 1;
-
-		# Loop over all children the second time.
-
-		for my $child_2 ($self -> paths -> children)
+	$self -> paths -> walk_down
+	({
+		ancestors => \%ancestors,
+		callback  =>
+		sub
 		{
-			$child_2_value = $child_2 -> value;
+			my($node, $options) = @_;
 
-			# Ensure we don't hit the same child twice.
-
-			next if $seen{$child_2_value};
-
-			# Here, for the given child_1, we are traversing all nodes in all other children.
-			# If there's a match, we attach child_1 to the other node.
-
-			for ($child_2 -> traverse)
+			if ($$options{_depth} > 1)
 			{
-				$value = $_ -> value;
+				$attributes = $node -> attributes;
+				$name       = $node -> name;
 
-				next if ($child_1_value ne $value);
-
-				$self -> log(notice => "Moving");
-
-				$_ -> add_child($child_1 -> clone);
-				$self -> paths -> remove_child($child_1);
+				if (defined $$options{ancestors}{$name} && ! $$attributes{replaced})
+				{
+					push @{$$options{stack} }, $node;
+				}
 			}
+
+			return 1;
+		},
+		_depth => 0,
+		stack  => \@stack,
+	});
+
+	my($count)    = 0;
+	my($sub_tree) = Tree::DAG_Node -> new;
+
+	my(@kids);
+	my($node);
+
+	for $node (@stack)
+	{
+		$count++;
+
+		$name = $node -> name;
+		@kids = grep{$_ -> name eq $name} $self -> paths -> daughters;
+
+		$sub_tree -> add_daughters(map{$_ -> copy_at_and_under} @kids);
+
+		for ($sub_tree -> daughters)
+		{
+			$_ -> attributes({replaced => 1});
 		}
+
+		$node -> replace_with($sub_tree -> daughters);
 	}
 
-	$self -> log(notice => 'Paths:');
-	$self -> pretty_print_forest($self -> paths);
+	return $count;
+
+} # End of _build_path_helper.
+
+# -----------------------------------------------
+
+sub _build_paths
+{
+	my($self)     = @_;
+	my($finished) = 0;
+
+	$self -> paths -> add_daughters($self -> edges -> daughters);
+
+	while (! $finished)
+	{
+		$finished = $self -> _build_path_helper == 0;
+	}
 
 } # End of _build_paths.
 
@@ -247,14 +275,14 @@ sub _build_tree
 
 			if ( ($edge_preceeds) || $edge_follows)
 			{
-				$child = Tree -> new($value);
+				$child = Tree::DAG_Node -> new({name => $value});
 
-				$child -> meta({%port_attribute});
-				$parent -> add_child($child);
+				$child -> attributes({%port_attribute});
+				$parent -> add_daughters($child);
 
-				if (! $parent -> is_root)
+				if (! defined $parent -> mother)
 				{
-					$parent -> meta({%{$parent -> meta}, %{$class_attribute{edge} }, %$attribute});
+					$parent -> attributes({%{$parent -> attributes}, %{$class_attribute{edge} }, %$attribute});
 					$self -> _hoist_parental_attributes($parent);
 				}
 
@@ -480,9 +508,9 @@ sub format_node
 	my($self, $node) = @_;
 
 	return
-		$node -> value .
+		$node -> name .
 		'. Edge attrs: ' .
-		$self -> hashref2string($node -> meta);
+		$self -> hashref2string($node -> attributes);
 
 } # End of format_node.
 
@@ -804,23 +832,23 @@ sub hashref2string
 
 # --------------------------------------------------
 # Handle cases such as A -> B -> C -> D [attributes],
-# where the attributes have just be stored in C's meta,
-# and now must be hoisted into the metas of A and B.
+# where the attributes have just be stored in C's attributes,
+# and now must be hoisted into the attributes of A and B.
 # This is called with C as the value of $start_node.
 
 sub _hoist_parental_attributes
 {
 	my($self, $start_node)  = @_;
-	my($node) = $start_node -> parent;
+	my($node) = $start_node;
 
-	my($meta);
+	my($attributes);
 
-	while (! $node -> is_root)
+	while ($node)
 	{
-		$node -> meta({%{$start_node -> meta} });
+		$node -> attributes({%{$start_node -> attributes} });
 
 		$start_node = $node;
-		$node       = $node -> parent;
+		$node       = $node -> mother;
 	}
 
 } # End of _hoist_parental_attributes.
@@ -859,7 +887,7 @@ sub increment_item_count
 sub _init
 {
 	my($self, $arg)         = @_;
-	$$arg{edges}            = Tree -> new('edges');
+	$$arg{edges}            = Tree::DAG_Node -> new({name => 'edges'});
 	$$arg{item_count}       = 0;
 	$$arg{items}            = Set::Array -> new;
 	$$arg{lexed_file}       ||= '';       # Caller can set.
@@ -869,7 +897,7 @@ sub _init
 	$$arg{nodes}            = {};
 	$$arg{output_file}      ||= '';       # Caller can set.
 	$$arg{parsed_file}      ||= '';       # Caller can set.
-	$$arg{paths}            = '';
+	$$arg{paths}            = Tree::DAG_Node -> new({name => 'paths'});
 	$$arg{renderer}         = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
 	$$arg{report_forest}    ||= 0;        # Caller can set.
 	$$arg{report_items}     ||= 0;        # Caller can set.
@@ -1000,10 +1028,19 @@ sub pretty_print_forest
 	my(@out);
 	my(@vert_dashes);
 
-	for my $t ($edges -> traverse)
-	{
-		push @out, $self -> pretty_print_node($t, \@vert_dashes);
-	}
+	$edges -> walk_down
+	({
+		callback =>
+		sub
+		{
+			my($node) = @_;
+
+			push @out, $self -> pretty_print_node($node, \@vert_dashes);
+
+			return 1,
+		},
+		_depth => 0,
+	});
 
 	$self -> log(notice => $_) for @out;
 
@@ -1014,8 +1051,8 @@ sub pretty_print_forest
 sub pretty_print_node
 {
 	my($self, $t, $vert_dashes) = @_;
-	my($depth)         = $t -> depth;
-	my($sibling_count) = $t -> is_root ? 1 : scalar $t -> parent -> children;
+	my($depth)         = scalar($t -> ancestors) || 0;
+	my($sibling_count) = defined $t -> mother ? 1 : scalar $t -> self_and_sisters - 1;
 	my($offset)        = ' ' x 4;
 	my(@indent)        = map{$$vert_dashes[$_] || $offset} 0 .. $depth - 1;
 	@$vert_dashes      =
@@ -1024,7 +1061,7 @@ sub pretty_print_node
 		($sibling_count == 1 ? $offset : '   |'),
 	);
 
-	if ($sibling_count == ($t -> get_index_for($t) + 1) )
+	if ($sibling_count == ($t -> my_daughter_index + 1) )
 	{
 		$$vert_dashes[$depth] = $offset;
 	}
@@ -1057,6 +1094,8 @@ sub print_structure
 
 	$self -> log(notice => 'Edges:');
 	$self -> pretty_print_forest($self -> edges);
+	$self -> log(notice => 'Paths:');
+	$self -> pretty_print_forest($self -> paths);
 
 } # End of print_structure.
 
