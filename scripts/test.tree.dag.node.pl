@@ -28,9 +28,9 @@ $tree -> name('root');
 
 my($child);
 my($kid_1, $kid_2);
-my($node);
+my($name, $node);
 
-for my $name (qw/I H J J L D E F B/)
+for $name (qw/I H J J L D E F B/)
 {
 	$count++;
 
@@ -53,19 +53,52 @@ for my $name (qw/I H J J L D E F B/)
 }
 
 print join("\n", @{$tree -> draw_ascii_tree}), "\n";
+print '-' x 50, "\n";
+
+my(@ancestors) = map{$_ -> name} $tree -> daughters;
+
+my(%ancestors);
+
+@ancestors{@ancestors} = (1) x @ancestors;
+
+my(@stack);
 
 $tree -> walk_down
 ({
-	callback =>
+	ancestors => \%ancestors,
+	callback  =>
 	sub
 	{
-		my($node) = @_;
+		my($node, $options) = @_;
 
-		print 'Name: ', $node -> name, '. Depth: ', scalar $node -> ancestors, "\n";
+		if ($$options{_depth} > 1)
+		{
+			$name = $node -> name;
+
+			if (defined $$options{ancestors}{$name})
+			{
+				push @{$$options{stack} }, $node;
+			}
+		}
 
 		return 1;
-	}
+	},
+	_depth => 0,
+	stack  => \@stack,
 });
+
+my(@kids);
+
+for $node (@stack)
+{
+	$name = $node -> name;
+	@kids = grep{$_ -> name eq $name} $tree -> daughters;
+
+	$node -> replace_with(map{$_ -> copy_at_and_under} @kids);
+}
+
+print join("\n", @{$tree -> draw_ascii_tree}), "\n";
+print '-' x 50, "\n";
 
 __END__
 
