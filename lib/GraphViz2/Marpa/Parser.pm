@@ -32,6 +32,7 @@ fieldhash my %minlevel         => 'minlevel';
 fieldhash my %nodes            => 'nodes';
 fieldhash my %output_file      => 'output_file';
 fieldhash my %parsed_file      => 'parsed_file';
+fieldhash my %paths            => 'paths';
 fieldhash my %renderer         => 'renderer';
 fieldhash my %report_forest    => 'report_forest';
 fieldhash my %report_items     => 'report_items';
@@ -110,11 +111,68 @@ sub _build_node
 } # End of _build_node.
 
 # -----------------------------------------------
+# Output:
+# $self -> paths, which combines all edges in $self -> edges.
+
+sub _build_paths
+{
+	my($self) = @_;
+
+	# Phase 1: Clone the tree of edges, so we'll operate on a copy.
+
+	$self -> paths($self -> edges -> clone);
+	$self -> paths -> root -> value('paths');
+
+	my($child_1_value, $child_2_value);
+	my(%seen);
+	my($value);
+
+	# Loop over all children the first time.
+
+	for my $child_1 ($self -> paths -> children)
+	{
+		$child_1_value = $child_1 -> value;
+
+		$seen{$child_1_value} = 1;
+
+		# Loop over all children the second time.
+
+		for my $child_2 ($self -> paths -> children)
+		{
+			$child_2_value = $child_2 -> value;
+
+			# Ensure we don't hit the same child twice.
+
+			next if $seen{$child_2_value};
+
+			# Here, for the given child_1, we are traversing all nodes in all other children.
+			# If there's a match, we attach child_1 to the other node.
+
+			for ($child_2 -> traverse)
+			{
+				$value = $_ -> value;
+
+				next if ($child_1_value ne $value);
+
+				$self -> log(notice => "Moving");
+
+				$_ -> add_child($child_1 -> clone);
+				$self -> paths -> remove_child($child_1);
+			}
+		}
+	}
+
+	$self -> log(notice => 'Paths:');
+	$self -> pretty_print_forest($self -> paths);
+
+} # End of _build_paths.
+
+# -----------------------------------------------
 # Outputs:
 # o $self -> edges, an object of type Tree.
-# o $self -> graph, a hashref of graph attributes.
-# o $self -> global, a hashref of (digraph => $Boolean, graph_id => $string).
-# o $self -> node, a hashref of {node => hashref of attributes}.
+# o $self -> nodes, a hashref of {node => hashref of attributes}.
+# o $self -> style, a hashref of graph attributes, e.g. rankdir, size.
+# o $self -> type, a hashref of {digraph => $Boolean, graph_id => $string, strict => $Boolan}.
 
 sub _build_tree
 {
@@ -801,7 +859,7 @@ sub increment_item_count
 sub _init
 {
 	my($self, $arg)         = @_;
-	$$arg{edges}            = Tree -> new('root');
+	$$arg{edges}            = Tree -> new('edges');
 	$$arg{item_count}       = 0;
 	$$arg{items}            = Set::Array -> new;
 	$$arg{lexed_file}       ||= '';       # Caller can set.
@@ -811,6 +869,7 @@ sub _init
 	$$arg{nodes}            = {};
 	$$arg{output_file}      ||= '';       # Caller can set.
 	$$arg{parsed_file}      ||= '';       # Caller can set.
+	$$arg{paths}            = '';
 	$$arg{renderer}         = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
 	$$arg{report_forest}    ||= 0;        # Caller can set.
 	$$arg{report_items}     ||= 0;        # Caller can set.
@@ -935,12 +994,13 @@ sub port_id
 
 sub pretty_print_forest
 {
-	my($self) = @_;
+	my($self, $edges) = @_;
+	$edges ||= $self -> edges;
 
 	my(@out);
 	my(@vert_dashes);
 
-	for my $t ($self -> edges -> traverse)
+	for my $t ($edges -> traverse)
 	{
 		push @out, $self -> pretty_print_node($t, \@vert_dashes);
 	}
@@ -996,7 +1056,7 @@ sub print_structure
 	}
 
 	$self -> log(notice => 'Edges:');
-	$self -> pretty_print_forest;
+	$self -> pretty_print_forest($self -> edges);
 
 } # End of print_structure.
 
@@ -1057,6 +1117,7 @@ sub run
 	# Build a Graphviz-like tree of the data.
 
 	$self -> _build_tree;
+	$self -> _build_paths;
 	$self -> print_structure if ($self -> report_forest);
 
 	# Pass the tokens to the renderer.
@@ -1585,7 +1646,11 @@ Get or set the name of the file of parsed tokens for the parser to write. This f
 
 'parsed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-=head2 pretty_print_forest()
+=head2 pretty_print_forest([$edges])
+
+Here, the [] indicate an optional parameter.
+
+If $edges is not supplied, it defaults to $self -> edges.
 
 Returns nothing.
 
@@ -1599,13 +1664,13 @@ Only override this in a sub-class if you wish to log the forest in a different f
 
 Returns a string.
 
-Called by L</pretty_print_forest()>.
+Called by L</pretty_print_forest([$edges])>.
 
 Only override this in a sub-class if you wish to log a node in a different format.
 
 =head2 print_structure()
 
-Calls L</pretty_print_forest()>.
+Calls L</pretty_print_forest([$edges])> for both $self -> edges and $self -> paths.
 
 Called by L</run()> at the end of the run, if new() was called as new(report_forest => 1).
 
@@ -1917,7 +1982,7 @@ Home page: L<http://savage.net.au/index.html>.
 
 The code to print the tree was adapted from L<Forest::Tree::Writer::ASCIIWithBranches>.
 
-See the source for L</pretty_print_node($t, $vert_dashes)>, which is called from L</pretty_print_forest()>.
+See the source for L</pretty_print_node($t, $vert_dashes)>, which is called from L</pretty_print_forest([$edges])>.
 
 =head1 Copyright
 
