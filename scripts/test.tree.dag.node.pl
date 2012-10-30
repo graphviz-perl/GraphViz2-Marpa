@@ -102,6 +102,16 @@ print '-' x 50, "\n";
 
 __END__
 
+for $node (@stack)
+{
+	$name = $node -> name;
+	@kids = grep{$_ -> name eq $name} $tree -> daughters;
+
+	$tree -> remove_daughter($_) for @kids;
+}
+
+__END__
+
 edges. Edge attrs: {}
    |---I. Edge attrs: {arrowhead => "none", color => "grey", label => "", samehead => "1"}
    |   |---J. Edge attrs: {}
