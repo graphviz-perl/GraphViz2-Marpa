@@ -8,7 +8,77 @@ use warnings qw(FATAL utf8);
 
 use Tree::DAG_Node;
 
-# ------------
+# ----------------------------------------------
+
+sub find_links
+{
+	my($tree)      = @_;
+	my(@ancestors) = map{$_ -> name} $tree -> daughters;
+
+	my(%ancestors);
+
+	@ancestors{@ancestors} = (1) x @ancestors;
+
+	my($attributes);
+	my($name);
+	my(@stack);
+
+	$tree -> walk_down
+	({
+		ancestors => \%ancestors,
+		callback  =>
+		sub
+		{
+			my($node, $options) = @_;
+
+			if ($$options{_depth} > 1)
+			{
+				$attributes = $node -> attributes;
+				$name       = $node -> name;
+
+				if (defined $$options{ancestors}{$name} && ! $$attributes{replaced})
+				{
+					push @{$$options{stack} }, $node;
+				}
+			}
+
+			return 1;
+		},
+		_depth => 0,
+		stack  => \@stack,
+	});
+
+	my($count)    = 0;
+	my($sub_tree) = Tree::DAG_Node -> new;
+
+	my(@kids);
+	my($node);
+
+	for $node (@stack)
+	{
+		$count++;
+
+		$name = $node -> name;
+		@kids = grep{$_ -> name eq $name} $tree -> daughters;
+
+		$sub_tree -> add_daughters(map{$_ -> copy_at_and_under} @kids);
+
+		for ($sub_tree -> daughters)
+		{
+			$_ -> attributes({replaced => 1});
+		}
+
+		$node -> replace_with($sub_tree -> daughters);
+	}
+
+	print join("\n", @{$tree -> draw_ascii_tree}), "\n";
+	print '-' x 50, "\n";
+
+	return $count;
+
+} # End of find_links.
+
+# ----------------------------------------------
 
 my($count) = 0;
 my($tree)  = Tree::DAG_Node -> new;
@@ -55,50 +125,30 @@ for $name (qw/I H J J L D E F B/)
 print join("\n", @{$tree -> draw_ascii_tree}), "\n";
 print '-' x 50, "\n";
 
-my(@ancestors) = map{$_ -> name} $tree -> daughters;
+my($finished) = 0;
 
-my(%ancestors);
+while (! $finished)
+{
+	$finished = find_links($tree) == 0;
+}
 
-@ancestors{@ancestors} = (1) x @ancestors;
-
-my(@stack);
+my($attributes);
 
 $tree -> walk_down
 ({
-	ancestors => \%ancestors,
 	callback  =>
 	sub
 	{
 		my($node, $options) = @_;
+		$name               = $node -> name;
+		$attributes         = $node -> attributes;
 
-		if ($$options{_depth} > 1)
-		{
-			$name = $node -> name;
-
-			if (defined $$options{ancestors}{$name})
-			{
-				push @{$$options{stack} }, $node;
-			}
-		}
+		print "Replaced: $name\n" if ($$attributes{replaced});
 
 		return 1;
 	},
 	_depth => 0,
-	stack  => \@stack,
 });
-
-my(@kids);
-
-for $node (@stack)
-{
-	$name = $node -> name;
-	@kids = grep{$_ -> name eq $name} $tree -> daughters;
-
-	$node -> replace_with(map{$_ -> copy_at_and_under} @kids);
-}
-
-print join("\n", @{$tree -> draw_ascii_tree}), "\n";
-print '-' x 50, "\n";
 
 __END__
 
