@@ -71,9 +71,6 @@ sub find_links
 		$node -> replace_with($sub_tree -> daughters);
 	}
 
-	print join("\n", @{$tree -> draw_ascii_tree}), "\n";
-	print '-' x 50, "\n";
-
 	return $count;
 
 } # End of find_links.
@@ -133,32 +130,31 @@ while (! $finished)
 }
 
 my($attributes);
+my(%replaced);
 
 $tree -> walk_down
 ({
 	callback  =>
 	sub
 	{
-		my($node, $options) = @_;
-		$name               = $node -> name;
-		$attributes         = $node -> attributes;
-
-		print "Replaced: $name\n" if ($$attributes{replaced});
+		my($node, $options)        = @_;
+		$name                      = $node -> name;
+		$attributes                = $node -> attributes;
+		$$options{replaced}{$name} = 1 if ($$attributes{replaced});
 
 		return 1;
 	},
-	_depth => 0,
+	_depth   => 0,
+	replaced => \%replaced,
 });
 
-__END__
-
-for $node (@stack)
+for $name (keys %replaced)
 {
-	$name = $node -> name;
-	@kids = grep{$_ -> name eq $name} $tree -> daughters;
-
-	$tree -> remove_daughter($_) for @kids;
+	$tree -> remove_daughter($_) for grep{$_ -> name eq $name} $tree -> daughters;
 }
+
+print join("\n", @{$tree -> draw_ascii_tree}), "\n";
+print '-' x 50, "\n";
 
 __END__
 
