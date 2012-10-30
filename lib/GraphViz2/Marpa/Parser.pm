@@ -111,8 +111,6 @@ sub _build_node
 } # End of _build_node.
 
 # -----------------------------------------------
-# Output:
-# $self -> paths, which combines all edges in $self -> edges.
 
 sub _build_path_helper
 {
@@ -152,20 +150,19 @@ sub _build_path_helper
 		stack  => \@stack,
 	});
 
-	my($count)    = 0;
 	my($sub_tree) = Tree::DAG_Node -> new;
 
 	my(@kids);
 	my($node);
+	my(%seen);
 
 	for $node (@stack)
 	{
-		$count++;
+		$name        = $node -> name;
+		@kids        = grep{$_ -> name eq $name} $self -> paths -> daughters;
+		$seen{$name} = 1;
 
-		$name = $node -> name;
-		@kids = grep{$_ -> name eq $name} $self -> paths -> daughters;
-
-		$sub_tree -> add_daughters(map{$_ -> copy_at_and_under} @kids);
+		$sub_tree -> add_daughters(map{$_ -> copy_at_and_under({no_attribute_copy => 1})} @kids);
 
 		for ($sub_tree -> daughters)
 		{
@@ -175,22 +172,38 @@ sub _build_path_helper
 		$node -> replace_with($sub_tree -> daughters);
 	}
 
-	return $count;
+	return ({%seen}, $#stack);
 
 } # End of _build_path_helper.
 
 # -----------------------------------------------
+# Output:
+# $self -> paths, which combines all edges in $self -> edges.
 
 sub _build_paths
 {
-	my($self)     = @_;
+	my($self) = @_;
+
+	# Copy the edges tree before fiddling with the copy.
+
+	$self -> paths($self -> edges -> copy_tree({no_attribute_copy => 1}) );
+	$self -> paths -> name('Root');
+
 	my($finished) = 0;
 
-	$self -> paths -> add_daughters($self -> edges -> daughters);
+	my(@result);
+	my(%seen);
 
 	while (! $finished)
 	{
-		$finished = $self -> _build_path_helper == 0;
+		@result   = $self -> _build_path_helper;
+		$seen{$_} = 1 for keys %{$result[0]};
+		$finished = $result[1] < 0;
+	}
+
+	for my $child ($self -> paths -> daughters)
+	{
+		$self -> paths -> remove_daughter($child) if ($seen{$child -> name});
 	}
 
 } # End of _build_paths.
@@ -278,9 +291,9 @@ sub _build_tree
 				$child = Tree::DAG_Node -> new({name => $value});
 
 				$child -> attributes({%port_attribute});
-				$parent -> add_daughters($child);
+				$parent -> add_daughter($child);
 
-				if (! defined $parent -> mother)
+				if (defined $parent -> mother)
 				{
 					$parent -> attributes({%{$parent -> attributes}, %{$class_attribute{edge} }, %$attribute});
 					$self -> _hoist_parental_attributes($parent);
@@ -887,7 +900,7 @@ sub increment_item_count
 sub _init
 {
 	my($self, $arg)         = @_;
-	$$arg{edges}            = Tree::DAG_Node -> new({name => 'edges'});
+	$$arg{edges}            = Tree::DAG_Node -> new({name => 'Root'});
 	$$arg{item_count}       = 0;
 	$$arg{items}            = Set::Array -> new;
 	$$arg{lexed_file}       ||= '';       # Caller can set.
@@ -897,7 +910,7 @@ sub _init
 	$$arg{nodes}            = {};
 	$$arg{output_file}      ||= '';       # Caller can set.
 	$$arg{parsed_file}      ||= '';       # Caller can set.
-	$$arg{paths}            = Tree::DAG_Node -> new({name => 'paths'});
+	$$arg{paths}            = Tree::DAG_Node -> new; # No need to set name. See _build_paths.
 	$$arg{renderer}         = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
 	$$arg{report_forest}    ||= 0;        # Caller can set.
 	$$arg{report_items}     ||= 0;        # Caller can set.
@@ -1156,7 +1169,13 @@ sub run
 	# Build a Graphviz-like tree of the data.
 
 	$self -> _build_tree;
+
+	# Combine edges into paths.
+
 	$self -> _build_paths;
+
+	# Announce the good news.
+
 	$self -> print_structure if ($self -> report_forest);
 
 	# Pass the tokens to the renderer.
