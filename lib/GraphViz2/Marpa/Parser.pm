@@ -293,6 +293,8 @@ sub _build_tree
 				$child -> attributes({%port_attribute});
 				$parent -> add_daughter($child);
 
+				# If the node has a mother, i.e. it's not the root.
+
 				if (defined $parent -> mother)
 				{
 					$parent -> attributes({%{$parent -> attributes}, %{$class_attribute{edge} }, %$attribute});
