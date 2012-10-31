@@ -2021,6 +2021,11 @@ Comments are not expected in the input stream.
 
 See L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/Lexing.and.Parsing.with.Marpa.html>.
 
+=head2 This module uses Hash::FieldHash, which has an XS component!
+
+Correct. My policy is that stand-alone modules should use a light-weight object manager (my choice is
+L<Hash::FieldHash>), whereas apps can - and probably should - use L<Moose>.
+
 =head1 Machine-Readable Change Log
 
 The file CHANGES was converted into Changelog.ini by L<Module::Metadata::Changes>.
