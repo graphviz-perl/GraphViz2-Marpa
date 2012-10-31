@@ -270,7 +270,7 @@ sub _build_tree
 		elsif ($type eq 'graph_id')
 		{
 			$$tipe{graph_id} = $value if (! defined $$tipe{graph_id});
-			$graph_id         = $value;
+			$graph_id        = $value;
 		}
 		elsif ($type eq 'node_id')
 		{
