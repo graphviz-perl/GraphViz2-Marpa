@@ -38,8 +38,13 @@ provides:
     version: 1.06
 requires:
   Algorithm::Diff: 1.1902
+  Config: 0
+  Config::Tiny: 2.14
   Data::Section::Simple: 0.02
   Date::Format: 2.24
+  Date::Simple: 3.03
+  File::Copy: 2.21
+  File::HomeDir: 0.99
   File::Slurp: 9999.19
   File::Spec: 3.33
   File::Temp: 0.22
@@ -52,13 +57,16 @@ requires:
   List::Compare: 0.37
   Log::Handler: 0.71
   Marpa::R2: 2.022
+  Module::Path: 0.08
+  Path::Class: 0.24
   Perl6::Slurp: 0.03
   Pod::Usage: 1.36
   Set::Array: 0.23
   Set::FA::Element: 1.08
+  Text::CSV: 1.21
   Text::CSV_XS: 0.8
   Text::Xslate: 1.4001
-  Tree: 1.02
+  Tree::DAG_Node: 1.06
   Try::Tiny: 0.09
   feature: 1
   perl: v5.10.0

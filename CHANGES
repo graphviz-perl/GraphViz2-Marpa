@@ -29,6 +29,9 @@ Revision history for Perl extension GraphViz2::Marpa.
 	- Incorporate code from scripts/stt2html.pl into GraphViz2::Marpa::Utils.
 	- Rename html/default.stt.html to html/stt.html.
 	- Expand contents of html/code.attributes.html, html/index.html and html/stt.html.
+	- Add config/.htgraphviz2.marpa.conf and lib/GraphViz2/Marpa/Config.pm to simplify generating the demo's
+		index.html.
+	- Switch from Tree to Tree::DAG_Node, since it has various method I hope to use implementing paths().
 
 1.05  Tue Oct 16 09:49:00 2012
 	- Fix a bug in the lexer where it used to combine multiple lines in the input file by, basically, using
