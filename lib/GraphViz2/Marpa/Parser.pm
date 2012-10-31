@@ -1376,6 +1376,8 @@ To disable logging, just set 'logger' to the empty string (not undef).
 
 This option affects L<Log::Handler>.
 
+You can get more output by calling new(maxlevel => 'info') and even more with new(maxlevel => 'debug').
+
 See the L<Log::Handler::Levels> docs.
 
 Default: 'notice'.
