@@ -520,10 +520,7 @@ sub format_node
 {
 	my($self, $node) = @_;
 
-	return
-		$node -> name .
-		'. Edge attrs: ' .
-		$self -> hashref2string($node -> attributes);
+	return $node -> name . '. Edge attrs: ' . $self -> hashref2string($node -> attributes);
 
 } # End of format_node.
 
@@ -1065,7 +1062,7 @@ sub pretty_print_node
 {
 	my($self, $t, $vert_dashes) = @_;
 	my($depth)         = scalar($t -> ancestors) || 0;
-	my($sibling_count) = defined $t -> mother ? 1 : scalar $t -> self_and_sisters - 1;
+	my($sibling_count) = defined $t -> mother ? scalar $t -> self_and_sisters : 1;
 	my($offset)        = ' ' x 4;
 	my(@indent)        = map{$$vert_dashes[$_] || $offset} 0 .. $depth - 1;
 	@$vert_dashes      =
@@ -1079,10 +1076,7 @@ sub pretty_print_node
 		$$vert_dashes[$depth] = $offset;
 	}
 
-	return
-		join('' => @indent[1 .. $#indent])
-		. ($depth ? '   |---' : '')
-		. $self -> format_node($t);
+	return join('' => @indent[1 .. $#indent]) . ($depth ? '   |---' : '') . $self -> format_node($t);
 
 } # End of pretty_print_node.
 
