@@ -16,6 +16,8 @@ Revision history for Perl extension GraphViz2::Marpa.
 		In particular, subgraph info is still missing.
 	- Add option report_forest for new() and as a mutator. Calling new(report_forest => 1) prints all the
 		information provided with those 4 new getters.
+	- Reserve the paths() mutator for later implementation. The current code gets into an infinite loop
+		sometimes, and so is commented out.
 	- Expand the POD for the lexer and the parse giving details on input and output stream content.
 	- Move the template for the demo from html/graphviz2.marpa.index.tx to htdocs/assets/templates/graphviz/marpa/
 		where it should have been all along. Patch scripts/generate.demo.pl to match.

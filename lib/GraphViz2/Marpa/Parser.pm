@@ -32,7 +32,7 @@ fieldhash my %minlevel         => 'minlevel';
 fieldhash my %nodes            => 'nodes';
 fieldhash my %output_file      => 'output_file';
 fieldhash my %parsed_file      => 'parsed_file';
-fieldhash my %paths            => 'paths';
+fieldhash my %paths            => 'paths'; # Reserved.
 fieldhash my %renderer         => 'renderer';
 fieldhash my %report_forest    => 'report_forest';
 fieldhash my %report_items     => 'report_items';
@@ -909,7 +909,7 @@ sub _init
 	$$arg{nodes}            = {};
 	$$arg{output_file}      ||= '';       # Caller can set.
 	$$arg{parsed_file}      ||= '';       # Caller can set.
-	$$arg{paths}            = Tree::DAG_Node -> new; # No need to set name. See _build_paths.
+	$$arg{paths}            = 'Reserved'; # No need to set name. See _build_paths.
 	$$arg{renderer}         = defined($$arg{renderer}) ? $$arg{renderer} : undef; # Caller can set.
 	$$arg{report_forest}    ||= 0;        # Caller can set.
 	$$arg{report_items}     ||= 0;        # Caller can set.
@@ -1103,8 +1103,8 @@ sub print_structure
 
 	$self -> log(notice => 'Edges:');
 	$self -> pretty_print_forest($self -> edges);
-	$self -> log(notice => 'Paths:');
-	$self -> pretty_print_forest($self -> paths);
+	#$self -> log(notice => 'Paths:');
+	#$self -> pretty_print_forest($self -> paths);
 
 } # End of print_structure.
 
@@ -1167,8 +1167,9 @@ sub run
 	$self -> _build_tree;
 
 	# Combine edges into paths.
+	# This method occassinally gets into an infinite loop.
 
-	$self -> _build_paths;
+	#$self -> _build_paths;
 
 	# Announce the good news.
 
@@ -1699,6 +1700,12 @@ Here, the [] indicate an optional parameter.
 Get or set the name of the file of parsed tokens for the parser to write. This file can be input to the renderer.
 
 'parsed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
+=head2 paths()
+
+Reserved.
+
+See also L</edges()>, L</nodes()>, L</style()> and L</type()>.
 
 =head2 pretty_print_forest([$edges])
 
