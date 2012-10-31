@@ -485,6 +485,7 @@ scripts/rend.pl
 scripts/rend.sh
 scripts/rend2svg.pl
 scripts/stt2html.pl
+scripts/test.tree.dag.node.pl
 t/dot2lex.t
 t/lex2parse.t
 t/parse2rend.t
