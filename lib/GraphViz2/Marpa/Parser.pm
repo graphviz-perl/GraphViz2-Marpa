@@ -1199,7 +1199,7 @@ sub tree2string
 	my($self, $edges) = @_;
 	$edges ||= $self -> edges;
 
-	return $edge -> tree2string;
+	return $edges -> tree2string;
 
 } # End of tree2string.
 
