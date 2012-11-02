@@ -191,7 +191,7 @@ sub generate_code_attributes_index
 		title           => 'Code and Command Line Attributes for GraphViz2::Marpa',
 		row             => \@row,
 		summary         => 'Code attributes',
-		version         => $GraphViz2::Marpa::VERSION,
+		version         => $VERSION,
 	},
 	);
 	close OUT;
@@ -372,7 +372,7 @@ sub generate_stt_index
 		title           => 'State Transition Table for GraphViz2::Marpa::Lexer',
 		row             => \@row,
 		summary         => 'STT',
-		version         => $GraphViz2::Marpa::VERSION,
+		version         => $VERSION,
 	},
 	);
 	close OUT;
