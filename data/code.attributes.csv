@@ -19,6 +19,7 @@ output_file,,,,Y,Y,Y,Y,Y,Y
 output_string,,,,,,,,,Y
 parsed_file,,,,Y,Y,Y,Y,Y,Y
 parser,,,,,,,,Y,
+paths,,,,,Y,,,,
 renderer,,,,,Y,,,Y,
 report_forest,,,,Y,Y,,Y,Y,
 report_items,Y,Y,,Y,Y,,Y,Y,
