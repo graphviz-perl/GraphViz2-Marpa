@@ -58,7 +58,7 @@ requires =>
 	Text::CSV                   => 1.21,
 	Text::CSV_XS                => 0.80,
 	Text::Xslate                => 1.4001,
-	Tree::DAG_Node              => 1.06,
+	Tree::DAG_Node              => 1.07,
 	Try::Tiny                   => 0.09,
 	warnings                    => 1.03,
 },

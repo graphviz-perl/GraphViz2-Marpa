@@ -518,16 +518,6 @@ sub end_subgraph
 
 # --------------------------------------------------
 
-sub format_node
-{
-	my($self, $node) = @_;
-
-	return $node -> name . '. Edge attrs: ' . $self -> hashref2string($node -> attributes);
-
-} # End of format_node.
-
-# --------------------------------------------------
-
 sub generate_parsed_file
 {
 	my($self, $file_name) = @_;
@@ -1030,58 +1020,6 @@ sub port_id
 
 } # End of port_id.
 
-# -----------------------------------------------
-
-sub pretty_print_forest
-{
-	my($self, $edges) = @_;
-	$edges ||= $self -> edges;
-
-	my(@out);
-	my(@vert_dashes);
-
-	$edges -> walk_down
-	({
-		callback =>
-		sub
-		{
-			my($node) = @_;
-
-			push @out, $self -> pretty_print_node($node, \@vert_dashes);
-
-			return 1,
-		},
-		_depth => 0,
-	});
-
-	$self -> log(notice => $_) for @out;
-
-} # End of pretty_print_forest.
-
-# -----------------------------------------------
-
-sub pretty_print_node
-{
-	my($self, $t, $vert_dashes) = @_;
-	my($depth)         = scalar($t -> ancestors) || 0;
-	my($sibling_count) = defined $t -> mother ? scalar $t -> self_and_sisters : 1;
-	my($offset)        = ' ' x 4;
-	my(@indent)        = map{$$vert_dashes[$_] || $offset} 0 .. $depth - 1;
-	@$vert_dashes      =
-	(
-		@indent,
-		($sibling_count == 1 ? $offset : '   |'),
-	);
-
-	if ($sibling_count == ($t -> my_daughter_index + 1) )
-	{
-		$$vert_dashes[$depth] = $offset;
-	}
-
-	return join('' => @indent[1 .. $#indent]) . ($depth ? '   |---' : '') . $self -> format_node($t);
-
-} # End of pretty_print_node.
-
 # --------------------------------------------------
 
 sub print_structure
@@ -1102,9 +1040,9 @@ sub print_structure
 	}
 
 	$self -> log(notice => 'Edges:');
-	$self -> pretty_print_forest($self -> edges);
+	$self -> log(notice => $_) for @{$self -> tree2string};
 	#$self -> log(notice => 'Paths:');
-	#$self -> pretty_print_forest($self -> paths);
+	#$self -> log(notice => $_) for @{$self -> tree2string{$self -> paths)};
 
 } # End of print_structure.
 
@@ -1253,6 +1191,17 @@ sub subgraph_id
 	return $t1;
 
 } # End of subgraph_id.
+
+# -----------------------------------------------
+
+sub tree2string
+{
+	my($self, $edges) = @_;
+	$edges ||= $self -> edges;
+
+	return $edge -> tree2string;
+
+} # End of tree2string.
 
 # --------------------------------------------------
 
@@ -1435,14 +1384,6 @@ The value supplied by the 'tokens' option takes preference over the 'lexed_file'
 =back
 
 =head1 Methods
-
-=head2 format_node($node)
-
-Returns a string.
-
-Called by L</pretty_print_node($node)>.
-
-Only override this in a sub-class if you wish to log a node in a different format.
 
 =head2 edges()
 
@@ -1709,31 +1650,9 @@ Reserved.
 
 See also L</edges()>, L</nodes()>, L</style()> and L</type()>.
 
-=head2 pretty_print_forest([$edges])
-
-Here, the [] indicate an optional parameter.
-
-If $edges is not supplied, it defaults to $self -> edges.
-
-Returns nothing.
-
-Calls L</pretty_print_node($t, $vert_dashes)>.
-
-Called by L</print_structure()>.
-
-Only override this in a sub-class if you wish to log the forest in a different format.
-
-=head2 pretty_print_node($t, $vert_dashes)
-
-Returns a string.
-
-Called by L</pretty_print_forest([$edges])>.
-
-Only override this in a sub-class if you wish to log a node in a different format.
-
 =head2 print_structure()
 
-Calls L</pretty_print_forest([$edges])> for both $self -> edges and $self -> paths.
+Calls L</tree2string([$edges])> for $self -> edges.
 
 Called by L</run()> at the end of the run, if new() was called as new(report_forest => 1).
 
@@ -1805,6 +1724,20 @@ Get or set the arrayref of lexed tokens to process.
 The value supplied by the 'tokens' option takes preference over the 'lexed_file' option.
 
 'tokens' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
+=head2 tree2string([$edges])
+
+Here, the [] indicate an optional parameter.
+
+If $edges is not supplied, it defaults to $self -> edges.
+
+Returns an arrayref which can be printed with:
+
+	print map{"$_\n"} @{$self -> tree2string};
+
+Calls L</Tree::DAG_Node/tree2string([$options], [$some_tree])>.
+
+Only override this in a sub-class if you wish to log the forest in a different format.
 
 =head2 type()
 
@@ -2045,12 +1978,6 @@ L<https://rt.cpan.org/Public/Dist/Display.html?Name=GraphViz2::Marpa>.
 L<GraphViz2::Marpa> was written by Ron Savage I<E<lt>ron@savage.net.auE<gt>> in 2012.
 
 Home page: L<http://savage.net.au/index.html>.
-
-=head1 Acknowledgements
-
-The code to print the tree was adapted from L<Forest::Tree::Writer::ASCIIWithBranches>.
-
-See the source for L</pretty_print_node($t, $vert_dashes)>, which is called from L</pretty_print_forest([$edges])>.
 
 =head1 Copyright
 
