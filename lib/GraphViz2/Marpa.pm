@@ -310,7 +310,7 @@ These are in the scripts/ directory.
 
 =item o code.attributes2html.pl
 
-Convert data/code.attributes.csv to data/code.attributes.html.
+Generate both data/code.attributes.csv and data/code.attributes.html.
 
 =item o dot2lex.pl
 
