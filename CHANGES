@@ -1,5 +1,9 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+1.07  Thu Nov  8 12:38:00 2012
+	- For pre-reqs such as strict, warnings, etc, which ship with Perl, set the version # to 0.
+		Reported as RT#80663 by Father Chrysostomos for Tree::DAG_Node.
+
 1.06  Fri Oct 26 09:09:00 2012
 	- Change the lexer to output start_scope and end_scope rather than open_brace and close_brace.
 		Change the parser to output start_scope and end_scope rather than start_graph and end_graph.

@@ -23,7 +23,7 @@ fieldhash my %subgraph_count => 'subgraph_count';
 fieldhash my %verbose        => 'verbose';
 
 our $myself; # Is a copy of $self for functions called by Set::FA::Element.
-our $VERSION = '1.06';
+our $VERSION = '1.07';
 
 # --------------------------------------------------
 
