@@ -60,8 +60,8 @@
             "Try::Tiny" : "0.09",
             "feature" : "1",
             "perl" : "v5.10.0",
-            "strict" : "1.03",
-            "warnings" : "1.03"
+            "strict" : "0",
+            "warnings" : "0"
          }
       }
    },
