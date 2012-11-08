@@ -68,7 +68,7 @@ requires:
   Text::Xslate: 1.4001
   Tree::DAG_Node: 1.07
   Try::Tiny: 0.09
-  feature: 1
+  feature: 0
   perl: v5.10.0
   strict: 0
   warnings: 0
