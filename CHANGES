@@ -1,5 +1,9 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+1.08  Unreleased.
+	- Add data/56.gv, which is graphs/directed/biological.gv from Graphviz V 2.29.
+	- Add data/57.gv, which is graphs/directed/arrows.gv from Graphviz V 2.29.
+
 1.07  Thu Nov  8 12:38:00 2012
 	- No code changes.
 	- For pre-reqs such as strict, warnings, etc, which ship with Perl, set the version # to 0.
