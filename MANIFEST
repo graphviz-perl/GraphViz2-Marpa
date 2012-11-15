@@ -245,6 +245,14 @@ data/55.gv
 data/55.lex
 data/55.parse
 data/55.rend
+data/56.gv
+data/56.lex
+data/56.parse
+data/56.rend
+data/57.gv
+data/57.lex
+data/57.parse
+data/57.rend
 data/90.abstract.gv
 data/90.abstract.lex
 data/90.abstract.parse
@@ -418,6 +426,8 @@ html/52.svg
 html/53.svg
 html/54.svg
 html/55.svg
+html/56.svg
+html/57.svg
 html/90.abstract.svg
 html/90.alf.svg
 html/90.clust.svg
