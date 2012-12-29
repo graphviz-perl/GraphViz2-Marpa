@@ -1,5 +1,5 @@
 use ExtUtils::MakeMaker;
-	LICENSE   => 'perl_5',
+	LICENSE   => 'artistic_2',
 
 if (open my $fh, '|dot', )
 {
@@ -31,7 +31,7 @@ WriteMakefile
 	},
 	DISTNAME  => 'GraphViz2-Marpa',
 	NAME      => 'GraphViz2::Marpa',
-	LICENSE   => 'perl_5',
+	LICENSE   => 'artistic_2',
 	PL_FILES  => {},
 	PREREQ_PM =>
 	{

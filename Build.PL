@@ -12,7 +12,7 @@ else
 Module::Build -> new
 (
 	module_name    => 'GraphViz2::Marpa',
-	license        => 'perl_5',
+	license        => 'artistic_2',
 	dist_abstract  => 'A Perl lexer and parser for Graphviz dot files',
 	dist_author    => 'Ron Savage <ron@savage.net.au>',
 	build_requires =>
