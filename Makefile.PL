@@ -1,4 +1,5 @@
 use ExtUtils::MakeMaker;
+	LICENSE   => 'perl_5',
 
 if (open my $fh, '|dot', )
 {
