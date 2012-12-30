@@ -29,11 +29,10 @@ use Hash::FieldHash ':all';
 
 use HTML::Entities::Interpolate;
 
-use IO::File;
-
 use Module::Path 'module_path';
 
 use Text::CSV;
+use Text::CSV::Slurp;
 use Text::Xslate 'mark_raw';
 
 fieldhash my %config => 'config';
@@ -137,7 +136,7 @@ sub generate_code_attributes_index
 
 	my($data_dir_name)   = 'data';
 	my($code_file_name)  = File::Spec -> catfile($data_dir_name, 'code.attributes.csv');
-	my($code_attributes) = $self -> read_csv_file($code_file_name);
+	my($code_attributes) = Text::CSV::Slurp -> new -> load(file => $code_file_name, allow_whitespace => 1);
 
 	my($column, @column);
 	my(@row);
@@ -318,7 +317,7 @@ sub generate_stt_index
 	my(@heading)       = qw/Start Accept State Event Next Entry Exit Regexp Interpretation/;
 	my($data_dir_name) = 'data';
 	my($stt_file_name) = File::Spec -> catfile($data_dir_name, 'default.stt.csv');
-	my($stt)           = $self -> read_csv_file($stt_file_name);
+	my($stt)           = Text::CSV::Slurp -> new -> load(file => $stt_file_name, allow_whitespace => 1);
 
 	my($column, @column);
 	my(@row);
@@ -430,20 +429,6 @@ sub new
 
 # -----------------------------------------------
 
-sub read_csv_file
-{
-	my($self, $file_name) = @_;
-	my($csv) = Text::CSV_XS -> new({allow_whitespace => 1});
-	my($io)  = IO::File -> new($file_name, 'r');
-
-	$csv -> column_names($csv -> getline($io) );
-
-	return $csv -> getline_hr_all($io);
-
-} # End of read_csv_file.
-
-# -----------------------------------------------
-
 1;
 
 =pod
@@ -548,10 +533,6 @@ Right justify the $string in a field of 20 spaces.
 =head2 new()
 
 See L</Constructor and Initialization> for details on the parameters accepted by L</new()>.
-
-=head2 read_csv_file($file_name)
-
-Read the named CSV file into an arrayref of hashrefs.
 
 =head1 Version Numbers
 

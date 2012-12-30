@@ -19,6 +19,8 @@ use Perl6::Slurp;
 use Set::Array;
 use Set::FA::Element;
 
+use Text::CSV::Slurp;
+
 use Try::Tiny;
 
 fieldhash my %description  => 'description';
@@ -550,7 +552,7 @@ sub run
 	}
 	elsif ($self -> type eq 'csv')
 	{
-		$result = $self -> _process_csv_file($self -> utils -> read_csv_file($self -> stt_file) );
+		$result = $self -> _process_csv_file(Text::CSV::Slurp -> new -> load(file => $self -> stt_file, allow_whitespace => 1));
 	}
 	else
 	{
