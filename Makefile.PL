@@ -63,7 +63,7 @@ WriteMakefile
 		Set::Array                  => 0.23,
 		Set::FA::Element            => 1.08,
 		strict                      => 0,
-		Test::Simple                => 0.98,
+		Test::More                => 0.98,
 		Test::Pod                   => 1.45,
 		Text::CSV                   => 1.21,
 		Text::CSV::Slurp            => 1,
