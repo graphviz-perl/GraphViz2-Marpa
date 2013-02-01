@@ -64,7 +64,7 @@ WriteMakefile
 		Set::FA::Element            => 1.08,
 		strict                      => 0,
 		Test::More                => 0.98,
-		Test::Pod                   => 1.45,
+#		Test::Pod                   => 1.45, # Make it optional. See t/pod.t
 		Text::CSV                   => 1.21,
 		Text::CSV::Slurp            => 1,
 		Text::Xslate                => 1.4001,
