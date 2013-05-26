@@ -4,7 +4,6 @@ author:
   - 'Ron Savage <ron@savage.net.au>'
 build_requires:
   Test::More: 0.98
-  Test::Pod: 1.44
 configure_requires:
   Module::Build: 0.38
 dynamic_config: 1
@@ -17,25 +16,25 @@ name: GraphViz2-Marpa
 provides:
   GraphViz2::Marpa:
     file: lib/GraphViz2/Marpa.pm
-    version: 1.07
+    version: 1.08
   GraphViz2::Marpa::Config:
     file: lib/GraphViz2/Marpa/Config.pm
-    version: 1.07
+    version: 1.08
   GraphViz2::Marpa::Lexer:
     file: lib/GraphViz2/Marpa/Lexer.pm
-    version: 1.07
+    version: 1.08
   GraphViz2::Marpa::Lexer::DFA:
     file: lib/GraphViz2/Marpa/Lexer/DFA.pm
-    version: 1.07
+    version: 1.08
   GraphViz2::Marpa::Parser:
     file: lib/GraphViz2/Marpa/Parser.pm
-    version: 1.07
+    version: 1.08
   GraphViz2::Marpa::Renderer::GraphViz2:
     file: lib/GraphViz2/Marpa/Renderer/GraphViz2.pm
-    version: 1.07
+    version: 1.08
   GraphViz2::Marpa::Utils:
     file: lib/GraphViz2/Marpa/Utils.pm
-    version: 1.07
+    version: 1.08
 requires:
   Algorithm::Diff: 1.1902
   Config: 0
@@ -73,4 +72,4 @@ requires:
   warnings: 0
 resources:
   license: http://www.perlfoundation.org/artistic_license_2_0
-version: 1.07
+version: 1.08
