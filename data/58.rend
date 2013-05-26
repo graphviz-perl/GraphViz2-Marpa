@@ -1,0 +1,19 @@
+digraph href_test
+{
+	edge
+	[
+		color = "blue"
+	]
+	node_1
+	[
+		color = "red"
+	]
+	node_2
+	[
+		color = "green"
+	]
+	node_1 -> node_2
+	[
+		label = <<table border='0'> 			<tr> 				<td href='http://savage.net.au' title='Tool tip'>Hover over label, then click it</td> 			</tr> 		</table>>
+	]
+}

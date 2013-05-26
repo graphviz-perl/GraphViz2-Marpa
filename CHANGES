@@ -1,9 +1,10 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
-1.08  Unreleased.
+1.08  Mon May 27 09:45:00 2013
 	- Add data/56.gv, which is graphs/directed/biological.gv from Graphviz V 2.29.
 	- Add data/57.gv, which is graphs/directed/arrows.gv from Graphviz V 2.29.
-	- Replace sub using IO::File and Text::CSV_XS with Text::CSV::Slurp.
+	- Add data/58.gv, which uses a clickable href in a table as an edge label.
+	- Replace sub read_cvs_file(), using IO::File and Text::CSV_XS, with Text::CSV::Slurp.
 
 1.07  Thu Nov  8 12:38:00 2012
 	- No code changes.

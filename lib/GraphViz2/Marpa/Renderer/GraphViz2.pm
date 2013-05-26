@@ -12,6 +12,8 @@ use Log::Handler;
 
 use Set::Array;
 
+use Text::CSV::Slurp;
+
 fieldhash my %items         => 'items';
 fieldhash my %logger        => 'logger';
 fieldhash my %maxlevel      => 'maxlevel';
@@ -22,7 +24,7 @@ fieldhash my %parsed_file   => 'parsed_file';
 fieldhash my %tokens        => 'tokens';
 fieldhash my %utils         => 'utils';
 
-our $VERSION = '1.07';
+our $VERSION = '1.08';
 
 # --------------------------------------------------
 
@@ -249,7 +251,9 @@ sub run
 
 	if ($#{$self -> tokens} < 0)
 	{
-		for my $record (@{$self -> utils -> read_csv_file($self -> parsed_file)})
+		my($parsed_file) = Text::CSV::Slurp -> new -> load(file => $self -> parsed_file, allow_whitespace => 1);
+
+		for my $record (@$parsed_file)
 		{
 			push @{$self -> tokens}, {type => $$record{type}, value => $$record{value} };
 		}

@@ -1308,7 +1308,181 @@ Output file 66: html/55.svg (6541 bytes)
 </tr>
 <tr>
   <td>
-	Input file 67: data/90.ER.gv (650 bytes). Lex result: OK:<br />graph ER {
+	Input file 67: data/56.gv (1353 bytes). Lex result: OK:<br />digraph g {
+<br />	rankdir=LR;
+<br />
+<br />	node [shape=rpromoter colorscheme=rdbu5 color=1 style=filled fontcolor=3]; Hef1a; TRE; UAS; Hef1aLacOid;
+<br />	Hef1aLacOid [label=&quot;Hef1a-LacOid&quot;];
+<br />	node [shape=rarrow colorscheme=rdbu5 color=5 style=filled fontcolor=3]; Gal4VP16; LacI; rtTA3; DeltamCherry;
+<br />	Gal4VP16 [label=&quot;Gal4-VP16&quot;];
+<br />	product [shape=oval style=filled colorscheme=rdbu5 color=2 label=&quot;&quot;];
+<br />	repression [shape=oval label=&quot;LacI repression&quot; fontcolor=black style=dotted];
+<br />	node [shape=oval style=filled colorscheme=rdbu5 color=4 fontcolor=5];
+<br />	combination [label=&quot;rtTA3 + Doxycycline&quot;];
+<br />	LacIprotein [label=&quot;LacI&quot;];
+<br />	rtTA3protein [label=&quot;rtTA3&quot;];
+<br />	Gal4VP16protein [label=&quot;Gal4-VP16&quot;];
+<br />
+<br />
+<br />	subgraph cluster_0 {
+<br />		colorscheme=rdbu5;
+<br />		color=3;
+<br />		node [colorscheme=rdbu5 fontcolor=3];
+<br />		Hef1a -&gt; Gal4VP16 [arrowhead=none];
+<br />		Gal4VP16 -&gt; UAS [arrowhead=none];
+<br />		UAS -&gt; LacI [arrowhead=none];
+<br />		LacI -&gt; Hef1aLacOid [arrowhead=none];
+<br />		Hef1aLacOid -&gt; rtTA3 [arrowhead=none];
+<br />		rtTA3 -&gt; TRE [arrowhead=none];
+<br />		TRE -&gt; DeltamCherry [arrowhead=none]
+<br />	}
+<br />
+<br />	Gal4VP16 -&gt; Gal4VP16protein;
+<br />	Gal4VP16protein -&gt; UAS;
+<br />	LacI -&gt; LacIprotein;
+<br />	LacIprotein -&gt; repression;
+<br />	repression -&gt; Hef1aLacOid [arrowhead=tee];
+<br />	IPTG -&gt; repression [arrowhead=tee];
+<br />	rtTA3 -&gt; rtTA3protein;
+<br />	rtTA3protein -&gt; combination;
+<br />	combination -&gt; TRE;
+<br />	Doxycycline -&gt; combination;
+<br />	DeltamCherry -&gt; product;
+<br />
+<br />
+<br />
+<br />}
+
+  </td>
+  <td>
+<object data = "./56.svg"></object><br />
+Output file 67: html/56.svg (10711 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 68: data/57.gv (4389 bytes). Lex result: OK:<br />digraph G {
+<br />	graph [rankdir=LR nodesep=0]
+<br />	node [shape=point label=&quot;&quot;]
+<br />	edge [fontsize=10]
+<br />	_box -&gt; box [arrowhead=box label=box]
+<br />	box -&gt; boxbox [arrowhead=boxbox label=boxbox]
+<br />	_box -&gt; lbox [arrowhead=lbox label=lbox]
+<br />	lbox -&gt; lboxlbox [arrowhead=lboxlbox label=lboxlbox]
+<br />	_box -&gt; rbox [arrowhead=rbox label=rbox]
+<br />	rbox -&gt; rboxrbox [arrowhead=rboxrbox label=rboxrbox]
+<br />	_box -&gt; olbox [arrowhead=olbox label=olbox]
+<br />	olbox -&gt; olboxolbox [arrowhead=olboxolbox label=olboxolbox]
+<br />	_box -&gt; orbox [arrowhead=orbox label=orbox]
+<br />	orbox -&gt; orboxorbox [arrowhead=orboxorbox label=orboxorbox]
+<br />	_box -&gt; obox [arrowhead=obox label=obox]
+<br />	obox -&gt; oboxobox [arrowhead=oboxobox label=oboxobox]
+<br />	_crow -&gt; crow [arrowhead=crow label=crow]
+<br />	crow -&gt; crowcrow [arrowhead=crowcrow label=crowcrow]
+<br />	_crow -&gt; lcrow [arrowhead=lcrow label=lcrow]
+<br />	lcrow -&gt; lcrowlcrow [arrowhead=lcrowlcrow label=lcrowlcrow]
+<br />	_crow -&gt; rcrow [arrowhead=rcrow label=rcrow]
+<br />	rcrow -&gt; rcrowrcrow [arrowhead=rcrowrcrow label=rcrowrcrow]
+<br />	_diamond -&gt; diamond [arrowhead=diamond label=diamond]
+<br />	diamond -&gt; diamonddiamond [arrowhead=diamonddiamond label=diamonddiamond]
+<br />	_diamond -&gt; ldiamond [arrowhead=ldiamond label=ldiamond]
+<br />	ldiamond -&gt; ldiamondldiamond [arrowhead=ldiamondldiamond label=ldiamondldiamond]
+<br />	_diamond -&gt; rdiamond [arrowhead=rdiamond label=rdiamond]
+<br />	rdiamond -&gt; rdiamondrdiamond [arrowhead=rdiamondrdiamond label=rdiamondrdiamond]
+<br />	_diamond -&gt; oldiamond [arrowhead=oldiamond label=oldiamond]
+<br />	oldiamond -&gt; oldiamondoldiamond [arrowhead=oldiamondoldiamond label=oldiamondoldiamond]
+<br />	_diamond -&gt; ordiamond [arrowhead=ordiamond label=ordiamond]
+<br />	ordiamond -&gt; ordiamondordiamond [arrowhead=ordiamondordiamond label=ordiamondordiamond]
+<br />	_diamond -&gt; odiamond [arrowhead=odiamond label=odiamond]
+<br />	odiamond -&gt; odiamondodiamond [arrowhead=odiamondodiamond label=odiamondodiamond]
+<br />	_dot -&gt; dot [arrowhead=dot label=dot]
+<br />	dot -&gt; dotdot [arrowhead=dotdot label=dotdot]
+<br />	_dot -&gt; odot [arrowhead=odot label=odot]
+<br />	odot -&gt; odotodot [arrowhead=odotodot label=odotodot]
+<br />	_inv -&gt; inv [arrowhead=inv label=inv]
+<br />	inv -&gt; invinv [arrowhead=invinv label=invinv]
+<br />	_inv -&gt; linv [arrowhead=linv label=linv]
+<br />	linv -&gt; linvlinv [arrowhead=linvlinv label=linvlinv]
+<br />	_inv -&gt; rinv [arrowhead=rinv label=rinv]
+<br />	rinv -&gt; rinvrinv [arrowhead=rinvrinv label=rinvrinv]
+<br />	_inv -&gt; olinv [arrowhead=olinv label=olinv]
+<br />	olinv -&gt; olinvolinv [arrowhead=olinvolinv label=olinvolinv]
+<br />	_inv -&gt; orinv [arrowhead=orinv label=orinv]
+<br />	orinv -&gt; orinvorinv [arrowhead=orinvorinv label=orinvorinv]
+<br />	_inv -&gt; oinv [arrowhead=oinv label=oinv]
+<br />	oinv -&gt; oinvoinv [arrowhead=oinvoinv label=oinvoinv]
+<br />	_none -&gt; none [arrowhead=none label=none]
+<br />	none -&gt; nonenone [arrowhead=nonenone label=nonenone]
+<br />	_normal -&gt; normal [arrowhead=normal label=normal]
+<br />	normal -&gt; normalnormal [arrowhead=normalnormal label=normalnormal]
+<br />	_normal -&gt; lnormal [arrowhead=lnormal label=lnormal]
+<br />	lnormal -&gt; lnormallnormal [arrowhead=lnormallnormal label=lnormallnormal]
+<br />	_normal -&gt; rnormal [arrowhead=rnormal label=rnormal]
+<br />	rnormal -&gt; rnormalrnormal [arrowhead=rnormalrnormal label=rnormalrnormal]
+<br />	_normal -&gt; olnormal [arrowhead=olnormal label=olnormal]
+<br />	olnormal -&gt; olnormalolnormal [arrowhead=olnormalolnormal label=olnormalolnormal]
+<br />	_normal -&gt; ornormal [arrowhead=ornormal label=ornormal]
+<br />	ornormal -&gt; ornormalornormal [arrowhead=ornormalornormal label=ornormalornormal]
+<br />	_normal -&gt; onormal [arrowhead=onormal label=onormal]
+<br />	onormal -&gt; onormalonormal [arrowhead=onormalonormal label=onormalonormal]
+<br />	_tee -&gt; tee [arrowhead=tee label=tee]
+<br />	tee -&gt; teetee [arrowhead=teetee label=teetee]
+<br />	_tee -&gt; ltee [arrowhead=ltee label=ltee]
+<br />	ltee -&gt; lteeltee [arrowhead=lteeltee label=lteeltee]
+<br />	_tee -&gt; rtee [arrowhead=rtee label=rtee]
+<br />	rtee -&gt; rteertee [arrowhead=rteertee label=rteertee]
+<br />	_vee -&gt; vee [arrowhead=vee label=vee]
+<br />	vee -&gt; veevee [arrowhead=veevee label=veevee]
+<br />	_vee -&gt; lvee [arrowhead=lvee label=lvee]
+<br />	lvee -&gt; lveelvee [arrowhead=lveelvee label=lveelvee]
+<br />	_vee -&gt; rvee [arrowhead=rvee label=rvee]
+<br />	rvee -&gt; rveervee [arrowhead=rveervee label=rveervee]
+<br />	_curve -&gt; curve [arrowhead=curve label=curve]
+<br />	curve -&gt; curvecurve [arrowhead=curvecurve label=curvecurve]
+<br />	_curve -&gt; lcurve [arrowhead=lcurve label=lcurve]
+<br />	lcurve -&gt; lcurvelcurve [arrowhead=lcurvelcurve label=lcurvelcurve]
+<br />	_curve -&gt; rcurve [arrowhead=rcurve label=rcurve]
+<br />	rcurve -&gt; rcurvercurve [arrowhead=rcurvercurve label=rcurvercurve]
+<br />}
+
+  </td>
+  <td>
+<object data = "./57.svg"></object><br />
+Output file 68: html/57.svg (58115 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 69: data/58.gv (410 bytes). Lex result: OK:<br /># Test of href as a clickable label attribute.
+<br /># Note the use of single quotes in the label.
+<br /># Double quotes are used for output *.csv files.
+<br />
+<br />digraph href_test
+<br />{
+<br />	edge   [color = blue]
+<br />	node_1 [color = red]
+<br />	node_2 [color = green]
+<br />
+<br />	node_1 -&gt; node_2
+<br />	[
+<br />		label =
+<br />		&lt;&lt;table border=&#39;0&#39;&gt;
+<br />			&lt;tr&gt;
+<br />				&lt;td href=&#39;http://savage.net.au&#39; title=&#39;Tool tip&#39;&gt;Hover over label, then click it&lt;/td&gt;
+<br />			&lt;/tr&gt;
+<br />		&lt;/table&gt;&gt;
+<br />	]
+<br />}
+
+  </td>
+  <td>
+<object data = "./58.svg"></object><br />
+Output file 69: html/58.svg (1615 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 70: data/90.ER.gv (650 bytes). Lex result: OK:<br />graph ER {
 <br />	node [shape=box]; course; institute; student;
 <br />	node [shape=ellipse]; {node [label=&quot;name&quot;] name0; name1; name2;}
 <br />		code; grade; number;
@@ -1334,12 +1508,12 @@ Output file 66: html/55.svg (6541 bytes)
   </td>
   <td>
 <object data = "./90.ER.svg"></object><br />
-Output file 67: html/90.ER.svg (7143 bytes)
+Output file 70: html/90.ER.svg (7143 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 68: data/90.KW91.gv (416 bytes). Lex result: OK:<br />digraph G {
+	Input file 71: data/90.KW91.gv (416 bytes). Lex result: OK:<br />digraph G {
 <br />	style=bold;
 <br />	subgraph cluster_outer {
 <br />		Act_1 -&gt; Act_21;
@@ -1363,12 +1537,12 @@ Output file 67: html/90.ER.svg (7143 bytes)
   </td>
   <td>
 <object data = "./90.KW91.svg"></object><br />
-Output file 68: html/90.KW91.svg (7477 bytes)
+Output file 71: html/90.KW91.svg (7477 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 69: data/90.Petersen.gv (902 bytes). Lex result: OK:<br />/*
+	Input file 72: data/90.Petersen.gv (902 bytes). Lex result: OK:<br />/*
 <br /> * The transitive 5-net, also known as Petersen&#39;s graph,
 <br /> * can be used to test the &quot;stability points&quot; of the layout
 <br /> * algorithm.
@@ -1420,12 +1594,12 @@ Output file 68: html/90.KW91.svg (7477 bytes)
   </td>
   <td>
 <object data = "./90.Petersen.svg"></object><br />
-Output file 69: html/90.Petersen.svg (6007 bytes)
+Output file 72: html/90.Petersen.svg (6007 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 70: data/90.abstract.gv (770 bytes). Lex result: OK:<br />digraph abstract {
+	Input file 73: data/90.abstract.gv (770 bytes). Lex result: OK:<br />digraph abstract {
 <br />	size=&quot;6,6&quot;;
 <br />	S24 -&gt; 27;
 <br />	S24 -&gt; 25;
@@ -1500,12 +1674,12 @@ Output file 69: html/90.Petersen.svg (6007 bytes)
   </td>
   <td>
 <object data = "./90.abstract.svg"></object><br />
-Output file 70: html/90.abstract.svg (34308 bytes)
+Output file 73: html/90.abstract.svg (34308 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 71: data/90.alf.gv (958 bytes). Lex result: OK:<br />digraph Alf {
+	Input file 74: data/90.alf.gv (958 bytes). Lex result: OK:<br />digraph Alf {
 <br />size = &quot;6,9&quot;;
 <br />node [ shape = record ];
 <br />Decl [ label = &quot;\n\nDecl|{name|access|decl_flags|extern_c_linkage}&quot;];
@@ -1541,12 +1715,12 @@ Output file 70: html/90.abstract.svg (34308 bytes)
   </td>
   <td>
 <object data = "./90.alf.svg"></object><br />
-Output file 71: html/90.alf.svg (14628 bytes)
+Output file 74: html/90.alf.svg (14628 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 72: data/90.clust.gv (255 bytes). Lex result: OK:<br />digraph G {
+	Input file 75: data/90.clust.gv (255 bytes). Lex result: OK:<br />digraph G {
 <br />	subgraph cluster_0 {
 <br />		label = &quot;hello world&quot;;
 <br />		a -&gt; b;
@@ -1572,12 +1746,12 @@ Output file 71: html/90.alf.svg (14628 bytes)
   </td>
   <td>
 <object data = "./90.clust.svg"></object><br />
-Output file 72: html/90.clust.svg (5683 bytes)
+Output file 75: html/90.clust.svg (5683 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 73: data/90.clust1.gv (146 bytes). Lex result: OK:<br />digraph G {
+	Input file 76: data/90.clust1.gv (146 bytes). Lex result: OK:<br />digraph G {
 <br />	subgraph cluster_c0 {a0 -&gt; a1 -&gt; a2 -&gt; a3;}
 <br />	subgraph cluster_c1 {b0 -&gt; b1 -&gt; b2 -&gt; b3;}
 <br />	x -&gt; a0;
@@ -1589,12 +1763,12 @@ Output file 72: html/90.clust.svg (5683 bytes)
   </td>
   <td>
 <object data = "./90.clust1.svg"></object><br />
-Output file 73: html/90.clust1.svg (6053 bytes)
+Output file 76: html/90.clust1.svg (6053 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 74: data/90.clust2.gv (146 bytes). Lex result: OK:<br />digraph G {
+	Input file 77: data/90.clust2.gv (146 bytes). Lex result: OK:<br />digraph G {
 <br />	subgraph cluster_c0 {a0 -&gt; a1 -&gt; a2 -&gt; a3;}
 <br />	subgraph cluster_c1 {b0 -&gt; b1 -&gt; b2 -&gt; b3;}
 <br />	x -&gt; a0;
@@ -1606,12 +1780,12 @@ Output file 73: html/90.clust1.svg (6053 bytes)
   </td>
   <td>
 <object data = "./90.clust2.svg"></object><br />
-Output file 74: html/90.clust2.svg (5899 bytes)
+Output file 77: html/90.clust2.svg (5899 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 75: data/90.clust3.gv (146 bytes). Lex result: OK:<br />digraph G {
+	Input file 78: data/90.clust3.gv (146 bytes). Lex result: OK:<br />digraph G {
 <br />	subgraph cluster_c0 {a0 -&gt; a1 -&gt; a2 -&gt; a3;}
 <br />	subgraph cluster_c1 {b0 -&gt; b1 -&gt; b2 -&gt; b3;}
 <br />	x -&gt; a0;
@@ -1623,12 +1797,12 @@ Output file 74: html/90.clust2.svg (5899 bytes)
   </td>
   <td>
 <object data = "./90.clust3.svg"></object><br />
-Output file 75: html/90.clust3.svg (5901 bytes)
+Output file 78: html/90.clust3.svg (5901 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 76: data/90.clust4.gv (401 bytes). Lex result: OK:<br />digraph G {
+	Input file 79: data/90.clust4.gv (401 bytes). Lex result: OK:<br />digraph G {
 <br />
 <br />	subgraph cluster_0 {
 <br />		style=filled;
@@ -1659,12 +1833,12 @@ Output file 75: html/90.clust3.svg (5901 bytes)
   </td>
   <td>
 <object data = "./90.clust4.svg"></object><br />
-Output file 76: html/90.clust4.svg (8124 bytes)
+Output file 79: html/90.clust4.svg (8124 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 77: data/90.clust5.gv (238 bytes). Lex result: OK:<br />digraph G {
+	Input file 80: data/90.clust5.gv (238 bytes). Lex result: OK:<br />digraph G {
 <br />size=&quot;6,6&quot;;
 <br />	a -&gt; b -&gt; c;
 <br />
@@ -1693,12 +1867,12 @@ Output file 76: html/90.clust4.svg (8124 bytes)
   </td>
   <td>
 <object data = "./90.clust5.svg"></object><br />
-Output file 77: html/90.clust5.svg (7845 bytes)
+Output file 80: html/90.clust5.svg (7845 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 78: data/90.ctext.gv (425 bytes). Lex result: OK:<br />digraph G {
+	Input file 81: data/90.ctext.gv (425 bytes). Lex result: OK:<br />digraph G {
 <br />	xyz [label = &quot;hello\nworld&quot;,color=&quot;slateblue&quot;,fontsize=24,fontname=&quot;Palatino-Italic&quot;,style=filled,fontcolor=&quot;hotpink&quot;];
 <br />	node [style=filled];
 <br />	red [color=red];
@@ -1719,12 +1893,12 @@ Output file 77: html/90.clust5.svg (7845 bytes)
   </td>
   <td>
 <object data = "./90.ctext.svg"></object><br />
-Output file 78: html/90.ctext.svg (4629 bytes)
+Output file 81: html/90.ctext.svg (4629 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 79: data/90.dfa.gv (959 bytes). Lex result: OK:<br />digraph g {
+	Input file 82: data/90.dfa.gv (959 bytes). Lex result: OK:<br />digraph g {
 <br />&quot;start&quot; [ label = &quot;MWGC-&quot; ];
 <br />&quot;n1&quot; [ label = &quot;WC-MG&quot; ];
 <br />&quot;n2&quot; [ label = &quot;MWC-G&quot; ];
@@ -1762,12 +1936,12 @@ Output file 78: html/90.ctext.svg (4629 bytes)
   </td>
   <td>
 <object data = "./90.dfa.svg"></object><br />
-Output file 79: html/90.dfa.svg (11782 bytes)
+Output file 82: html/90.dfa.svg (11782 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 80: data/90.hashtable.gv (629 bytes). Lex result: OK:<br />digraph G {
+	Input file 83: data/90.hashtable.gv (629 bytes). Lex result: OK:<br />digraph G {
 <br />	nodesep=.05;
 <br />	rankdir=LR;
 <br />	node [shape=record,width=.1,height=.1];
@@ -1794,12 +1968,12 @@ Output file 79: html/90.dfa.svg (11782 bytes)
   </td>
   <td>
 <object data = "./90.hashtable.svg"></object><br />
-Output file 80: html/90.hashtable.svg (8211 bytes)
+Output file 83: html/90.hashtable.svg (8211 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 81: data/90.longflat.gv (86 bytes). Lex result: OK:<br />digraph if
+	Input file 84: data/90.longflat.gv (86 bytes). Lex result: OK:<br />digraph if
 <br />{
 <br />rankdir=LR;
 <br />  {rank=same;b;c;}
@@ -1810,12 +1984,12 @@ Output file 80: html/90.hashtable.svg (8211 bytes)
   </td>
   <td>
 <object data = "./90.longflat.svg"></object><br />
-Output file 81: html/90.longflat.svg (1952 bytes)
+Output file 84: html/90.longflat.svg (1952 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 82: data/90.mike.gv (381 bytes). Lex result: OK:<br />digraph mike{
+	Input file 85: data/90.mike.gv (381 bytes). Lex result: OK:<br />digraph mike{
 <br />size = &quot;8,8&quot;;
 <br />	a -&gt; A;
 <br />	a -&gt; m;
@@ -1861,12 +2035,12 @@ Output file 81: html/90.longflat.svg (1952 bytes)
   </td>
   <td>
 <object data = "./90.mike.svg"></object><br />
-Output file 82: html/90.mike.svg (20294 bytes)
+Output file 85: html/90.mike.svg (20294 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 83: data/90.nhg.gv (339 bytes). Lex result: OK:<br />digraph automata_0 {
+	Input file 86: data/90.nhg.gv (339 bytes). Lex result: OK:<br />digraph automata_0 {
 <br />	size =&quot;8.5, 11&quot;;
 <br />	node [shape = circle];
 <br />	0 [ style = filled, color=lightgrey ];
@@ -1883,12 +2057,12 @@ Output file 82: html/90.mike.svg (20294 bytes)
   </td>
   <td>
 <object data = "./90.nhg.svg"></object><br />
-Output file 83: html/90.nhg.svg (4183 bytes)
+Output file 86: html/90.nhg.svg (4183 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 84: data/90.process.gv (234 bytes). Lex result: OK:<br />graph G {
+	Input file 87: data/90.process.gv (234 bytes). Lex result: OK:<br />graph G {
 <br />	run -- intr;
 <br />	intr -- runbl;
 <br />	runbl -- run;
@@ -1907,12 +2081,12 @@ Output file 83: html/90.nhg.svg (4183 bytes)
   </td>
   <td>
 <object data = "./90.process.svg"></object><br />
-Output file 84: html/90.process.svg (5854 bytes)
+Output file 87: html/90.process.svg (5854 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 85: data/90.record2.gv (155 bytes). Lex result: OK:<br />digraph G {
+	Input file 88: data/90.record2.gv (155 bytes). Lex result: OK:<br />digraph G {
 <br />    node [shape=record];
 <br />    a [label = &quot;&lt;f0&gt; foo | x | &lt;f1&gt; bar&quot;];
 <br />    b [label = &quot;a | { &lt;f0&gt; foo | x | &lt;f1&gt; bar } | b&quot;];
@@ -1922,12 +2096,12 @@ Output file 84: html/90.process.svg (5854 bytes)
   </td>
   <td>
 <object data = "./90.record2.svg"></object><br />
-Output file 85: html/90.record2.svg (2545 bytes)
+Output file 88: html/90.record2.svg (2545 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 86: data/90.records.gv (417 bytes). Lex result: OK:<br />digraph G {
+	Input file 89: data/90.records.gv (417 bytes). Lex result: OK:<br />digraph G {
 <br />	rankdir=LR;
 <br />	node [shape=record];
 <br />	a [ label =&quot;&lt;bala&gt; Graphs can\lbe fun\l|&lt;f1&gt; mid|&lt;f2&gt; right\r&quot;];
@@ -1948,12 +2122,12 @@ Output file 85: html/90.record2.svg (2545 bytes)
   </td>
   <td>
 <object data = "./90.records.svg"></object><br />
-Output file 86: html/90.records.svg (6482 bytes)
+Output file 89: html/90.records.svg (6482 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 87: data/90.states.gv (493 bytes). Lex result: OK:<br />/*
+	Input file 90: data/90.states.gv (493 bytes). Lex result: OK:<br />/*
 <br />The command line is
 <br />
 <br />  dot -Tps -Grankdir=LR states.dot &gt; states.ps
@@ -1978,12 +2152,12 @@ Output file 86: html/90.records.svg (6482 bytes)
   </td>
   <td>
 <object data = "./90.states.svg"></object><br />
-Output file 87: html/90.states.svg (4005 bytes)
+Output file 90: html/90.states.svg (4005 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 88: data/90.structs.gv (307 bytes). Lex result: OK:<br />digraph structs {
+	Input file 91: data/90.structs.gv (307 bytes). Lex result: OK:<br />digraph structs {
 <br />node [shape=record];
 <br />    struct1 [shape=record,label=&quot;&lt;f0&gt; left|&lt;f1&gt; middle|&lt;f2&gt; right&quot;];
 <br />    struct2 [shape=record,label=&quot;&lt;f0&gt; one|&lt;f1&gt; two&quot;];
@@ -1995,12 +2169,12 @@ Output file 87: html/90.states.svg (4005 bytes)
   </td>
   <td>
 <object data = "./90.structs.svg"></object><br />
-Output file 88: html/90.structs.svg (3843 bytes)
+Output file 91: html/90.structs.svg (3843 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 89: data/90.train11.gv (777 bytes). Lex result: OK:<br />digraph G {
+	Input file 92: data/90.train11.gv (777 bytes). Lex result: OK:<br />digraph G {
 <br />	size=&quot;6,6&quot;;
 <br />	node [shape=circle,fontsize=8];
 <br />	rankdir=LR;
@@ -2034,12 +2208,12 @@ Output file 88: html/90.structs.svg (3843 bytes)
   </td>
   <td>
 <object data = "./90.train11.svg"></object><br />
-Output file 89: html/90.train11.svg (14023 bytes)
+Output file 92: html/90.train11.svg (14023 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 90: data/90.tree.gv (588 bytes). Lex result: OK:<br />digraph g {
+	Input file 93: data/90.tree.gv (588 bytes). Lex result: OK:<br />digraph g {
 <br />node [shape = record,height=.1];
 <br />node0[label = &quot;&lt;f0&gt; |&lt;f1&gt; G|&lt;f2&gt; &quot;];
 <br />node1[label = &quot;&lt;f0&gt; |&lt;f1&gt; E|&lt;f2&gt; &quot;];
@@ -2063,12 +2237,12 @@ Output file 89: html/90.train11.svg (14023 bytes)
   </td>
   <td>
 <object data = "./90.tree.svg"></object><br />
-Output file 90: html/90.tree.svg (8333 bytes)
+Output file 93: html/90.tree.svg (8333 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 91: data/90.try.gv (163 bytes). Lex result: OK:<br />digraph G {
+	Input file 94: data/90.try.gv (163 bytes). Lex result: OK:<br />digraph G {
 <br />	subgraph cluster_small {
 <br />		a -&gt; b;
 <br />		label=small;
@@ -2087,7 +2261,7 @@ Output file 90: html/90.tree.svg (8333 bytes)
   </td>
   <td>
 <object data = "./90.try.svg"></object><br />
-Output file 91: html/90.try.svg (5225 bytes)
+Output file 94: html/90.try.svg (5225 bytes)
   </td>
 </tr>
 </table>
@@ -2129,7 +2303,7 @@ Date
 <!-- Right -->
 <td>
 <div class="odd_right">
-2012-11-08
+2013-05-27
 </div>
 </td>
 </tr>
