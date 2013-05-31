@@ -16,28 +16,27 @@ name: GraphViz2-Marpa
 provides:
   GraphViz2::Marpa:
     file: lib/GraphViz2/Marpa.pm
-    version: 1.08
+    version: 1.09
   GraphViz2::Marpa::Config:
     file: lib/GraphViz2/Marpa/Config.pm
-    version: 1.08
+    version: 1.09
   GraphViz2::Marpa::Lexer:
     file: lib/GraphViz2/Marpa/Lexer.pm
-    version: 1.08
+    version: 1.09
   GraphViz2::Marpa::Lexer::DFA:
     file: lib/GraphViz2/Marpa/Lexer/DFA.pm
-    version: 1.08
+    version: 1.09
   GraphViz2::Marpa::Parser:
     file: lib/GraphViz2/Marpa/Parser.pm
-    version: 1.08
+    version: 1.09
   GraphViz2::Marpa::Renderer::GraphViz2:
     file: lib/GraphViz2/Marpa/Renderer/GraphViz2.pm
-    version: 1.08
+    version: 1.09
   GraphViz2::Marpa::Utils:
     file: lib/GraphViz2/Marpa/Utils.pm
-    version: 1.08
+    version: 1.09
 requires:
   Algorithm::Diff: 1.1902
-  Config: 0
   Config::Tiny: 2.14
   Data::Section::Simple: 0.02
   Date::Format: 2.24
@@ -45,8 +44,6 @@ requires:
   File::Copy: 2.21
   File::HomeDir: 0.99
   File::Slurp: 9999.19
-  File::Spec: 3.33
-  File::Temp: 0.22
   Getopt::Long: 2.38
   GraphViz2: 1.09
   GraphViz2::Parse::Marpa: 1.12
@@ -67,9 +64,8 @@ requires:
   Tree::DAG_Node: 1.07
   Try::Tiny: 0.09
   feature: 0
-  perl: v5.10.0
   strict: 0
   warnings: 0
 resources:
   license: http://www.perlfoundation.org/artistic_license_2_0
-version: 1.08
+version: 1.09
