@@ -1,6 +1,5 @@
 package GraphViz2::Marpa::Renderer::GraphViz2;
 
-use feature 'switch';
 use strict;
 use warnings;
 
@@ -275,25 +274,75 @@ sub run
 		$type  = $$token{type};
 		$value = $$token{value};
 
-		given ($type)
+		# Since use feature qw/switch/ is being phased out,
+		# we now use a chain of 'if' statements.
+
+		if ($type eq 'attribute_id')
 		{
-			when ('strict')          {$self -> new_item($value eq 'no' ? '' : 'strict ', 0, 0, 0);}
-			when ('digraph')         {$self -> new_item($value eq 'no' ? 'graph' : 'digraph', 0, 0, 0);}
-			when ('graph_id')        {$self -> new_item($value, 0, 0, 1);}
-			when ('start_scope')     {$self -> new_item('{', 1, 0, 0);}
-			when ('end_scope')       {$self -> new_item('}', 1, 0, 0);}
-			when ('start_subgraph')  {$self -> new_item('subgraph', 1, 0, 0);}
-			when ('end_subgraph')    {}
-			when ('start_attribute') {@attributes = ();}
-			when ('attribute_id')    {push @attributes, $value;}
-			when ('attribute_value') {push @attributes, $value;}
-			when ('end_attribute')   {$self -> format_attributes([@attributes]);}
-			when ('open_brace')      {$self -> new_item('{', 1, 0, 0);}
-			when ('close_brace')     {$self -> new_item('}', 1, 0, 0);}
-			when ('class_id')        {$self -> new_id($last_type, $type, $value);}
-			when ('edge_id')         {$self -> new_id($last_type, $type, $value);}
-			when ('node_id')         {$self -> new_id($last_type, $type, $value);}
-			default                  {die "Unexpected type '$type' (with value '$value') in the input";}
+			push @attributes, $value;
+		}
+		elsif ($type eq 'attribute_value')
+		{
+			push @attributes, $value;
+		}
+		elsif ($type eq 'close_brace')
+		{
+			$self -> new_item('}', 1, 0, 0);
+		}
+		elsif ($type eq 'class_id')
+		{
+			$self -> new_id($last_type, $type, $value);
+		}
+		elsif ($type eq 'digraph')
+		{
+			$self -> new_item($value eq 'no' ? 'graph' : 'digraph', 0, 0, 0);
+		}
+		elsif ($type eq 'edge_id')
+		{
+			$self -> new_id($last_type, $type, $value);
+		}
+		elsif ($type eq 'end_attribute')
+		{
+			$self -> format_attributes([@attributes]);
+		}
+		elsif ($type eq 'end_scope')
+		{
+			$self -> new_item('}', 1, 0, 0);
+		}
+		elsif ($type eq 'end_subgraph')
+		{
+		}
+		elsif ($type eq 'graph_id')
+		{
+			$self -> new_item($value, 0, 0, 1);
+		}
+		elsif ($type eq 'node_id')
+		{
+			$self -> new_id($last_type, $type, $value);
+		}
+		elsif ($type eq 'open_brace')
+		{
+			$self -> new_item('{', 1, 0, 0);
+		}
+		elsif ($type eq 'start_attribute')
+		{
+			@attributes = ();
+		}
+		elsif ($type eq 'start_scope')
+		{
+			$self -> new_item('{', 1, 0, 0);
+		}
+		elsif ($type eq 'start_subgraph')
+		{
+			$self -> new_item('subgraph', 1, 0, 0);
+		}
+		elsif ($type eq 'strict')
+		{
+			$self -> new_item($value eq 'no' ? '' : 'strict ', 0, 0, 0);
+		}
+		else
+		{
+			die "Unexpected type '$type' (with value '$value') in the input";
 		}
 
 		$last_type = $type;

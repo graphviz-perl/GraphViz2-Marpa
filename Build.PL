@@ -32,8 +32,6 @@ sub is_dot_installed
 
 	die "Please install Graphviz from http://www.graphviz.org/\n" if ($stdout !~ m|</svg>|);
 
-	print "V $Config{version}. \n";
-
 } # End of is_dot_installed.
 
 # -----------------------------------------------
