@@ -42,7 +42,7 @@ fieldhash my %utils            => 'utils';
 # $myself is a copy of $self for use by functions called by Marpa.
 
 our $myself;
-our $VERSION = '1.08';
+our $VERSION = '1.09';
 
 # --------------------------------------------------
 # This is a function, not a method.

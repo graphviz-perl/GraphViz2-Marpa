@@ -37,7 +37,6 @@ provides:
     version: 1.08
 requires:
   Algorithm::Diff: 1.1902
-  Config: 0
   Config::Tiny: 2.14
   Data::Section::Simple: 0.02
   Date::Format: 2.24
@@ -45,8 +44,6 @@ requires:
   File::Copy: 2.21
   File::HomeDir: 0.99
   File::Slurp: 9999.19
-  File::Spec: 3.33
-  File::Temp: 0.22
   Getopt::Long: 2.38
   GraphViz2: 1.09
   GraphViz2::Parse::Marpa: 1.12
@@ -67,7 +64,6 @@ requires:
   Tree::DAG_Node: 1.07
   Try::Tiny: 0.09
   feature: 0
-  perl: v5.10.0
   strict: 0
   warnings: 0
 resources:

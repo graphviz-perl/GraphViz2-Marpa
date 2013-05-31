@@ -1,13 +1,57 @@
+use Config;
+
+use File::Spec;
+use File::Temp;
+
 use Module::Build;
 
-if (open my $fh, '|dot', )
+# -----------------------------------------------
+
+sub is_dot_installed
 {
-	close $fh;
-}
-else
+	# 1: Create a temp file containing DOT commands.
+	# The EXLOCK option is for BSD-based systems.
+	# newdir() croaks() if it fails, which is what we want.
+	# Hence there is no need to use Try::Tiny.
+
+	my($temp_dir) = File::Temp -> newdir('temp.XXXX', CLEANUP => 1, EXLOCK => 0, TMPDIR => 1);
+	my($gv_file)  = File::Spec -> catfile($temp_dir, 'test.gv');
+
+	# We use the deprecated 2-argument form of open in case
+	# this code is run on an ancient version of Perl.
+
+	open(OUT, ">$gv_file")                   || die "Can't create temp file: $!\n";
+	print OUT "digraph graph_14 {node_14}\n" || die "Can't write to temp file: $!\n";
+	close OUT                                || die "Can't close temp file: $!\n";
+
+	# 2: Run dot to create an SVG file.
+
+	my $stdout = `dot -Tsvg $gv_file`;
+
+	# 3: If that failed, we die.
+
+	die "Please install Graphviz from http://www.graphviz.org/\n" if ($stdout !~ m|</svg>|);
+
+	print "V $Config{version}. \n";
+
+} # End of is_dot_installed.
+
+# -----------------------------------------------
+
+sub is_perl_recent
 {
-	die "Please install Graphviz from http://www.graphviz.org/.\n";
-}
+	# We want Perl V 5.12 or later, because we 'use feature qw/say unicode_strings/'.
+
+	my(@version) = split(/\./, $Config{version});
+
+	die "Please install Perl V 5.12 or later\n" if ($version[1] < 12);
+
+} # End of is_perl_recent.
+
+# -----------------------------------------------
+
+is_dot_installed();
+is_perl_recent();
 
 Module::Build -> new
 (
@@ -27,7 +71,6 @@ Module::Build -> new
 	requires =>
 	{
 		Algorithm::Diff             => 1.1902,
-		Config                      => undef,
 		Config::Tiny                => 2.14,
 		Data::Section::Simple       => 0.02,
 		Date::Format                => 2.24,
@@ -36,8 +79,6 @@ Module::Build -> new
 		File::Copy                  => 2.21,
 		File::HomeDir               => 0.99,
 		File::Slurp                 => 9999.19,
-		File::Spec                  => 3.33,
-		File::Temp                  => 0.22,
 		Getopt::Long                => 2.38,
 		GraphViz2                   => 1.09,
 		GraphViz2::Parse::Marpa     => 1.12,
@@ -48,7 +89,6 @@ Module::Build -> new
 		Marpa::R2                   => 2.022000,
 		Module::Path                => 0.08,
 		Path::Class                 => 0.24,
-		perl                        => '5.10.0', # For given/when.
 		Perl6::Slurp                => 0.03,
 		Pod::Usage                  => 1.36,
 		Set::Array                  => 0.23,

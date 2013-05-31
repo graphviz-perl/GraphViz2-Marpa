@@ -1,5 +1,16 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+1.09  Fri May 31 09:57:00 2013
+	- Re-write the code in Build.PL and Makefile.PL which checks for Graphviz (dot) being installed,
+		since the previous code, using a pipe, was failing on some versions of Windows.
+	- Assume Config.pm is installed, and hence remove it from the pre-reqs.
+		This also stops a warning message generated because Config's version # is undef.
+	- Likewise assume File::Spec and File::Temp are installed, and 'recent enough'.
+		This is because the new code uses these 3 modules before specifying the pre-reqs.
+	- Re-write the code in Build.PL and Makefile.PL which checks for Perl being 'recent enough',
+		since the previous code, using a pre-req of "perl => '5.10.0'" generates a warning message
+		when using Makefile.PL (for my current Perl V 5.14.2). Now we analyze $Config{version}.
+
 1.08  Mon May 27 09:45:00 2013
 	- Add data/56.gv, which is graphs/directed/biological.gv from Graphviz V 2.29.
 	- Add data/57.gv, which is graphs/directed/arrows.gv from Graphviz V 2.29.
