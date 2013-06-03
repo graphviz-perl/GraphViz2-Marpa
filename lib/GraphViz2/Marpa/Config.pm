@@ -5,11 +5,11 @@ use warnings;
 
 use Config::Tiny;
 
-use File::HomeDir;
+use File::ShareDir;
 
 use Hash::FieldHash ':all';
 
-use Path::Class;
+use Path::Tiny; # For path().
 
 fieldhash my %config           => 'config';
 fieldhash my %config_file_path => 'config_file_path';
@@ -35,10 +35,7 @@ sub new
     my($self)        = bless {}, $class;
 
 	$self -> _init(\%arg);
-
-	my($path) = Path::Class::file(File::HomeDir -> my_dist_config('GraphViz2-Marpa'), '.htgraphviz2.marpa.conf');
-
-	$self -> read($path);
+	$self -> read(path(File::ShareDir::dist_dir('GraphViz2-Marpa'), '.htgraphviz2.marpa.conf') );
 
     return $self;
 
@@ -121,12 +118,11 @@ If the file can't be read, die is called.
 
 The path to the config file is determined by:
 
-	Path::Class::file(File::HomeDir -> my_dist_config('GraphViz2-Marpa'), '.htgraphviz2.marpa.conf');
+	Path::Tiny's path(File::ShareDir -> dist_dir('GraphViz2-Marpa'), '.htgraphviz2.marpa.conf')
 
-During installation, you should have run scripts/copy.config.pl, which uses the same code, to move the config file
-from the config/ directory in the disto into an OS-dependent directory.
+During installation, Makefile.PL will have installed '.htgraphviz2.marpa.conf' in a shared directory.
 
-The run-time code uses this module to look in the same directory as used by scripts/copy.config.pl.
+You can find it (perhaps for editing) by running scripts/find.config.pl.
 
 =head1 Support
 

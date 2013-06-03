@@ -1,7 +1,5 @@
-Build.PL
 Changelog.ini
-CHANGES
-config/.htgraphviz2.marpa.conf
+Changes
 data/01.gv
 data/02.gv
 data/03.gv
@@ -462,6 +460,15 @@ html/code.attributes.html
 html/index.html
 html/Marpa.Grammar.svg
 html/stt.html
+inc/Module/Install.pm
+inc/Module/Install/Base.pm
+inc/Module/Install/Can.pm
+inc/Module/Install/Fetch.pm
+inc/Module/Install/Makefile.pm
+inc/Module/Install/Metadata.pm
+inc/Module/Install/Share.pm
+inc/Module/Install/Win32.pm
+inc/Module/Install/WriteAll.pm
 lib/GraphViz2/Marpa.pm
 lib/GraphViz2/Marpa/Config.pm
 lib/GraphViz2/Marpa/Lexer.pm
@@ -475,7 +482,6 @@ META.json
 META.yml
 README
 scripts/code.attributes2html.pl
-scripts/copy.config.pl
 scripts/dot2lex.pl
 scripts/dot2rend.pl
 scripts/g2m.pl
@@ -499,6 +505,7 @@ scripts/rend.pl
 scripts/rend.sh
 scripts/rend2svg.pl
 scripts/stt2html.pl
+share/.htgraphviz2.marpa.conf
 t/dot2lex.t
 t/lex2parse.t
 t/parse2rend.t
