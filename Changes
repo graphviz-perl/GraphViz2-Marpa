@@ -7,10 +7,10 @@ Revision history for Perl extension GraphViz2::Marpa.
 		Unfortunately, that config file was installed neither by Build.PL nor Makefile.PL.
 		So, I've switched to Module::Install to install the config file, and replaced File::HomeDir with
 		File::ShareDir. Also, the latter should help MS Windows users (e.g. some CPAN testers) who run tests
-		under a user who has no home dir.
+		as a user who has no home dir.
 		This requires moving the config file from config/ to share/ within this distro.
-	- Add scripts/find.config.pl in case you want to edit the config file, but for testers and end-users
-		that should never be necessary.
+	- Add scripts/find.config.pl in case you want to find the config file, to edit it say, but for testers
+		and end-users that should never be necessary.
 	- Remove scripts/copy.config.pl.
 
 1.09  Fri May 31 09:57:00 2013

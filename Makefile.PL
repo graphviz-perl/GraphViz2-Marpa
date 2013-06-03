@@ -61,6 +61,8 @@ all_from 'lib/GraphViz2/Marpa.pm';
 
 install_share;
 
+perl_version '5.014000';
+
 requires 'Algorithm::Diff'             => 1.1902;
 requires 'Config'                      => undef;
 requires 'Config::Tiny'                => 2.14;
