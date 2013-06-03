@@ -1,5 +1,6 @@
 package GraphViz2::Marpa;
 
+use 5.014000;
 use strict;
 use warnings;
 
