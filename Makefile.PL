@@ -83,6 +83,7 @@ requires 'Marpa::R2'                   => 2.022000;
 requires 'Module::Path'                => 0.08;
 requires 'open'                        => 0;
 requires 'Path::Tiny'                  => 0.022;
+requires 'perl'                        => 5,
 requires 'Perl6::Slurp'                => 0.03;
 requires 'Pod::Usage'                  => 1.36;
 requires 'Set::Array'                  => 0.23;
