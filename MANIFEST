@@ -484,6 +484,7 @@ README
 scripts/code.attributes2html.pl
 scripts/dot2lex.pl
 scripts/dot2rend.pl
+scripts/find.config.pl
 scripts/g2m.pl
 scripts/g2m.sh
 scripts/generate.demo.pl
