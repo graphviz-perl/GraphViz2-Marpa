@@ -39,7 +39,7 @@ fieldhash my %timeout      => 'timeout';
 fieldhash my %type         => 'type';
 fieldhash my %utils        => 'utils';
 
-our $VERSION = '1.09';
+our $VERSION = '1.10';
 
 # --------------------------------------------------
 
