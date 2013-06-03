@@ -2,7 +2,8 @@ Revision history for Perl extension GraphViz2::Marpa.
 
 1.10  Mon Jun  3 11:25:00 2013
 	- Rename CHANGES to Changes as per CPAN::Changes::Spec.
-	- Fix installation bug. The tests were calling GraphViz2::Marpa::Utils -> new() which called
+	- Remove Build.PL and re-write Makefile.PL to use File::ShareDir:
+		Fix installation bug. The tests were calling GraphViz2::Marpa::Utils -> new() which called
 		GraphViz2::Marpa::Config -> new() which loaded config/.htgraphviz2.marpa.conf using File::HomeDir.
 		Unfortunately, that config file was installed neither by Build.PL nor Makefile.PL.
 		So, I've switched to Module::Install to install the config file, and replaced File::HomeDir with
