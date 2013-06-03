@@ -57,7 +57,8 @@ name 'GraphViz2-Marpa';
 
 license 'artistic_2';
 
-perl_version_from 'lib/GraphViz2/Marpa.pm';
+perl_version '5.014000';
+
 all_from 'lib/GraphViz2/Marpa.pm';
 
 install_share;
