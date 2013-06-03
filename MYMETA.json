@@ -16,7 +16,7 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "6.36",
+            "ExtUtils::MakeMaker" : "6.59",
             "Test::More" : "0.98"
          }
       },
@@ -58,6 +58,7 @@
             "Try::Tiny" : "0.09",
             "feature" : "0",
             "open" : "0",
+            "perl" : "5.014",
             "strict" : "0",
             "warnings" : "0"
          }

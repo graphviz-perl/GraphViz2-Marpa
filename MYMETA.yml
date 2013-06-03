@@ -3,7 +3,7 @@ abstract: 'A Perl lexer and parser for Graphviz dot files'
 author:
   - 'Ron Savage <ron@savage.net.au>'
 build_requires:
-  ExtUtils::MakeMaker: 6.36
+  ExtUtils::MakeMaker: 6.59
   Test::More: 0.98
 configure_requires:
   Module::Build: 0.38
@@ -68,6 +68,7 @@ requires:
   Try::Tiny: 0.09
   feature: 0
   open: 0
+  perl: 5.014
   strict: 0
   warnings: 0
 resources:
