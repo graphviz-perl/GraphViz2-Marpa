@@ -62,31 +62,31 @@
    "provides" : {
       "GraphViz2::Marpa" : {
          "file" : "lib/GraphViz2/Marpa.pm",
-         "version" : "1.09"
+         "version" : "1.11"
       },
       "GraphViz2::Marpa::Config" : {
          "file" : "lib/GraphViz2/Marpa/Config.pm",
-         "version" : "1.09"
+         "version" : "1.11"
       },
       "GraphViz2::Marpa::Lexer" : {
          "file" : "lib/GraphViz2/Marpa/Lexer.pm",
-         "version" : "1.09"
+         "version" : "1.11"
       },
       "GraphViz2::Marpa::Lexer::DFA" : {
          "file" : "lib/GraphViz2/Marpa/Lexer/DFA.pm",
-         "version" : "1.09"
+         "version" : "1.11"
       },
       "GraphViz2::Marpa::Parser" : {
          "file" : "lib/GraphViz2/Marpa/Parser.pm",
-         "version" : "1.09"
+         "version" : "1.11"
       },
       "GraphViz2::Marpa::Renderer::GraphViz2" : {
          "file" : "lib/GraphViz2/Marpa/Renderer/GraphViz2.pm",
-         "version" : "1.09"
+         "version" : "1.11"
       },
       "GraphViz2::Marpa::Utils" : {
          "file" : "lib/GraphViz2/Marpa/Utils.pm",
-         "version" : "1.09"
+         "version" : "1.11"
       }
    },
    "release_status" : "stable",
@@ -95,5 +95,5 @@
          "http://www.perlfoundation.org/artistic_license_2_0"
       ]
    },
-   "version" : "1.09"
+   "version" : "1.11"
 }

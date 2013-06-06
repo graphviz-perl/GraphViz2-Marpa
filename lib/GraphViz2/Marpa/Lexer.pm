@@ -19,6 +19,7 @@ use Perl6::Slurp;
 use Set::Array;
 use Set::FA::Element;
 
+use Text::CSV;
 use Text::CSV::Slurp;
 
 use Try::Tiny;
@@ -39,7 +40,7 @@ fieldhash my %timeout      => 'timeout';
 fieldhash my %type         => 'type';
 fieldhash my %utils        => 'utils';
 
-our $VERSION = '1.10';
+our $VERSION = '1.11';
 
 # --------------------------------------------------
 
@@ -470,7 +471,7 @@ sub _read_internal_file
 	my($self)   = @_;
 	my($stt)    = get_data_section('stt');
 	my(@stt)    = split(/\n/, $stt);
-	my($csv)    = Text::CSV_XS -> new({allow_whitespace => 1});
+	my($csv)    = Text::CSV -> new({allow_whitespace => 1});
 	my($status) = $csv -> parse(shift @stt);
 
 	if (! $status)
