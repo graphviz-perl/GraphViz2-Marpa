@@ -1,5 +1,11 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+1.11  Thu Jun  6 15:46:00 2013
+	- Update META.json, META.yml, MYMETA.json and MYMETA.yml manually, since (after switching to
+		just a Makefile.PL) I can't get make to do it for me.
+	- Fix usage of Text::CSV_XS in Lexer.pm without a use stmt. Make it Text::CSV anyway, since that will use
+		Text::CSV_XS if it's installed.
+
 1.10  Mon Jun  3 11:25:00 2013
 	- Rename CHANGES to Changes as per CPAN::Changes::Spec.
 	- Remove Build.PL and re-write Makefile.PL to use File::ShareDir:
