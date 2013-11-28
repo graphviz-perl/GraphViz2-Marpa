@@ -358,7 +358,6 @@ data/90.try.rend
 data/code.attributes.csv
 data/default.stt.csv
 data/default.stt.ods
-data/Marpa.Grammar.dat
 htdocs/assets/css/graphviz2/marpa/default.css
 htdocs/assets/css/graphviz2/marpa/fancy.table.css
 htdocs/assets/css/graphviz2/marpa/web.page.css
@@ -458,7 +457,6 @@ html/90.tree.svg
 html/90.try.svg
 html/code.attributes.html
 html/index.html
-html/Marpa.Grammar.svg
 html/stt.html
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
