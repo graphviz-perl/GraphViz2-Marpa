@@ -48,8 +48,6 @@ requires:
   File::Spec: 3.4
   File::Temp: 0.2301
   Getopt::Long: 2.38
-  GraphViz2: 1.09
-  GraphViz2::Parse::Marpa: 1.12
   HTML::Entities::Interpolate: 1.04
   Hash::FieldHash: 0.1
   List::Compare: 0.37

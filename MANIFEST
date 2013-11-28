@@ -495,7 +495,6 @@ scripts/lex.pl
 scripts/lex.sh
 scripts/lex2parse.pl
 scripts/lex2rend.pl
-scripts/marpa.grammar2svg.pl
 scripts/parse.1.sh
 scripts/parse.pl
 scripts/parse.sh
