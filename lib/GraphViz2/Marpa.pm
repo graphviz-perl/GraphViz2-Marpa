@@ -368,11 +368,6 @@ Convert all data/*.lex to data/*.parse using parse.pl.
 
 Convert all data/*.lex to data/*.parse and data/*.rend using parse.pl.
 
-=item o marpa.grammar2svg.pl
-
-I extracted the L<Marpa::XS> grammar from Parser.pm and saved it as data/Marpa.Grammar.dat.
-The program coverts it into html/Marpa.Grammar.svg.
-
 =item o parse.1.sh
 
 Simplifies running parse.sh.
