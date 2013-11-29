@@ -8,7 +8,7 @@ Revision history for Perl extension GraphViz2::Marpa.
 		See also the GraphViz2 Changes file entries for V 2.19 and V 2.15.
 	- Remove scripts/marpa.grammar2svg.pl. This script used GraphViz2::Parse::Marpa.
 	- Remove corresponding data/Marpa.Grammar.dat and html/Marpa.Grammar.svg.
-	- Add t/version.t, which Test::Version.
+	- Add t/version.t, which uses Test::Version.
 	- Move t/pod.t to xt/author.
 	- Update pre-reqs in Makefile.PL.
 	- Update MANIFEST.
