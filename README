@@ -9,8 +9,8 @@ ftp://ftp.info-zip.org/pub/infozip/
 
 1 Installing from a Unix-like distro
 ------------------------------------
-shell>gunzip GraphViz2-Marpa-1.02.tgz
-shell>tar mxvf GraphViz2-Marpa-1.02.tar
+shell>gunzip GraphViz2-Marpa-1.12.tgz
+shell>tar mxvf GraphViz2-Marpa-1.12.tar
 
 On Unix-like systems, assuming you have installed Module::Build V 0.25+:
 
@@ -39,11 +39,11 @@ shell>exit            (for Unix-like systems)
 
 On all systems:
 
-Run Marpa.pm through you favourite pod2html translator.
+Run Marpa.pm through your favourite pod2html translator.
 
 2 Installing from an ActiveState distro
 ---------------------------------------
-shell>unzip GraphViz2-Marpa-1.02.zip
+shell>unzip GraphViz2-Marpa-1.12.zip
 shell>ppm install --location=. GraphViz2-Marpa
-shell>del GraphViz2-Marpa-1.02.ppd
-shell>del PPM-GraphViz2-Marpa-1.02.tar.gz
+shell>del GraphViz2-Marpa-1.12.ppd
+shell>del PPM-GraphViz2-Marpa-1.12.tar.gz
