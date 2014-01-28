@@ -7,9 +7,9 @@ build_requires:
   Test::More: 0.98
   Test::Version: 1.002003
 configure_requires:
-  Module::Build: 0.38
+  ExtUtils::MakeMaker: 0
 dynamic_config: 0
-generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921, CPAN::Meta::Converter version 2.131560'
+generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921'
 license: artistic_2
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
