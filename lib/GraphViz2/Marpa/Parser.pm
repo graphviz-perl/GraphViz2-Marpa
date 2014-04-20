@@ -1103,7 +1103,7 @@ sub run
 	$self -> _build_tree;
 
 	# Combine edges into paths.
-	# This method occassinally gets into an infinite loop.
+	# This method occasionally gets into an infinite loop.
 
 	#$self -> _build_paths;
 
