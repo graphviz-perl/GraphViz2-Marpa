@@ -507,5 +507,4 @@ share/.htgraphviz2.marpa.conf
 t/dot2lex.t
 t/lex2parse.t
 t/parse2rend.t
-t/version.t
 xt/author/pod.t

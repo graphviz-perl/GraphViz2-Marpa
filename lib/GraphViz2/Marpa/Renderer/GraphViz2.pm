@@ -23,7 +23,7 @@ fieldhash my %parsed_file   => 'parsed_file';
 fieldhash my %tokens        => 'tokens';
 fieldhash my %utils         => 'utils';
 
-our $VERSION = '1.12';
+our $VERSION = '1.13';
 
 # --------------------------------------------------
 

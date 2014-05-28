@@ -95,8 +95,8 @@ requires 'Tree::DAG_Node'              => 1.07;
 requires 'Try::Tiny'                   => 0.09;
 requires 'warnings'                    => 0;
 
-test_requires 'Test::More'    => 0.98;
-test_requires 'Test::Version' => 1.002003;
-#test_requires 'Test::Pod'    => 1.45; # Make it optional. See t/pod.t
+test_requires 'Test::More'     => 0.98;
+#test_requires 'Test::Version' => 1.002003;
+#test_requires 'Test::Pod'     => 1.45; # Make it optional. See t/pod.t
 
 WriteAll;
