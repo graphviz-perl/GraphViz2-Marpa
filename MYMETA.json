@@ -17,8 +17,7 @@
       "build" : {
          "requires" : {
             "ExtUtils::MakeMaker" : "6.59",
-            "Test::More" : "0.98",
-            "Test::Version" : "1.002003"
+            "Test::More" : "0.98"
          }
       },
       "configure" : {
