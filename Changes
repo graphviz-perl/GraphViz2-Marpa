@@ -1,5 +1,8 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+1.14  Tue Jul  8 08:59:00 2014
+	- Patch test files to report test counts.
+
 1.13  Thu May 27 08:31:00 2014
 	- Remove t/version.t, and so remove Test::Version, since the latter fails when combined with Test::Pretty.
 		I do not use Test::Pretty, only Test::More.

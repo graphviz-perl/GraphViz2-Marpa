@@ -23,7 +23,7 @@ my($temp_dir_name) = $temp_dir -> dirname;
 my($data_dir_name) = 'data';
 my($in_suffix)     = 'gv';
 my($out_suffix)    = 'lex';
-my($test_count)    = 0;
+my($count)         = 0;
 
 my(@diff, $diff_count);
 my($in_file);
@@ -34,7 +34,7 @@ my(@new_content);
 
 for my $file_name (grep{! /^(?:01|02|03|04|05|06|08)/} GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, $in_suffix) )
 {
-	$test_count++;
+	$count++;
 
 	$in_file  = File::Spec -> catfile($data_dir_name, "$file_name.$in_suffix");
 	$out_file = File::Spec -> catfile($temp_dir_name, "$file_name.$out_suffix");
@@ -49,4 +49,6 @@ for my $file_name (grep{! /^(?:01|02|03|04|05|06|08)/} GraphViz2::Marpa::Utils -
 	ok($diff_count == 0, "Compare shipped and generated: $in_file");
 }
 
-done_testing($test_count);
+print "# Internal test count: $count. \n";
+
+done_testing($count);
