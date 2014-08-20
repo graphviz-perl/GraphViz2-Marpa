@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use File::ShareDir;
-
+File::ShareDir::ProjectDistDir
 # --------------
 
 my($app_name)    = 'GraphViz2-Marpa';

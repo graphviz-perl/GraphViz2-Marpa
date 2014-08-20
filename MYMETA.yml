@@ -3,72 +3,72 @@ abstract: 'A Perl lexer and parser for Graphviz dot files'
 author:
   - 'Ron Savage <ron@savage.net.au>'
 build_requires:
-  ExtUtils::MakeMaker: 6.59
-  Test::More: 0.98
+  ExtUtils::MakeMaker: '6.59'
+  Test::More: '0.98'
 configure_requires:
-  ExtUtils::MakeMaker: 0
+  Module::Build: '0.38'
 dynamic_config: 0
-generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921, CPAN::Meta::Converter version 2.133380'
+generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921, CPAN::Meta::Converter version 2.142060'
 license: artistic_2
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
-  version: 1.4
+  version: '1.4'
 name: GraphViz2-Marpa
 provides:
   GraphViz2::Marpa:
     file: lib/GraphViz2/Marpa.pm
-    version: 1.11
+    version: '1.11'
   GraphViz2::Marpa::Config:
     file: lib/GraphViz2/Marpa/Config.pm
-    version: 1.11
+    version: '1.11'
   GraphViz2::Marpa::Lexer:
     file: lib/GraphViz2/Marpa/Lexer.pm
-    version: 1.11
+    version: '1.11'
   GraphViz2::Marpa::Lexer::DFA:
     file: lib/GraphViz2/Marpa/Lexer/DFA.pm
-    version: 1.11
+    version: '1.11'
   GraphViz2::Marpa::Parser:
     file: lib/GraphViz2/Marpa/Parser.pm
-    version: 1.11
+    version: '1.11'
   GraphViz2::Marpa::Renderer::GraphViz2:
     file: lib/GraphViz2/Marpa/Renderer/GraphViz2.pm
-    version: 1.11
+    version: '1.11'
   GraphViz2::Marpa::Utils:
     file: lib/GraphViz2/Marpa/Utils.pm
-    version: 1.11
+    version: '1.11'
 requires:
-  Algorithm::Diff: 1.1902
-  Config: 0
-  Config::Tiny: 2.14
-  Data::Section::Simple: 0.02
-  Date::Format: 2.24
-  Date::Simple: 3.03
-  File::ShareDir: 1.03
-  File::Slurp: 9999.19
-  File::Spec: 3.4
-  File::Temp: 0.2301
-  Getopt::Long: 2.38
-  HTML::Entities::Interpolate: 1.04
-  Hash::FieldHash: 0.1
-  List::Compare: 0.37
-  Log::Handler: 0.71
-  Marpa::R2: 2.022
-  Module::Path: 0.08
-  Path::Tiny: 0.022
-  Perl6::Slurp: 0.03
-  Pod::Usage: 1.36
-  Set::Array: 0.23
-  Set::FA::Element: 1.08
-  Text::CSV: 1.21
-  Text::CSV::Slurp: 1
-  Text::Xslate: 1.4001
-  Tree::DAG_Node: 1.07
-  Try::Tiny: 0.09
-  feature: 0
-  open: 0
-  perl: 5.014
-  strict: 0
-  warnings: 0
+  Algorithm::Diff: '1.1902'
+  Config: '0'
+  Config::Tiny: '2.14'
+  Data::Section::Simple: '0.02'
+  Date::Format: '2.24'
+  Date::Simple: '3.03'
+  File::ShareDir: '1.03'
+  File::Slurp: '9999.19'
+  File::Spec: '3.4'
+  File::Temp: '0.2301'
+  Getopt::Long: '2.38'
+  HTML::Entities::Interpolate: '1.04'
+  Hash::FieldHash: '0.1'
+  List::Compare: '0.37'
+  Log::Handler: '0.71'
+  Marpa::R2: '2.022'
+  Module::Path: '0.08'
+  Path::Tiny: '0.022'
+  Perl6::Slurp: '0.03'
+  Pod::Usage: '1.36'
+  Set::Array: '0.23'
+  Set::FA::Element: '1.08'
+  Text::CSV: '1.21'
+  Text::CSV::Slurp: '1'
+  Text::Xslate: '1.4001'
+  Tree::DAG_Node: '1.07'
+  Try::Tiny: '0.09'
+  feature: '0'
+  open: '0'
+  perl: '5.014'
+  strict: '0'
+  warnings: '0'
 resources:
   license: http://www.perlfoundation.org/artistic_license_2_0
-version: 1.11
+version: '1.11'
