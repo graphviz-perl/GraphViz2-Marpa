@@ -1,24 +1,7 @@
 digraph graph_15
 {
-	node
-	[
-		shape = "record"
-	]
-	edge
-	[
-		color = "red"
-		penwidth = 5
-	]
 	node_15_1
-	[
-		label = "<f0> left|<f1> middle|<f2> right"
-	]
 	node_15_2
-	[
-		label = "<f0> one|<f1> two"
-	]
-	node_15_1:f0 -> node_15_2:f1
-	[
-		arrowhead = "obox"
-	]
+
+	node_15_1 -> node_15_2
 }

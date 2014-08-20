@@ -166,16 +166,22 @@ graph_id_token			::= graph_id
 
 # The graph proper.
 
-graph_statement_tokens	::= '{' graph_statements '}'
+graph_statement_tokens	::= open_brace graph_statements close_brace
 
-graph_statements		::= node_statement
+graph_statements		::= graph_statement+
+
+graph_statement			::= node_statement
 							| edge_statement
 
 node_statement			::= graph_id_token
 
 edge_statement			::= graph_id_token edge_literal graph_id_token
 
-# Lexeme-level stuff.
+# Lexeme-level stuff, in alphabetical order.
+
+:lexeme					~ close_brace		pause => before		event => close_brace
+
+close_brace				~ '}'
 
 :lexeme					~ digraph_literal	pause => before		event => digraph_literal
 
@@ -195,6 +201,10 @@ graph_literal			~ 'graph'
 graph_id_prefix			~ [a-zA-Z\200-\377_]
 graph_id_suffix			~ [a-zA-Z\200-\377_0-9]+
 graph_id				~ <graph_id_prefix>graph_id_suffix
+
+:lexeme					~ open_brace		pause => before		event => open_brace
+
+open_brace				~ '{'
 
 :lexeme					~ strict_literal	pause => before		event => strict_literal
 
@@ -218,6 +228,15 @@ END_OF_GRAMMAR
 			semantics_package => 'GraphViz2::Marpa::Actions',
 		})
 	);
+
+	$self -> items(Tree::DAG_Node -> new({name => 'Root'}));
+
+	for my $type (qw/Prolog Graphs/)
+	{
+		my($node) = Tree::DAG_Node -> new({name => $type});
+
+		$self -> items -> add_daughter($node);
+	}
 
 	$GraphViz2::Marpa::Actions::caller = $self;
 
@@ -322,13 +341,12 @@ sub process
 
 	$self -> log(debug => "Input: $string");
 
-	$self -> items(Tree::DAG_Node -> new({name => 'Root'}));
-
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
 
 	my($attribute_list);
 	my($do_lexeme_read);
 	my(@event, $event_name);
+	my($graph_id);
 	my($lexeme_name, $lexeme, $literal);
 	my($node_name);
 	my($span, $start);
@@ -352,7 +370,17 @@ sub process
 		$self -> log(debug => "pause_span($lexeme_name) => start: $start. span: $span. " .
 			"lexeme: $lexeme. event: $event_name");
 
-		if ($event_name eq 'digraph_literal')
+		if ($event_name eq 'close_brace')
+		{
+			$pos            = $self -> recce -> lexeme_read($lexeme_name);
+			$literal        = substr($string, $start, $pos - $start);
+			$do_lexeme_read = 0;
+
+			$self -> log(debug => "close_brace => '$literal'");
+
+			$self -> process_literal('Graphs', $literal, 'literal');
+		}
+		elsif ($event_name eq 'digraph_literal')
 		{
 			$pos            = $self -> recce -> lexeme_read($lexeme_name);
 			$literal        = substr($string, $start, $pos - $start);
@@ -360,7 +388,37 @@ sub process
 
 			$self -> log(debug => "digraph_literal => '$literal'");
 
-			$self -> process_literal('prolog', $literal);
+			$self -> process_literal('Prolog', $literal, 'literal');
+		}
+		elsif ($event_name eq 'edge_literal')
+		{
+			$pos            = $self -> recce -> lexeme_read($lexeme_name);
+			$literal        = substr($string, $start, $pos - $start);
+			$do_lexeme_read = 0;
+
+			$self -> log(debug => "edge_literal => '$literal'");
+
+			$self -> process_literal('Graphs', $literal, 'literal');
+		}
+		elsif ($event_name eq 'graph_id')
+		{
+			$pos            = $self -> recce -> lexeme_read($lexeme_name);
+			$graph_id       = substr($string, $start, $pos - $start);
+			$do_lexeme_read = 0;
+
+			$self -> log(debug => "graph_id => '$graph_id'");
+
+			$self -> process_literal('Graphs', $graph_id, 'id');
+		}
+		elsif ($event_name eq 'graph_id_token')
+		{
+			$pos            = $self -> recce -> lexeme_read($lexeme_name);
+			$graph_id       = substr($string, $start, $pos - $start);
+			$do_lexeme_read = 0;
+
+			$self -> log(debug => "graph_id_token => '$graph_id'");
+
+			$self -> process_literal('Prolog', $literal, 'graph_id');
 		}
 		elsif ($event_name eq 'graph_literal')
 		{
@@ -370,17 +428,17 @@ sub process
 
 			$self -> log(debug => "graph_literal => '$literal'");
 
-			$self -> process_literal('prolog', $literal);
+			$self -> process_literal('Prolog', $literal, 'literal');
 		}
-		elsif ($event_name eq 'graph_id')
+		elsif ($event_name eq 'open_brace')
 		{
 			$pos            = $self -> recce -> lexeme_read($lexeme_name);
 			$literal        = substr($string, $start, $pos - $start);
 			$do_lexeme_read = 0;
 
-			$self -> log(debug => "graph_id => '$literal'");
+			$self -> log(debug => "open_brace => '$literal'");
 
-			$self -> process_literal('prolog', $literal);
+			$self -> process_literal('Graphs', $literal, 'literal');
 		}
 		elsif ($event_name eq 'strict_literal')
 		{
@@ -390,7 +448,7 @@ sub process
 
 			$self -> log(debug => "strict_literal => '$literal'");
 
-			$self -> process_literal('prolog', $literal);
+			$self -> process_literal('Prolog', $literal, 'literal');
 		}
 		elsif ($event_name eq 'start_attributes')
 		{
@@ -427,10 +485,13 @@ sub process
 
 sub process_literal
 {
-	my($self, $context, $literal) = @_;
-	my($node) = Tree::DAG_Node -> new({name => $literal, attributes => {context => $context} });
+	my($self, $context, $literal, $type) = @_;
+	$type          ||= '';
+	my(@daughters) = $self -> items -> daughters;
+	my($node)      = Tree::DAG_Node -> new({name => $literal, attributes => {context => $context, type => $type} });
+	my($index)     = $context eq 'Prolog' ? 0 : 1;
 
-	$self -> items -> add_daughter($node);
+	$daughters[$index] -> add_daughter($node);
 
 } # End of process_literal.
 
@@ -469,6 +530,7 @@ sub run
 	{
 		if (defined $self -> process)
 		{
+			$self -> log(info => join("\n", @{$self -> items -> tree2string}) );
 		}
 		else
 		{
