@@ -21,6 +21,8 @@ use Tree::DAG_Node;
 
 use Types::Standard qw/Any Str/;
 
+use Try::Tiny;
+
 has description =>
 (
 	default  => sub{return ''},
@@ -97,7 +99,7 @@ has recce =>
 (
 	default  => sub{return ''},
 	is       => 'rw',
-	isa      => Object,
+	isa      => Any,
 	required => 0,
 );
 
@@ -105,7 +107,7 @@ has renderer =>
 (
 	default  => sub{return ''},
 	is       => 'rw',
-	isa      => Object,
+	isa      => Any,
 	required => 0,
 );
 
@@ -141,45 +143,62 @@ source					=> \(<<'END_OF_GRAMMAR'),
 
 lexeme default			= latm => 1
 
-:start 					::= prolog_and_graph
+:start 					::= DOT
 
 # The prolog to the graph.
 
-prolog_and_graph		::= prolog_tokens graph_sequence_tokens
+DOT						::= prolog_tokens graph_statement_tokens
 
-prolog_tokens			::= strict_token digraph_token graph_id_token	action => prolog
+prolog_tokens			::= strict_token graph_type graph_id_value
 
-strict_token			::= strict					action => strict
+strict_token			::=
+strict_token			::= strict_literal
 
-digraph_token			::= 'digraph'				action => digraph
-							| 'graph'				action => graph
+graph_type				::= digraph_literal
+							| graph_literal
 
-graph_id_token			::= 						action => graph_id
-graph_id_token			::= graph_id				action => graph_id
-							| ('"') graph_id ('"')	action => graph_id
-							| ('<') graph_id ('>')	action => graph_id
+graph_id_value			::=
+graph_id_value			::= graph_id_token
+
+graph_id_token			::= graph_id
+							| ('"') graph_id ('"')
+							| ('<') graph_id ('>')
 
 # The graph proper.
 
-graph_sequence_tokens	::= '{' graph_sequence '}'
+graph_statement_tokens	::= '{' graph_statements '}'
 
-graph_sequence			::= 'node_14'
+graph_statements		::= node_statement
+							| edge_statement
+
+node_statement			::= graph_id_token
+
+edge_statement			::= graph_id_token edge_literal graph_id_token
 
 # Lexeme-level stuff.
 
-# Strict.
+:lexeme					~ digraph_literal	pause => before		event => digraph_literal
 
-:lexeme					~ strict
+digraph_literal			~ 'digraph'
 
-strict					~ 'strict'
+:lexeme					~ edge_literal		pause => before		event => edge_literal
 
-# Graph id.
+edge_literal			~ '->'
+edge_literal			~ '--'
 
-:lexeme					~ graph_id
+:lexeme					~ graph_literal		pause => before		event => graph_literal
+
+graph_literal			~ 'graph'
+
+:lexeme					~ graph_id			pause => before		event => graph_id
 
 graph_id_prefix			~ [a-zA-Z\200-\377_]
 graph_id_suffix			~ [a-zA-Z\200-\377_0-9]+
 graph_id				~ <graph_id_prefix>graph_id_suffix
+
+:lexeme					~ strict_literal	pause => before		event => strict_literal
+
+strict_literal			~ 'strict'
 
 # White space.
 
@@ -267,7 +286,7 @@ sub find_terminator
 			# In the case of attributes ($target eq '}') but not nodes names,
 			# quotes can be <...> or <<...>>.
 
-			if ( ($target =~ '}') && ($char =~ '<') )
+			if ( ($target =~ ']') && ($char =~ '<') )
 			{
 				$quote = '>';
 				$angle = 1 if ( ($i < $#char) && ($char[$i + 1] eq '<') );
@@ -301,12 +320,16 @@ sub process
 	my($string) = $self -> graph_text;
 	my($length) = length $string;
 
+	$self -> log(debug => "Input: $string");
+
+	$self -> items(Tree::DAG_Node -> new({name => 'Root'}));
+
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
 
 	my($attribute_list);
 	my($do_lexeme_read);
 	my(@event, $event_name);
-	my($lexeme_name, $lexeme);
+	my($lexeme_name, $lexeme, $literal);
 	my($node_name);
 	my($span, $start);
 
@@ -327,9 +350,49 @@ sub process
 		$lexeme         = $self -> recce -> literal($start, $span);
 
 		$self -> log(debug => "pause_span($lexeme_name) => start: $start. span: $span. " .
-			"lexeme: $lexeme. event: $event_name";
+			"lexeme: $lexeme. event: $event_name");
 
-		if ($event_name eq 'start_attributes')
+		if ($event_name eq 'digraph_literal')
+		{
+			$pos            = $self -> recce -> lexeme_read($lexeme_name);
+			$literal        = substr($string, $start, $pos - $start);
+			$do_lexeme_read = 0;
+
+			$self -> log(debug => "digraph_literal => '$literal'");
+
+			$self -> process_literal('prolog', $literal);
+		}
+		elsif ($event_name eq 'graph_literal')
+		{
+			$pos            = $self -> recce -> lexeme_read($lexeme_name);
+			$literal        = substr($string, $start, $pos - $start);
+			$do_lexeme_read = 0;
+
+			$self -> log(debug => "graph_literal => '$literal'");
+
+			$self -> process_literal('prolog', $literal);
+		}
+		elsif ($event_name eq 'graph_id')
+		{
+			$pos            = $self -> recce -> lexeme_read($lexeme_name);
+			$literal        = substr($string, $start, $pos - $start);
+			$do_lexeme_read = 0;
+
+			$self -> log(debug => "graph_id => '$literal'");
+
+			$self -> process_literal('prolog', $literal);
+		}
+		elsif ($event_name eq 'strict_literal')
+		{
+			$pos            = $self -> recce -> lexeme_read($lexeme_name);
+			$literal        = substr($string, $start, $pos - $start);
+			$do_lexeme_read = 0;
+
+			$self -> log(debug => "strict_literal => '$literal'");
+
+			$self -> process_literal('prolog', $literal);
+		}
+		elsif ($event_name eq 'start_attributes')
 		{
 			# Read the attribute_start lexeme, but don't do lexeme_read()
 			# at the bottom of the for loop, because we're just about
@@ -359,6 +422,17 @@ sub process
 	return $self -> recce -> value;
 
 } # End of process.
+
+# --------------------------------------------------
+
+sub process_literal
+{
+	my($self, $context, $literal) = @_;
+	my($node) = Tree::DAG_Node -> new({name => $literal, attributes => {context => $context} });
+
+	$self -> items -> add_daughter($node);
+
+} # End of process_literal.
 
 # --------------------------------------------------
 
@@ -399,16 +473,17 @@ sub run
 		else
 		{
 			$result = 1;
-
-			$self -> log(error => 'Parse failed');
 		}
 	}
 	catch
 	{
 		$result = 1;
 
-		$self -> log(error => "Parse exception. Error: $_");
+		$self -> log(error => "Exception: $_");
 	};
+
+
+	$self -> log(error => 'Parse failed') if ($result == 1);
 
 	# Return 0 for success and 1 for failure.
 
