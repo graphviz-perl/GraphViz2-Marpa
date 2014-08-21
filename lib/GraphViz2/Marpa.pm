@@ -1,4 +1,4 @@
-package GraphViz2::M;
+package GraphViz2::Marpa;
 
 use strict;
 use utf8;
