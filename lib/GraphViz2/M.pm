@@ -172,12 +172,13 @@ graph_statement			::= node_statement
 							| edge_statement
 
 # Node stuff.
+# Note: generic_id_token is a copy of global_id_token because I wish to trigger a different event.
 
-node_statement			::= graph_id_token attribute_tokens
+node_statement			::= generic_id_token attribute_tokens
 
-graph_id_token			::= graph_id
-							| ('"') graph_id ('"')
-							| ('<') graph_id ('>')
+generic_id_token		::= generic_id
+							| ('"') generic_id ('"')
+							| ('<') generic_id ('>')
 
 # Attribute stuff.
 # These have no body between the '[]' because they are parsed manually in order to
@@ -194,7 +195,7 @@ edge_node_token			::= edge_node_id_token
 							| node_port
 							| node_port_compass_point
 
-edge_node_id_token		::= graph_id
+edge_node_id_token		::= generic_id
 
 #edge_node_id_token		::= edge_node_id
 #							| ('"') edge_node_id ('"')
@@ -235,9 +236,9 @@ global_id_prefix		~ [a-zA-Z\200-\377_]
 global_id_suffix		~ [a-zA-Z\200-\377_0-9]*
 global_id				~ <global_id_prefix>global_id_suffix
 
-:lexeme					~ graph_id			pause => before		event => graph_id
+:lexeme					~ generic_id		pause => before		event => generic_id
 
-graph_id				~ <global_id_prefix>global_id_suffix
+generic_id				~ <global_id_prefix>global_id_suffix
 
 :lexeme					~ graph_literal		pause => before		event => graph_literal
 
@@ -522,7 +523,7 @@ sub process
 
 	my($attribute_list);
 	my(@event, $event_name);
-	my($graph_id);
+	my($generic_id, $global_id);
 	my($lexeme_name, $lexeme, $literal);
 	my($node_port);
 	my($span, $start);
@@ -578,27 +579,27 @@ sub process
 			$self -> log(debug => "edge_literal => '$literal'");
 			$self -> process_token('Graphs', 'edge', $literal);
 		}
-		elsif ($event_name eq 'global_id')
+		elsif ($event_name eq 'generic_id')
 		{
-			$pos      = $self -> recce -> lexeme_read($lexeme_name);
-			$graph_id = substr($string, $start, $pos - $start);
+			$pos        = $self -> recce -> lexeme_read($lexeme_name);
+			$generic_id = substr($string, $start, $pos - $start);
+			$type       = 'node_id';
 
-			$self -> log(debug => "global_id => '$graph_id'");
-			$self -> process_token('Prolog', 'graph_id', $graph_id);
-		}
-		elsif ($event_name eq 'graph_id')
-		{
-			$pos      = $self -> recce -> lexeme_read($lexeme_name);
-			$graph_id = substr($string, $start, $pos - $start);
-			$type     = 'node_id';
-
-			if ($graph_id =~ /^(?:node|edge|graph)$/)
+			if ($generic_id =~ /^(?:node|edge|graph)$/)
 			{
 				$type = 'class';
 			}
 
-			$self -> log(debug => "graph_id => '$graph_id'. type => $type");
-			$self -> process_token('Graphs', $type, $graph_id);
+			$self -> log(debug => "generic_id => '$generic_id'. type => $type");
+			$self -> process_token('Graphs', $type, $generic_id);
+		}
+		elsif ($event_name eq 'global_id')
+		{
+			$pos       = $self -> recce -> lexeme_read($lexeme_name);
+			$global_id = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "global_id => '$global_id'");
+			$self -> process_token('Prolog', 'global_id', $global_id);
 		}
 		elsif ($event_name eq 'graph_literal')
 		{
