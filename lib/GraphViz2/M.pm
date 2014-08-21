@@ -191,19 +191,17 @@ attribute_tokens		::= open_bracket close_bracket
 
 edge_statement			::= edge_node_token edge_literal edge_node_token attribute_tokens
 
-edge_node_token			::= edge_node_id_token
-							| node_port
-							| node_port_compass_point
+edge_node_token			::= generic_id
+							| node_port_id
+							| node_port_compass_id
 
-edge_node_id_token		::= generic_id
+node_port_id			::= node_port
+							| ('"') node_port ('"')
+							| ('<') node_port ('>')
 
-#edge_node_id_token		::= edge_node_id
-#							| ('"') edge_node_id ('"')
-#							| ('<') edge_node_id ('>')
-
-port_id					::= edge_node_id_token
-
-compass_point			::= edge_node_id_token
+node_port_compass_id	::= node_port_compass
+							| ('"') node_port_compass ('"')
+							| ('<') node_port_compass ('>')
 
 # Lexeme-level stuff, in alphabetical order.
 
@@ -257,9 +255,9 @@ open_bracket			~ '['
 node_port_prefix		~ <global_id_prefix>global_id_suffix
 node_port				~ node_port_prefix<colon>node_port_prefix
 
-:lexeme					~ node_port_compass_point	pause => before		event => node_port_compass_point
+:lexeme					~ node_port_compass	pause => before		event => node_port_compass
 
-node_port_compass_point	~ node_port_prefix<colon>node_port_prefix<colon>node_port_prefix
+node_port_compass		~ node_port_prefix<colon>node_port_prefix<colon>node_port_prefix
 
 :lexeme					~ strict_literal	pause => before		event => strict_literal
 
@@ -617,13 +615,13 @@ sub process
 			$self -> log(debug => "node_port => '$literal'");
 			$self -> process_token('Graphs', 'node_port', $node_port);
 		}
-		elsif ($event_name eq 'node_port_compass_point')
+		elsif ($event_name eq 'node_port_compass')
 		{
 			$pos       = $self -> recce -> lexeme_read($lexeme_name);
 			$node_port = substr($string, $start, $pos - $start);
 
-			$self -> log(debug => "node_port_compass_point => '$literal'");
-			$self -> process_token('Graphs', 'node_port_compass_point', $node_port);
+			$self -> log(debug => "node_port_compass => '$literal'");
+			$self -> process_token('Graphs', 'node_port_compass', $node_port);
 		}
 		elsif ($event_name eq 'open_brace')
 		{
