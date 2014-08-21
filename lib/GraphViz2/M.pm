@@ -166,11 +166,20 @@ global_id_token			::= global_id
 
 graph_statement_tokens	::= open_brace statement_list close_brace
 
-statement_list			::= statement+
+statement_list			::= statement*
+
+# Note: Subgraphs are handled by the statement type 'graph_statement_tokens'.
+# Hence subgraph sub_1 {...} and subgraph {...} and sub_1 {...} and {...} are all output as:
+# o The optional literal 'subgraph', which is classified as a node_id.
+# o The optional subgraph id, which is also classified as a node_id.
+# o The literal '{'.
+# o The body of the subgraph.
+# o The literal '}'.
 
 statement				::= node_statement
 							| edge_statement
 							| subgraph_statement
+							| graph_statement_tokens
 
 # Node stuff.
 # Note: generic_id_token is a copy of global_id_token because I wish to trigger a different event.
@@ -206,13 +215,7 @@ node_port_compass_id	::= node_port_compass
 
 # Subgraph stuff.
 
-subgraph_statement		::= subgraph_token subgraph_id_value open_brace statement_list close_brace
-
-subgraph_token			::=
-subgraph_token			::= subgraph_literal
-
-subgraph_id_value		::=
-subgraph_id_value		::= generic_id_token
+subgraph_statement		::= graph_statement_tokens
 
 # Lexeme-level stuff, in alphabetical order.
 
@@ -234,10 +237,6 @@ digraph_literal			~ 'digraph'
 
 edge_literal			~ '->'
 edge_literal			~ '--'
-
-#:lexeme					~ edge_node_id		pause => before		event => edge_node_id
-#
-#edge_node_id			~ <global_id_prefix>global_id_suffix
 
 :lexeme					~ global_id			pause => before		event => global_id
 
@@ -273,10 +272,6 @@ node_port_compass		~ node_port_prefix<colon>node_port_prefix<colon>node_port_pre
 :lexeme					~ strict_literal	pause => before		event => strict_literal
 
 strict_literal			~ 'strict'
-
-:lexeme					~ subgraph_literal	pause => before		event => subgraph_literal
-
-subgraph_literal		~ 'subgraph'
 
 # White space.
 
@@ -529,6 +524,7 @@ sub process
 	my($self)   = @_;
 	my($string) = $self -> graph_text;
 	my($length) = length $string;
+	my($level)  = 0;
 
 	$self -> log(info => "Input: $string");
 
@@ -562,6 +558,8 @@ sub process
 
 		if ($event_name eq 'close_brace')
 		{
+			$level--;
+
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
@@ -640,6 +638,8 @@ sub process
 		}
 		elsif ($event_name eq 'open_brace')
 		{
+			$level++;
+
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
@@ -663,7 +663,7 @@ sub process
 			$attribute_list = substr($string, $start + 1, $pos - $start - 1);
 
 			$self -> log(debug => "index() => attribute list: $attribute_list");
-			$self -> process_attribute($attribute_list);
+			$self -> process_attribute($level, $attribute_list);
 		}
 		elsif ($event_name eq 'strict_literal')
 		{
@@ -689,7 +689,7 @@ sub process
 
 sub process_attribute
 {
-	my($self, $input) = @_;
+	my($self, $level, $input) = @_;
 
 	my($key);
 	my($value);

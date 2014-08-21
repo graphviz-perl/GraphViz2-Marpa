@@ -1,6 +1,17 @@
 digraph graph_18
 {
-	subgraph subgraph_18
+	subgraph subgraph_18_1
+	{
+	}
+
+	subgraph
+	{
+	}
+
+	subgraph_18_2
+	{
+	}
+
 	{
 	}
 }
