@@ -191,8 +191,8 @@ attribute_tokens		::= open_bracket close_bracket
 edge_statement			::= edge_node_token edge_literal edge_node_token attribute_tokens
 
 edge_node_token			::= edge_node_id_token
-							| edge_node_id_token<colon>port_id
-							| edge_node_id_token<colon>port_id<colon>compass_point
+							| node_port
+							| node_port_compass_point
 
 edge_node_id_token		::= graph_id
 
@@ -250,6 +250,15 @@ open_brace				~ '{'
 :lexeme					~ open_bracket		pause => before		event => open_bracket
 
 open_bracket			~ '['
+
+:lexeme					~ node_port			pause => before		event => node_port
+
+node_port_prefix		~ <global_id_prefix>global_id_suffix
+node_port				~ node_port_prefix<colon>node_port_prefix
+
+:lexeme					~ node_port_compass_point	pause => before		event => node_port_compass_point
+
+node_port_compass_point	~ node_port_prefix<colon>node_port_prefix<colon>node_port_prefix
 
 :lexeme					~ strict_literal	pause => before		event => strict_literal
 
@@ -515,7 +524,7 @@ sub process
 	my(@event, $event_name);
 	my($graph_id);
 	my($lexeme_name, $lexeme, $literal);
-	my($node_name);
+	my($node_port);
 	my($span, $start);
 	my($type);
 
@@ -537,21 +546,13 @@ sub process
 		$self -> log(debug => "pause_span($lexeme_name) => start: $start. span: $span. " .
 			"lexeme: $lexeme. event: $event_name");
 
-		if ($event_name eq 'center')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "center => '$literal'");
-			$self -> process_literal('Graphs', 'literal', $literal);
-		}
-		elsif ($event_name eq 'close_brace')
+		if ($event_name eq 'close_brace')
 		{
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "close_brace => '$literal'");
-			$self -> process_literal('Graphs', $literal, $literal);
+			$self -> process_token('Graphs', $literal, $literal);
 		}
 		elsif ($event_name eq 'close_bracket')
 		{
@@ -567,15 +568,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "digraph_literal => '$literal'");
-			$self -> process_literal('Prolog', 'literal', $literal);
-		}
-		elsif ($event_name eq 'east')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "east => '$literal'");
-			$self -> process_literal('Graphs', 'literal', $literal);
+			$self -> process_token('Prolog', 'literal', $literal);
 		}
 		elsif ($event_name eq 'edge_literal')
 		{
@@ -583,7 +576,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "edge_literal => '$literal'");
-			$self -> process_literal('Graphs', 'edge', $literal);
+			$self -> process_token('Graphs', 'edge', $literal);
 		}
 		elsif ($event_name eq 'global_id')
 		{
@@ -591,7 +584,7 @@ sub process
 			$graph_id = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "global_id => '$graph_id'");
-			$self -> process_literal('Prolog', 'graph_id', $graph_id);
+			$self -> process_token('Prolog', 'graph_id', $graph_id);
 		}
 		elsif ($event_name eq 'graph_id')
 		{
@@ -605,7 +598,7 @@ sub process
 			}
 
 			$self -> log(debug => "graph_id => '$graph_id'. type => $type");
-			$self -> process_literal('Graphs', $type, $graph_id);
+			$self -> process_token('Graphs', $type, $graph_id);
 		}
 		elsif ($event_name eq 'graph_literal')
 		{
@@ -613,7 +606,23 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "graph_literal => '$literal'");
-			$self -> process_literal('Prolog', 'literal', $literal);
+			$self -> process_token('Prolog', 'literal', $literal);
+		}
+		elsif ($event_name eq 'node_port')
+		{
+			$pos       = $self -> recce -> lexeme_read($lexeme_name);
+			$node_port = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "node_port => '$literal'");
+			$self -> process_token('Graphs', 'node_port', $node_port);
+		}
+		elsif ($event_name eq 'node_port_compass_point')
+		{
+			$pos       = $self -> recce -> lexeme_read($lexeme_name);
+			$node_port = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "node_port_compass_point => '$literal'");
+			$self -> process_token('Graphs', 'node_port_compass_point', $node_port);
 		}
 		elsif ($event_name eq 'open_brace')
 		{
@@ -621,7 +630,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "open_brace => '$literal'");
-			$self -> process_literal('Graphs', $literal, $literal);
+			$self -> process_token('Graphs', $literal, $literal);
 		}
 		elsif ($event_name eq 'open_bracket')
 		{
@@ -642,77 +651,13 @@ sub process
 			$self -> log(debug => "index() => attribute list: $attribute_list");
 			$self -> process_attribute($attribute_list);
 		}
-		elsif ($event_name eq 'north')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "north => '$literal'");
-			$self -> process_literal('Graphs', 'literal', $literal);
-		}
-		elsif ($event_name eq 'north_east')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "north_east => '$literal'");
-			$self -> process_literal('Graphs', 'literal', $literal);
-		}
-		elsif ($event_name eq 'north_west')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "north_west => '$literal'");
-			$self -> process_literal('Graphs', 'literal', $literal);
-		}
-		elsif ($event_name eq 'south')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "south => '$literal'");
-			$self -> process_literal('Graphs', 'literal', $literal);
-		}
-		elsif ($event_name eq 'south_east')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "south_east => '$literal'");
-			$self -> process_literal('Graphs', 'literal', $literal);
-		}
-		elsif ($event_name eq 'south_west')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "south_west => '$literal'");
-			$self -> process_literal('Graphs', 'literal', $literal);
-		}
 		elsif ($event_name eq 'strict_literal')
 		{
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "strict_literal => '$literal'");
-			$self -> process_literal('Prolog', 'literal', $literal);
-		}
-		elsif ($event_name eq 'underline')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "underline => '$literal'");
-			$self -> process_literal('Graphs', 'literal', $literal);
-		}
-		elsif ($event_name eq 'west')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "west => '$literal'");
-			$self -> process_literal('Graphs', 'literal', $literal);
+			$self -> process_token('Prolog', 'literal', $literal);
 		}
 		else
 		{
@@ -762,7 +707,7 @@ sub process_bracket
 
 # --------------------------------------------------
 
-sub process_literal
+sub process_token
 {
 	my($self, $context, $name, $value) = @_;
 	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $value} });
@@ -771,7 +716,7 @@ sub process_literal
 
 	$daughters[$index] -> add_daughter($node);
 
-} # End of process_literal.
+} # End of process_token.
 
 # --------------------------------------------------
 
