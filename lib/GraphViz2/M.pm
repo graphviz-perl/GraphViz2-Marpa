@@ -9,8 +9,6 @@ use charnames qw(:full :short);  # Unneeded in v5.16.
 
 use File::Slurp; # For read_file().
 
-use GraphViz2::Marpa::Actions;
-
 use Log::Handler;
 
 use Marpa::R2;
@@ -73,7 +71,7 @@ has logger =>
 
 has maxlevel =>
 (
-	default  => sub{return 'debug'},
+	default  => sub{return 'info'},
 	is       => 'rw',
 	isa      => Str,
 	required => 0,
@@ -143,13 +141,13 @@ source					=> \(<<'END_OF_GRAMMAR'),
 
 lexeme default			= latm => 1
 
-:start 					::= DOT
+:start 					::= graph_definition
 
 # The prolog to the graph.
 
-DOT						::= prolog_tokens graph_statement_tokens
+graph_definition		::= prolog_tokens graph_statement_tokens
 
-prolog_tokens			::= strict_token graph_type graph_id_value
+prolog_tokens			::= strict_token graph_type global_id_value
 
 strict_token			::=
 strict_token			::= strict_literal
@@ -157,12 +155,12 @@ strict_token			::= strict_literal
 graph_type				::= digraph_literal
 							| graph_literal
 
-graph_id_value			::=
-graph_id_value			::= graph_id_token
+global_id_value			::=
+global_id_value			::= global_id_token
 
-graph_id_token			::= graph_id
-							| ('"') graph_id ('"')
-							| ('<') graph_id ('>')
+global_id_token			::= global_id
+							| ('"') global_id ('"')
+							| ('<') global_id ('>')
 
 # The graph proper.
 
@@ -173,15 +171,50 @@ graph_statements		::= graph_statement+
 graph_statement			::= node_statement
 							| edge_statement
 
-node_statement			::= graph_id_token
+# Node stuff.
 
-edge_statement			::= graph_id_token edge_literal graph_id_token
+node_statement			::= graph_id_token attribute_tokens
+
+graph_id_token			::= graph_id
+							| ('"') graph_id ('"')
+							| ('<') graph_id ('>')
+
+# Attribute stuff.
+# These have no body between the '[]' because they are parsed manually in order to
+# preserve whitespace (which is discarded by this grammar). See attribute_list().
+
+attribute_tokens		::=
+attribute_tokens		::= open_bracket close_bracket
+
+# Edge stuff.
+
+edge_statement			::= edge_node_token edge_literal edge_node_token attribute_tokens
+
+edge_node_token			::= edge_node_id_token
+							| edge_node_id_token<colon>port_id
+							| edge_node_id_token<colon>port_id<colon>compass_point
+
+edge_node_id_token		::= graph_id
+
+#edge_node_id_token		::= edge_node_id
+#							| ('"') edge_node_id ('"')
+#							| ('<') edge_node_id ('>')
+
+port_id					::= edge_node_id_token
+
+compass_point			::= edge_node_id_token
 
 # Lexeme-level stuff, in alphabetical order.
 
 :lexeme					~ close_brace		pause => before		event => close_brace
 
 close_brace				~ '}'
+
+:lexeme					~ close_bracket		pause => before		event => close_bracket
+
+close_bracket			~ ']'
+
+colon					~ ':'
 
 :lexeme					~ digraph_literal	pause => before		event => digraph_literal
 
@@ -192,19 +225,31 @@ digraph_literal			~ 'digraph'
 edge_literal			~ '->'
 edge_literal			~ '--'
 
+#:lexeme					~ edge_node_id		pause => before		event => edge_node_id
+#
+#edge_node_id			~ <global_id_prefix>global_id_suffix
+
+:lexeme					~ global_id			pause => before		event => global_id
+
+global_id_prefix		~ [a-zA-Z\200-\377_]
+global_id_suffix		~ [a-zA-Z\200-\377_0-9]*
+global_id				~ <global_id_prefix>global_id_suffix
+
+:lexeme					~ graph_id			pause => before		event => graph_id
+
+graph_id				~ <global_id_prefix>global_id_suffix
+
 :lexeme					~ graph_literal		pause => before		event => graph_literal
 
 graph_literal			~ 'graph'
 
-:lexeme					~ graph_id			pause => before		event => graph_id
-
-graph_id_prefix			~ [a-zA-Z\200-\377_]
-graph_id_suffix			~ [a-zA-Z\200-\377_0-9]+
-graph_id				~ <graph_id_prefix>graph_id_suffix
-
 :lexeme					~ open_brace		pause => before		event => open_brace
 
 open_brace				~ '{'
+
+:lexeme					~ open_bracket		pause => before		event => open_bracket
+
+open_bracket			~ '['
 
 :lexeme					~ strict_literal	pause => before		event => strict_literal
 
@@ -224,8 +269,7 @@ END_OF_GRAMMAR
 	(
 		Marpa::R2::Scanless::R -> new
 		({
-			grammar           => $self -> grammar,
-			semantics_package => 'GraphViz2::Marpa::Actions',
+			grammar => $self -> grammar,
 		})
 	);
 
@@ -241,6 +285,130 @@ END_OF_GRAMMAR
 	$GraphViz2::Marpa::Actions::caller = $self;
 
 } # End of BUILD.
+
+# ------------------------------------------------
+
+sub attribute_field
+{
+	my($self, $input)  = @_;
+	my(@char)          = split(//, $input);
+	my($char_count)    = 0;
+	my($count_quotes)  = 0;
+	my($field)         = '';
+	my($html)          = 'no';
+	my($previous_char) = '';
+
+	my($char);
+	my($result);
+
+	for my $i (0 .. $#char)
+	{
+		$char_count++;
+
+		$char = $char[$i];
+		$html = 'yes' if ( ($html eq 'no') && ($char eq '<') && ($field eq '') );
+
+		$self -> log(debug => "Char: $char. HTML: $html. count_quotes: $count_quotes.");
+
+		if ($char eq '"')
+		{
+			# Gobble up and escaped quotes.
+
+			if ($previous_char eq '\\')
+			{
+				$field         .= $char;
+				$previous_char = $char;
+
+				next;
+			}
+
+			$count_quotes++;
+
+			$field .= $char;
+
+			# If HTML, gobble up any quotes.
+
+			if ($html eq 'yes')
+			{
+				$previous_char = $char;
+
+				next;
+			}
+
+			# First quote is start of field.
+
+			if ($count_quotes == 1)
+			{
+				$previous_char = $char;
+
+				next;
+			}
+
+			# Second quote is end of field.
+
+			$count_quotes = 0;
+			$result       = $field;
+			$field        = '';
+
+			$self -> log(debug => "Result 1: $result.");
+
+			# Skip the quote, and skip any training '\s=\s'.
+
+			$i++;
+
+			$self -> log(debug => "Input:    " . join('', @char[$i .. $#char]) . '.');
+
+			while ( ($i < $#char) && ($char[$i] =~ /[=\s]/) )
+			{
+				$i++;
+				$char_count++;
+			}
+
+			$self -> log(debug => "Input:    " . join('', @char[$i .. $#char]) . '.');
+
+			last;
+		}
+		elsif ( ($char =~ /\s/) && ($count_quotes == 0) )
+		{
+			# Discard spaces outside quotes and outside HTML.
+
+			$field         .= $char if ($html eq 'yes');
+			$previous_char = $char;
+
+			next;
+		}
+		elsif ( ($char eq '=') && ($count_quotes == 0) )
+		{
+			# Discard '=' outside quotes.
+
+			$result = $field;
+			$field  = '';
+
+			$self -> log(debug => "Result 2: $result.");
+
+			last;
+		}
+		else
+		{
+			$field .= $char;
+		}
+
+		$previous_char = $char;
+	}
+
+	$result = $field if ($field ne '');
+	$result =~ s/^"(.+)"$/$1/;
+
+	$self -> log(debug => "Result: $result.");
+	$self -> log(debug => "Input:  $input.");
+
+	$input  = substr($input, $char_count);
+
+	$self -> log(debug => "Input:  $input.");
+
+	return ($result, $input);
+
+} # End of attribute_field.
 
 # -----------------------------------------------
 # $target is qr/], at the end of a list of attributes.
@@ -339,17 +507,17 @@ sub process
 	my($string) = $self -> graph_text;
 	my($length) = length $string;
 
-	$self -> log(debug => "Input: $string");
+	$self -> log(info => "Input: $string");
 
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
 
 	my($attribute_list);
-	my($do_lexeme_read);
 	my(@event, $event_name);
 	my($graph_id);
 	my($lexeme_name, $lexeme, $literal);
 	my($node_name);
 	my($span, $start);
+	my($type);
 
 	for
 	(
@@ -360,7 +528,6 @@ sub process
 	{
 		$self -> log(debug => "read() => pos: $pos");
 
-		$do_lexeme_read = 1;
 		@event          = @{$self -> recce -> events};
 		$event_name     = ${$event[0]}[0];
 		($start, $span) = $self -> recce -> pause_span;
@@ -370,107 +537,187 @@ sub process
 		$self -> log(debug => "pause_span($lexeme_name) => start: $start. span: $span. " .
 			"lexeme: $lexeme. event: $event_name");
 
-		if ($event_name eq 'close_brace')
+		if ($event_name eq 'center')
 		{
-			$pos            = $self -> recce -> lexeme_read($lexeme_name);
-			$literal        = substr($string, $start, $pos - $start);
-			$do_lexeme_read = 0;
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "center => '$literal'");
+			$self -> process_literal('Graphs', 'literal', $literal);
+		}
+		elsif ($event_name eq 'close_brace')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "close_brace => '$literal'");
+			$self -> process_literal('Graphs', $literal, $literal);
+		}
+		elsif ($event_name eq 'close_bracket')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
 
-			$self -> process_literal('Graphs', $literal, 'literal');
+			$self -> log(debug => "close_bracket => '$literal'");
+			$self -> process_bracket('Graphs', $literal, $literal);
 		}
 		elsif ($event_name eq 'digraph_literal')
 		{
-			$pos            = $self -> recce -> lexeme_read($lexeme_name);
-			$literal        = substr($string, $start, $pos - $start);
-			$do_lexeme_read = 0;
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "digraph_literal => '$literal'");
+			$self -> process_literal('Prolog', 'literal', $literal);
+		}
+		elsif ($event_name eq 'east')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
 
-			$self -> process_literal('Prolog', $literal, 'literal');
+			$self -> log(debug => "east => '$literal'");
+			$self -> process_literal('Graphs', 'literal', $literal);
 		}
 		elsif ($event_name eq 'edge_literal')
 		{
-			$pos            = $self -> recce -> lexeme_read($lexeme_name);
-			$literal        = substr($string, $start, $pos - $start);
-			$do_lexeme_read = 0;
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "edge_literal => '$literal'");
+			$self -> process_literal('Graphs', 'edge', $literal);
+		}
+		elsif ($event_name eq 'global_id')
+		{
+			$pos      = $self -> recce -> lexeme_read($lexeme_name);
+			$graph_id = substr($string, $start, $pos - $start);
 
-			$self -> process_literal('Graphs', $literal, 'literal');
+			$self -> log(debug => "global_id => '$graph_id'");
+			$self -> process_literal('Prolog', 'graph_id', $graph_id);
 		}
 		elsif ($event_name eq 'graph_id')
 		{
-			$pos            = $self -> recce -> lexeme_read($lexeme_name);
-			$graph_id       = substr($string, $start, $pos - $start);
-			$do_lexeme_read = 0;
+			$pos      = $self -> recce -> lexeme_read($lexeme_name);
+			$graph_id = substr($string, $start, $pos - $start);
+			$type     = 'node_id';
 
-			$self -> log(debug => "graph_id => '$graph_id'");
+			if ($graph_id =~ /^(?:node|edge|graph)$/)
+			{
+				$type = 'class';
+			}
 
-			$self -> process_literal('Graphs', $graph_id, 'id');
-		}
-		elsif ($event_name eq 'graph_id_token')
-		{
-			$pos            = $self -> recce -> lexeme_read($lexeme_name);
-			$graph_id       = substr($string, $start, $pos - $start);
-			$do_lexeme_read = 0;
-
-			$self -> log(debug => "graph_id_token => '$graph_id'");
-
-			$self -> process_literal('Prolog', $literal, 'graph_id');
+			$self -> log(debug => "graph_id => '$graph_id'. type => $type");
+			$self -> process_literal('Graphs', $type, $graph_id);
 		}
 		elsif ($event_name eq 'graph_literal')
 		{
-			$pos            = $self -> recce -> lexeme_read($lexeme_name);
-			$literal        = substr($string, $start, $pos - $start);
-			$do_lexeme_read = 0;
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "graph_literal => '$literal'");
-
-			$self -> process_literal('Prolog', $literal, 'literal');
+			$self -> process_literal('Prolog', 'literal', $literal);
 		}
 		elsif ($event_name eq 'open_brace')
 		{
-			$pos            = $self -> recce -> lexeme_read($lexeme_name);
-			$literal        = substr($string, $start, $pos - $start);
-			$do_lexeme_read = 0;
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "open_brace => '$literal'");
-
-			$self -> process_literal('Graphs', $literal, 'literal');
+			$self -> process_literal('Graphs', $literal, $literal);
 		}
-		elsif ($event_name eq 'strict_literal')
+		elsif ($event_name eq 'open_bracket')
 		{
-			$pos            = $self -> recce -> lexeme_read($lexeme_name);
-			$literal        = substr($string, $start, $pos - $start);
-			$do_lexeme_read = 0;
-
-			$self -> log(debug => "strict_literal => '$literal'");
-
-			$self -> process_literal('Prolog', $literal, 'literal');
-		}
-		elsif ($event_name eq 'start_attributes')
-		{
-			# Read the attribute_start lexeme, but don't do lexeme_read()
+			# Read the open_bracket lexeme, but don't do lexeme_read()
 			# at the bottom of the for loop, because we're just about
 			# to fiddle $pos to skip the attributes.
 
-			$pos            = $self -> recce -> lexeme_read($lexeme_name);
-			$pos            = $self -> find_terminator(\$string, qr/]/, $start);
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "open_bracket => '$literal'");
+			$self -> process_bracket('Graphs', $literal, $literal);
+
+			$pos = $self -> find_terminator(\$string, qr/]/, $start);
+
 			$attribute_list = substr($string, $start + 1, $pos - $start - 1);
-			$do_lexeme_read = 0;
 
 			$self -> log(debug => "index() => attribute list: $attribute_list");
+			$self -> process_attribute($attribute_list);
+		}
+		elsif ($event_name eq 'north')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
 
-			$self -> attribute_list($attribute_list);
+			$self -> log(debug => "north => '$literal'");
+			$self -> process_literal('Graphs', 'literal', $literal);
+		}
+		elsif ($event_name eq 'north_east')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "north_east => '$literal'");
+			$self -> process_literal('Graphs', 'literal', $literal);
+		}
+		elsif ($event_name eq 'north_west')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "north_west => '$literal'");
+			$self -> process_literal('Graphs', 'literal', $literal);
+		}
+		elsif ($event_name eq 'south')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "south => '$literal'");
+			$self -> process_literal('Graphs', 'literal', $literal);
+		}
+		elsif ($event_name eq 'south_east')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "south_east => '$literal'");
+			$self -> process_literal('Graphs', 'literal', $literal);
+		}
+		elsif ($event_name eq 'south_west')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "south_west => '$literal'");
+			$self -> process_literal('Graphs', 'literal', $literal);
+		}
+		elsif ($event_name eq 'strict_literal')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "strict_literal => '$literal'");
+			$self -> process_literal('Prolog', 'literal', $literal);
+		}
+		elsif ($event_name eq 'underline')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "underline => '$literal'");
+			$self -> process_literal('Graphs', 'literal', $literal);
+		}
+		elsif ($event_name eq 'west')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "west => '$literal'");
+			$self -> process_literal('Graphs', 'literal', $literal);
 		}
 		else
 		{
 			die "Unexpected lexeme '$lexeme_name' with a pause\n";
 		}
-
-		$pos = $self -> recce -> lexeme_read($lexeme_name) if ($do_lexeme_read);
 
 		$self -> log(debug => "lexeme_read($lexeme_name) => $pos");
     }
@@ -483,12 +730,45 @@ sub process
 
 # --------------------------------------------------
 
+sub process_attribute
+{
+	my($self, $input) = @_;
+
+	my($key);
+	my($value);
+
+	($key, $input)   = $self -> attribute_field($input);
+	($value, $input) = $self -> attribute_field($input);
+	my($node)        = Tree::DAG_Node -> new({name => 'attribute', attributes => {type => $key, value => $value} });
+	my(@daughters)   = $self -> items -> daughters;
+	my($index)       = 1; # Graphs not Prolog.
+	@daughters       = $daughters[$index] -> daughters;
+
+	$daughters[$#daughters] -> add_daughter($node);
+
+} # End of process_attribute.
+
+# --------------------------------------------------
+
+sub process_bracket
+{
+	my($self, $context, $name, $value) = @_;
+	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $value} });
+	my(@daughters) = $self -> items -> daughters;
+	my($index)     = $context eq 'Prolog' ? 0 : 1;
+	@daughters     = $daughters[$index] -> daughters;
+
+	$daughters[$#daughters] -> add_daughter($node);
+
+} # End of process_bracket.
+
+# --------------------------------------------------
+
 sub process_literal
 {
-	my($self, $context, $literal, $type) = @_;
-	$type          ||= '';
+	my($self, $context, $name, $value) = @_;
+	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $value} });
 	my(@daughters) = $self -> items -> daughters;
-	my($node)      = Tree::DAG_Node -> new({name => $literal, attributes => {context => $context, type => $type} });
 	my($index)     = $context eq 'Prolog' ? 0 : 1;
 
 	$daughters[$index] -> add_daughter($node);
@@ -503,6 +783,8 @@ sub run
 
 	if ($self -> description)
 	{
+		# Assume graph is a single line without comments.
+
 		$self -> graph_text($self -> description);
 	}
 	elsif ($self -> input_file)
@@ -515,7 +797,9 @@ sub run
 							chomp      => 1,
 						);
 
-		$self -> graph_text(join(' ', @$ara_ref) );
+		# Discard comments and combine lines into a single string.
+
+		$self -> graph_text(join(' ', grep{! /^#/} @$ara_ref) );
 	}
 	else
 	{

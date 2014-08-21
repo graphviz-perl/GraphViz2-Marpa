@@ -7,18 +7,34 @@ digraph graph_17
 	edge
 	[
 		color = "blue"
-		penwidth = 5
+		penwidth = 1
 	]
 	node_17_1
 	[
-		label = "<f0> left|<f1> middle|<f2> right"
+		label = "<p11> left|<p12> middle|<p13> right"
 	]
 	node_17_2
 	[
-		label = "<f0> one|<f1> two"
+		label = "<p21> one|<p22> two"
 	]
-	node_17_1:n -> node_17_2:s
+	node_17_1:p12:n -> node_17_2:p22:w
 	[
-		arrowhead = "odiamond"
+		arrowtail = "empty"
+		arrowhead = "halfopen"
+		dir       = "both"
+	]
+	node_17_1:p13:e -> node_17_2:p22:s
+	[
+		arrowtail = "invdot"
+		arrowhead = "dot"
+		color     = green
+		dir       = "both"
+	]
+	node_17_1:p13:ne -> node_17_2:p21:s
+	[
+		arrowtail = "crow"
+		arrowhead = "tee"
+		color     = red
+		dir       = "both"
 	]
 }
