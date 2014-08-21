@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use GraphViz2::M;
+use GraphViz2::Marpa;
 
 use Getopt::Long;
 
@@ -30,7 +30,7 @@ if ($option_parser -> getoptions
 
 	# Return 0 for success and 1 for failure.
 
-	exit GraphViz2::M -> new(%option) -> run;
+	exit GraphViz2::Marpa -> new(%option) -> run;
 }
 else
 {
