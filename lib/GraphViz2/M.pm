@@ -558,13 +558,13 @@ sub process
 
 		if ($event_name eq 'close_brace')
 		{
-			$level--;
-
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "close_brace => '$literal'");
-			$self -> process_token('Graphs', $literal, $literal);
+			$self -> process_brace($level, $literal);
+
+			$level--;
 		}
 		elsif ($event_name eq 'close_bracket')
 		{
@@ -572,7 +572,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "close_bracket => '$literal'");
-			$self -> process_bracket('Graphs', $literal, $literal);
+			$self -> process_bracket($literal);
 		}
 		elsif ($event_name eq 'digraph_literal')
 		{
@@ -644,7 +644,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "open_brace => '$literal'");
-			$self -> process_token('Graphs', $literal, $literal);
+			$self -> process_brace($level, $literal);
 		}
 		elsif ($event_name eq 'open_bracket')
 		{
@@ -656,7 +656,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "open_bracket => '$literal'");
-			$self -> process_bracket('Graphs', $literal, $literal);
+			$self -> process_bracket($literal);
 
 			$pos = $self -> find_terminator(\$string, qr/]/, $start);
 
@@ -707,12 +707,25 @@ sub process_attribute
 
 # --------------------------------------------------
 
+sub process_brace
+{
+	my($self, $level, $name) = @_;
+	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $name} });
+	my(@daughters) = $self -> items -> daughters;
+	my($index)     = 1; # Graphs not Prolog.
+
+	$daughters[$index] -> add_daughter($node);
+
+} # End of process_brace.
+
+# --------------------------------------------------
+
 sub process_bracket
 {
-	my($self, $context, $name, $value) = @_;
-	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $value} });
+	my($self, $name) = @_;
+	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $name} });
 	my(@daughters) = $self -> items -> daughters;
-	my($index)     = $context eq 'Prolog' ? 0 : 1;
+	my($index)     = 1; # Graphs not Prolog.
 	@daughters     = $daughters[$index] -> daughters;
 
 	$daughters[$#daughters] -> add_daughter($node);
