@@ -1,154 +1,837 @@
-package GraphViz2::Marpa;
+package GraphViz2::M;
 
 use strict;
+use utf8;
 use warnings;
+use warnings  qw(FATAL utf8);    # Fatalize encoding glitches.
+use open      qw(:std :utf8);    # Undeclared streams in UTF-8.
+use charnames qw(:full :short);  # Unneeded in v5.16.
 
-use GraphViz2::Marpa::Lexer;
-use GraphViz2::Marpa::Parser;
-
-use Hash::FieldHash ':all';
+use File::Slurp; # For read_file().
 
 use Log::Handler;
 
-fieldhash my %description   => 'description';
-fieldhash my %input_file    => 'input_file';
-fieldhash my %lexed_file    => 'lexed_file';
-fieldhash my %lexer         => 'lexer';
-fieldhash my %logger        => 'logger';
-fieldhash my %maxlevel      => 'maxlevel';
-fieldhash my %minlevel      => 'minlevel';
-fieldhash my %output_file   => 'output_file';
-fieldhash my %parsed_file   => 'parsed_file';
-fieldhash my %parser        => 'parser';
-fieldhash my %renderer      => 'renderer';
-fieldhash my %report_forest => 'report_forest';
-fieldhash my %report_items  => 'report_items';
-fieldhash my %report_stt    => 'report_stt';
-fieldhash my %stt_file      => 'stt_file';
-fieldhash my %timeout       => 'timeout';
-fieldhash my %type          => 'type';
+use Marpa::R2;
 
-our $VERSION = '1.14';
+use Moo;
+
+use Tree::DAG_Node;
+
+use Types::Standard qw/Any Str/;
+
+use Try::Tiny;
+
+has description =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Str,
+	required => 0,
+);
+
+has grammar =>
+(
+	default  => sub {return ''},
+	is       => 'rw',
+	isa      => Any,
+	required => 0,
+);
+
+has graph_text =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Str,
+	required => 0,
+);
+
+has input_file =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Str,
+	required => 0,
+);
+
+has items =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Any,
+	required => 0,
+);
+
+has logger =>
+(
+	default  => sub{return undef},
+	is       => 'rw',
+	isa      => Any,
+	required => 0,
+);
+
+has maxlevel =>
+(
+	default  => sub{return 'info'},
+	is       => 'rw',
+	isa      => Str,
+	required => 0,
+);
+
+has minlevel =>
+(
+	default  => sub{return 'error'},
+	is       => 'rw',
+	isa      => Str,
+	required => 0,
+);
+
+has output_file =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Str,
+	required => 0,
+);
+
+has recce =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Any,
+	required => 0,
+);
+
+has renderer =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Any,
+	required => 0,
+);
+
+our $VERSION = '2.03';
 
 # --------------------------------------------------
 
-sub _init
+sub BUILD
 {
-	my($self, $arg)      = @_;
-	$$arg{description}   ||= ''; # Caller can set.
-	$$arg{input_file}    ||= ''; # Caller can set.
-	$$arg{lexed_file}    ||= ''; # Caller can set.
-	$$arg{lexer}         = '';
-	$$arg{logger}        = defined($$arg{logger}) ? $$arg{logger} : undef; # Caller can set.
-	$$arg{maxlevel}      ||= 'notice'; # Caller can set.
-	$$arg{minlevel}      ||= 'error';  # Caller can set.
-	$$arg{output_file}   ||= '';       # Caller can set.
-	$$arg{parsed_file}   ||= '';       # Caller can set.
-	$$arg{parser}        = '';
-	$$arg{renderer}      ||= '';       # Caller can set.
-	$$arg{report_forest} ||= 0;        # Caller can set.
-	$$arg{report_items}  ||= 0;        # Caller can set.
-	$$arg{report_stt}    ||= 0;        # Caller can set.
-	$$arg{stt_file}      ||= '';       # Caller can set.
-	$$arg{timeout}       ||= 10;       # Caller can set.
-	$$arg{type}          ||= '';       # Caller can set.
-	$self                = from_hash($self, $arg);
+	my($self) = @_;
 
 	if (! defined $self -> logger)
 	{
 		$self -> logger(Log::Handler -> new);
 		$self -> logger -> add
 		(
-		 screen =>
-		 {
-			 maxlevel       => $self -> maxlevel,
-			 message_layout => '%m',
-			 minlevel       => $self -> minlevel,
-		 }
+			screen =>
+			{
+				maxlevel       => $self -> maxlevel,
+				message_layout => '%m',
+				minlevel       => $self -> minlevel,
+			}
 		);
 	}
 
-	return $self;
+	$self -> grammar
+	(
+		Marpa::R2::Scanless::G -> new
+		({
+source					=> \(<<'END_OF_GRAMMAR'),
 
-} # End of _init.
+:default				::= action => [values]
+
+lexeme default			= latm => 1
+
+:start 					::= graph_definition
+
+# The prolog to the graph.
+
+graph_definition		::= prolog_tokens graph_statement_tokens
+
+prolog_tokens			::= strict_token graph_type global_id_value
+
+strict_token			::=
+strict_token			::= strict_literal
+
+graph_type				::= digraph_literal
+							| graph_literal
+
+global_id_value			::=
+global_id_value			::= global_id_token
+
+global_id_token			::= global_id
+							| ('"') global_id ('"')
+							| ('<') global_id ('>')
+
+# The graph proper.
+
+graph_statement_tokens	::= open_brace statement_list close_brace
+
+statement_list			::= statement*
+
+# Note: Subgraphs are handled by the statement type 'graph_statement_tokens'.
+# Hence subgraph sub_1 {...} and subgraph {...} and sub_1 {...} and {...} are all output as:
+# o The optional literal 'subgraph', which is classified as a node_id.
+# o The optional subgraph id, which is also classified as a node_id.
+# o The literal '{'.
+# o The body of the subgraph.
+# o The literal '}'.
+
+statement				::= node_statement
+							| edge_statement
+#							| attribute_statement		# Handled by node_statement.
+							| assignment_statement
+							| subgraph_statement
+
+# Node stuff.
+# Note: generic_id_token is a copy of global_id_token because I wish to trigger a different event.
+
+node_statement			::= generic_id_token attribute_tokens
+
+generic_id_token		::= generic_id
+							| ('"') generic_id ('"')
+							| ('<') generic_id ('>')
+
+# Attribute stuff.
+# These have no body between the '[]' because they are parsed manually in order to
+# preserve whitespace (which is discarded by this grammar). See attribute_list().
+
+attribute_tokens		::=
+attribute_tokens		::= open_bracket close_bracket
+
+# Edge stuff.
+
+edge_statement			::= edge_node_token edge_literal edge_node_token attribute_tokens
+
+edge_node_token			::= generic_id
+							| node_port_id
+							| node_port_compass_id
+
+node_port_id			::= node_port
+							| ('"') node_port ('"')
+							| ('<') node_port ('>')
+
+node_port_compass_id	::= node_port_compass
+							| ('"') node_port_compass ('"')
+							| ('<') node_port_compass ('>')
+
+# Subgraph stuff.
+
+subgraph_statement		::= graph_statement_tokens
+
+# Assignment stuff.
+
+assignment_statement	::= generic_id equals_literal generic_id
+
+# Lexeme-level stuff, in alphabetical order.
+
+:lexeme					~ close_brace		pause => before		event => close_brace
+
+close_brace				~ '}'
+
+:lexeme					~ close_bracket		pause => before		event => close_bracket
+
+close_bracket			~ ']'
+
+colon					~ ':'
+
+:lexeme					~ digraph_literal	pause => before		event => digraph_literal
+
+digraph_literal			~ 'digraph'
+
+:lexeme					~ edge_literal		pause => before		event => edge_literal
+
+edge_literal			~ '->'
+edge_literal			~ '--'
+
+:lexeme					~ equals_literal	pause => before		event => equals_literal
+
+equals_literal			~ '='
+
+:lexeme					~ global_id			pause => before		event => global_id
+
+global_id_prefix		~ [a-zA-Z\200-\377_]
+global_id_suffix		~ [a-zA-Z\200-\377_0-9]*
+global_id				~ <global_id_prefix>global_id_suffix
+
+:lexeme					~ generic_id		pause => before		event => generic_id
+
+generic_id				~ <global_id_prefix>global_id_suffix
+
+:lexeme					~ graph_literal		pause => before		event => graph_literal
+
+graph_literal			~ 'graph'
+
+:lexeme					~ open_brace		pause => before		event => open_brace
+
+open_brace				~ '{'
+
+:lexeme					~ open_bracket		pause => before		event => open_bracket
+
+open_bracket			~ '['
+
+:lexeme					~ node_port			pause => before		event => node_port
+
+node_port_prefix		~ <global_id_prefix>global_id_suffix
+node_port				~ node_port_prefix<colon>node_port_prefix
+
+:lexeme					~ node_port_compass	pause => before		event => node_port_compass
+
+node_port_compass		~ node_port_prefix<colon>node_port_prefix<colon>node_port_prefix
+
+:lexeme					~ strict_literal	pause => before		event => strict_literal
+
+strict_literal			~ 'strict'
+
+# White space.
+
+:discard				~ whitespace
+
+whitespace				~ [\s]*
+
+END_OF_GRAMMAR
+		})
+	);
+
+	$self -> recce
+	(
+		Marpa::R2::Scanless::R -> new
+		({
+			grammar => $self -> grammar,
+		})
+	);
+
+	$self -> items(Tree::DAG_Node -> new({name => 'Root', attributes => {type => '', value => ''} }));
+
+	for my $type (qw/Prolog Graphs/)
+	{
+		my($node) = Tree::DAG_Node -> new({name => $type, attributes => {type => '', value => ''} });
+
+		$self -> items -> add_daughter($node);
+	}
+
+} # End of BUILD.
+
+# ------------------------------------------------
+
+sub attribute_field
+{
+	my($self, $input)  = @_;
+	my(@char)          = split(//, $input);
+	my($char_count)    = 0;
+	my($count_quotes)  = 0;
+	my($field)         = '';
+	my($html)          = 'no';
+	my($previous_char) = '';
+
+	my($char);
+	my($result);
+
+	for my $i (0 .. $#char)
+	{
+		$char_count++;
+
+		$char = $char[$i];
+		$html = 'yes' if ( ($html eq 'no') && ($char eq '<') && ($field eq '') );
+
+		$self -> log(debug => "Char: $char. HTML: $html. count_quotes: $count_quotes.");
+
+		if ($char eq '"')
+		{
+			# Gobble up and escaped quotes.
+
+			if ($previous_char eq '\\')
+			{
+				$field         .= $char;
+				$previous_char = $char;
+
+				next;
+			}
+
+			$count_quotes++;
+
+			$field .= $char;
+
+			# If HTML, gobble up any quotes.
+
+			if ($html eq 'yes')
+			{
+				$previous_char = $char;
+
+				next;
+			}
+
+			# First quote is start of field.
+
+			if ($count_quotes == 1)
+			{
+				$previous_char = $char;
+
+				next;
+			}
+
+			# Second quote is end of field.
+
+			$count_quotes = 0;
+			$result       = $field;
+			$field        = '';
+
+			$self -> log(debug => "Result 1: $result.");
+
+			# Skip the quote, and skip any training '\s=\s'.
+
+			$i++;
+
+			$self -> log(debug => "Input:    " . join('', @char[$i .. $#char]) . '.');
+
+			while ( ($i < $#char) && ($char[$i] =~ /[=\s]/) )
+			{
+				$i++;
+				$char_count++;
+			}
+
+			$self -> log(debug => "Input:    " . join('', @char[$i .. $#char]) . '.');
+
+			last;
+		}
+		elsif ( ($char =~ /\s/) && ($count_quotes == 0) )
+		{
+			# Discard spaces outside quotes and outside HTML.
+
+			$field         .= $char if ($html eq 'yes');
+			$previous_char = $char;
+
+			next;
+		}
+		elsif ( ($char eq '=') && ($count_quotes == 0) )
+		{
+			# Discard '=' outside quotes.
+
+			$result = $field;
+			$field  = '';
+
+			$self -> log(debug => "Result 2: $result.");
+
+			last;
+		}
+		else
+		{
+			$field .= $char;
+		}
+
+		$previous_char = $char;
+	}
+
+	$result = $field if ($field ne '');
+	$result =~ s/^"(.+)"$/$1/;
+
+	$self -> log(debug => "Result: $result.");
+	$self -> log(debug => "Input:  $input.");
+
+	$input  = substr($input, $char_count);
+
+	$self -> log(debug => "Input:  $input.");
+
+	return ($result, $input);
+
+} # End of attribute_field.
+
+# -----------------------------------------------
+# $target is qr/], at the end of a list of attributes.
+# The special case is <<...>>, as used in attributes.
+
+sub find_terminator
+{
+	my($self, $stringref, $target, $start) = @_;
+	my(@char)   = split(//, substr($$stringref, $start) );
+	my($offset) = 0;
+	my($quote)  = '';
+	my($angle)  = 0; # Set to 1 if inside <<...>>.
+
+	my($char);
+
+	for my $i (0 .. $#char)
+	{
+		$char   = $char[$i];
+		$offset = $i;
+
+		if ($quote)
+		{
+			# Ignore an escaped quote.
+			# The first 2 backslashes are just to fix syntax highlighting in UltraEdit.
+
+			next if ( ($char =~ /[\]\"\'>]/) && ($i > 0) && ($char[$i - 1] eq '\\') );
+
+			# Get out of quotes if matching one found.
+
+			if ($char eq $quote)
+			{
+				if ($quote eq '>')
+				{
+					$quote = '' if (! $angle || ($char[$i - 1] eq '>') );
+
+					next;
+				}
+
+				$quote = '';
+
+				next;
+			}
+		}
+		else
+		{
+			# Look for quotes.
+			# 1: Skip escaped chars.
+
+			next if ( ($i > 0) && ($char[$i - 1] eq '\\') );
+
+			# 2: " and '.
+			# The backslashes are just to fix syntax highlighting in UltraEdit.
+
+			if ($char =~ /[\"\']/)
+			{
+				$quote = $char;
+
+				next;
+			}
+
+			# 3: <.
+			# In the case of attributes ($target eq '}') but not nodes names,
+			# quotes can be <...> or <<...>>.
+
+			if ( ($target =~ ']') && ($char =~ '<') )
+			{
+				$quote = '>';
+				$angle = 1 if ( ($i < $#char) && ($char[$i + 1] eq '<') );
+
+				next;
+			}
+
+			last if ($char =~ $target);
+		}
+	}
+
+	return $start + $offset;
+
+} # End of find_terminator.
 
 # --------------------------------------------------
 
 sub log
 {
 	my($self, $level, $s) = @_;
-	$level ||= 'debug';
-	$s     ||= '';
 
-	$self -> logger -> $level($s);
+	$self -> logger -> log($level => $s) if ($self -> logger);
 
 } # End of log.
 
 # --------------------------------------------------
 
-sub new
+sub process
 {
-	my($class, %arg) = @_;
-	my($self)        = bless {}, $class;
-	$self            = $self -> _init(\%arg);
+	my($self)   = @_;
+	my($string) = $self -> graph_text;
+	my($length) = length $string;
+	my($level)  = 0;
 
-	return $self;
+	$self -> log(info => "Input: $string");
 
-}	# End of new.
+	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
+
+	my($attribute_list);
+	my(@event, $event_name);
+	my($generic_id, $global_id);
+	my($lexeme_name, $lexeme, $literal);
+	my($node_port);
+	my($span, $start);
+	my($type);
+
+	for
+	(
+		my $pos = $self -> recce -> read(\$string);
+		$pos < $length;
+		$pos = $self -> recce -> resume($pos)
+	)
+	{
+		$self -> log(debug => "read() => pos: $pos");
+
+		@event          = @{$self -> recce -> events};
+		$event_name     = ${$event[0]}[0];
+		($start, $span) = $self -> recce -> pause_span;
+		$lexeme_name    = $self -> recce -> pause_lexeme;
+		$lexeme         = $self -> recce -> literal($start, $span);
+
+		$self -> log(debug => "pause_span($lexeme_name) => start: $start. span: $span. " .
+			"lexeme: $lexeme. event: $event_name");
+
+		if ($event_name eq 'close_brace')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "close_brace => '$literal'");
+			$self -> process_brace($level, $literal);
+
+			$level--;
+		}
+		elsif ($event_name eq 'close_bracket')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "close_bracket => '$literal'");
+			$self -> process_bracket($literal);
+		}
+		elsif ($event_name eq 'digraph_literal')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "digraph_literal => '$literal'");
+			$self -> process_token('Prolog', 'literal', $literal);
+		}
+		elsif ($event_name eq 'edge_literal')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "edge_literal => '$literal'");
+			$self -> process_token('Graphs', 'edge', $literal);
+		}
+		elsif ($event_name eq 'equals_literal')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "equals_literal => '$literal'");
+			$self -> process_token('Graphs', 'equals_literal', $literal);
+		}
+		elsif ($event_name eq 'generic_id')
+		{
+			$pos        = $self -> recce -> lexeme_read($lexeme_name);
+			$generic_id = substr($string, $start, $pos - $start);
+			$type       = 'node_id';
+
+			if ($generic_id =~ /^(?:graph|node|edge)$/)
+			{
+				$type = 'class';
+			}
+
+			$self -> log(debug => "generic_id => '$generic_id'. type => $type");
+			$self -> process_token('Graphs', $type, $generic_id);
+		}
+		elsif ($event_name eq 'global_id')
+		{
+			$pos       = $self -> recce -> lexeme_read($lexeme_name);
+			$global_id = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "global_id => '$global_id'");
+			$self -> process_token('Prolog', 'global_id', $global_id);
+		}
+		elsif ($event_name eq 'graph_literal')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "graph_literal => '$literal'");
+			$self -> process_token('Prolog', 'literal', $literal);
+		}
+		elsif ($event_name eq 'node_port')
+		{
+			$pos       = $self -> recce -> lexeme_read($lexeme_name);
+			$node_port = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "node_port => '$literal'");
+			$self -> process_token('Graphs', 'node_port', $node_port);
+		}
+		elsif ($event_name eq 'node_port_compass')
+		{
+			$pos       = $self -> recce -> lexeme_read($lexeme_name);
+			$node_port = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "node_port_compass => '$literal'");
+			$self -> process_token('Graphs', 'node_port_compass', $node_port);
+		}
+		elsif ($event_name eq 'open_brace')
+		{
+			$level++;
+
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "open_brace => '$literal'");
+			$self -> process_brace($level, $literal);
+		}
+		elsif ($event_name eq 'open_bracket')
+		{
+			# Read the open_bracket lexeme, but don't do lexeme_read()
+			# at the bottom of the for loop, because we're just about
+			# to fiddle $pos to skip the attributes.
+
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "open_bracket => '$literal'");
+			$self -> process_bracket($literal);
+
+			$pos = $self -> find_terminator(\$string, qr/]/, $start);
+
+			$attribute_list = substr($string, $start + 1, $pos - $start - 1);
+
+			$self -> log(debug => "index() => attribute list: $attribute_list");
+			$self -> process_attribute($level, $attribute_list);
+		}
+		elsif ($event_name eq 'strict_literal')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "strict_literal => '$literal'");
+			$self -> process_token('Prolog', 'literal', $literal);
+		}
+		else
+		{
+			die "Unexpected lexeme '$lexeme_name' with a pause\n";
+		}
+    }
+
+	# Return a defined value for success and undef for failure.
+
+	return $self -> recce -> value;
+
+} # End of process.
+
+# --------------------------------------------------
+
+sub process_assignment
+{
+	my($self) = @_;
+	my($node)      = Tree::DAG_Node -> new({name => 'assignment', attributes => {type => '', value => ''} });
+	my(@daughters) = $self -> items -> daughters;
+	my($index)     = 1; # Graphs not Prolog.
+
+	$daughters[$index] -> add_daughter($node);
+
+} # End of process_assignment.
+
+# --------------------------------------------------
+
+sub process_attribute
+{
+	my($self, $level, $input) = @_;
+
+	my($key);
+	my($value);
+
+	($key, $input)   = $self -> attribute_field($input);
+	($value, $input) = $self -> attribute_field($input);
+	my($node)        = Tree::DAG_Node -> new({name => 'attribute', attributes => {type => $key, value => $value} });
+	my(@daughters)   = $self -> items -> daughters;
+	my($index)       = 1; # Graphs not Prolog.
+	@daughters       = $daughters[$index] -> daughters;
+
+	$daughters[$#daughters] -> add_daughter($node);
+
+} # End of process_attribute.
+
+# --------------------------------------------------
+
+sub process_brace
+{
+	my($self, $level, $name) = @_;
+	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {type => '', value => $name} });
+	my(@daughters) = $self -> items -> daughters;
+	my($index)     = 1; # Graphs not Prolog.
+
+	$daughters[$index] -> add_daughter($node);
+
+} # End of process_brace.
+
+# --------------------------------------------------
+
+sub process_bracket
+{
+	my($self, $name) = @_;
+	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {type => '', value => $name} });
+	my(@daughters) = $self -> items -> daughters;
+	my($index)     = 1; # Graphs not Prolog.
+	@daughters     = $daughters[$index] -> daughters;
+
+	$daughters[$#daughters] -> add_daughter($node);
+
+} # End of process_bracket.
+
+# --------------------------------------------------
+
+sub process_token
+{
+	my($self, $context, $name, $value) = @_;
+	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {type => '', value => $value} });
+	my(@daughters) = $self -> items -> daughters;
+	my($index)     = $context eq 'Prolog' ? 0 : 1;
+
+	$daughters[$index] -> add_daughter($node);
+
+} # End of process_token.
 
 # --------------------------------------------------
 
 sub run
 {
-	my($self)  = @_;
+	my($self) = @_;
 
-	$self -> lexer
-	(GraphViz2::Marpa::Lexer -> new
-		(
-		 description  => $self -> description,
-		 input_file   => $self -> input_file,
-		 lexed_file   => $self -> lexed_file,
-		 logger       => $self -> logger,
-		 maxlevel     => $self -> maxlevel,
-		 minlevel     => $self -> minlevel,
-		 report_items => $self -> report_items,
-		 report_stt   => $self -> report_stt,
-		 stt_file     => $self -> stt_file,
-		 timeout      => $self -> timeout,
-		 type         => $self -> type,
-		)
-	);
-
-	# Return 0 for success and 1 for failure.
-
-	my($result) = $self -> lexer -> run;
-
-	if ($result == 0)
+	if ($self -> description)
 	{
-		$self -> parser
-		(GraphViz2::Marpa::Parser -> new
-			(
-			 lexed_file    => $self -> lexed_file,
-			 logger        => $self -> logger,
-			 maxlevel      => $self -> maxlevel,
-			 minlevel      => $self -> minlevel,
-			 output_file   => $self -> output_file,
-			 parsed_file   => $self -> parsed_file,
-			 renderer      => $self -> renderer,
-			 report_items  => $self -> report_items,
-			 report_forest => $self -> report_forest,
-			 tokens        => $self -> lexer -> items,
-			)
-		);
+		# Assume graph is a single line without comments.
 
-		$result = $self -> parser -> run;
+		$self -> graph_text($self -> description);
+	}
+	elsif ($self -> input_file)
+	{
+		my($ara_ref) = read_file
+						(
+							$self -> input_file,
+							array_ref  => 1,
+							binmode    => ':encoding(UTF-8)',
+							chomp      => 1,
+						);
+
+		# Discard comments and combine lines into a single string.
+
+		$self -> graph_text(join(' ', grep{! /^#/} @$ara_ref) );
 	}
 	else
 	{
-		$self -> log(warn => 'The lexer failed. The parser will not be run') if ($self -> logger);
+		die "Error: You must provide a graph using one of -input_file or -description\n";
 	}
 
 	# Return 0 for success and 1 for failure.
+
+	my($result) = 0;
+
+	try
+	{
+		if (defined $self -> process)
+		{
+			$self -> log(info => join("\n", @{$self -> items -> tree2string}) );
+		}
+		else
+		{
+			$result = 1;
+		}
+	}
+	catch
+	{
+		$result = 1;
+
+		$self -> log(error => "Exception: $_");
+	};
+
+
+	$self -> log(error => 'Parse failed') if ($result == 1);
+
+	# Return 0 for success and 1 for failure.
+
+	$self -> log(info => "Parse result: $result (0 is success)");
 
 	return $result;
 
