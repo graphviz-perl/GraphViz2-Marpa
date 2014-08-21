@@ -718,8 +718,6 @@ sub process
 		{
 			die "Unexpected lexeme '$lexeme_name' with a pause\n";
 		}
-
-		$self -> log(debug => "lexeme_read($lexeme_name) => $pos");
     }
 
 	# Return a defined value for success and undef for failure.
