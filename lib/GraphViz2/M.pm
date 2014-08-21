@@ -164,12 +164,13 @@ global_id_token			::= global_id
 
 # The graph proper.
 
-graph_statement_tokens	::= open_brace graph_statements close_brace
+graph_statement_tokens	::= open_brace statement_list close_brace
 
-graph_statements		::= graph_statement+
+statement_list			::= statement+
 
-graph_statement			::= node_statement
+statement				::= node_statement
 							| edge_statement
+							| subgraph_statement
 
 # Node stuff.
 # Note: generic_id_token is a copy of global_id_token because I wish to trigger a different event.
@@ -202,6 +203,16 @@ node_port_id			::= node_port
 node_port_compass_id	::= node_port_compass
 							| ('"') node_port_compass ('"')
 							| ('<') node_port_compass ('>')
+
+# Subgraph stuff.
+
+subgraph_statement		::= subgraph_token subgraph_id_value open_brace statement_list close_brace
+
+subgraph_token			::=
+subgraph_token			::= subgraph_literal
+
+subgraph_id_value		::=
+subgraph_id_value		::= generic_id_token
 
 # Lexeme-level stuff, in alphabetical order.
 
@@ -262,6 +273,10 @@ node_port_compass		~ node_port_prefix<colon>node_port_prefix<colon>node_port_pre
 :lexeme					~ strict_literal	pause => before		event => strict_literal
 
 strict_literal			~ 'strict'
+
+:lexeme					~ subgraph_literal	pause => before		event => subgraph_literal
+
+subgraph_literal		~ 'subgraph'
 
 # White space.
 
