@@ -1,7 +1,0 @@
-"type","value"
-strict              , "no"
-digraph             , "yes"
-graph_id            , "graph_42_01"
-start_scope         , "1"
-node_id             , "node_42_01"
-end_scope           , "1"
