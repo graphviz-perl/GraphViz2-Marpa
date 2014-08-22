@@ -147,7 +147,7 @@ lexeme default			= latm => 1
 
 graph_definition		::= prolog_tokens graph_statement_tokens
 
-prolog_tokens			::= strict_token graph_type global_id_value
+prolog_tokens			::= strict_token graph_type global_id
 
 strict_token			::=
 strict_token			::= strict_literal
@@ -155,12 +155,12 @@ strict_token			::= strict_literal
 graph_type				::= digraph_literal
 							| graph_literal
 
-global_id_value			::=
-global_id_value			::= global_id_token
+global_id				::=
+global_id				::= generic_id_token
 
-global_id_token			::= global_id
-							| ('"') global_id ('"')
-							| ('<') global_id ('>')
+generic_id_token		::= generic_id
+							| ('"') generic_id ('"')
+							| ('<') generic_id ('>')
 
 # The graph proper.
 
@@ -183,13 +183,8 @@ statement				::= node_statement
 							| subgraph_statement
 
 # Node stuff.
-# Note: generic_id_token is a copy of global_id_token because I wish to trigger a different event.
 
 node_statement			::= generic_id_token attribute_tokens
-
-generic_id_token		::= generic_id
-							| ('"') generic_id ('"')
-							| ('<') generic_id ('>')
 
 # Attribute stuff.
 # These have no body between the '[]' because they are parsed manually in order to
@@ -247,15 +242,11 @@ edge_literal			~ '--'
 
 equals_literal			~ '='
 
-:lexeme					~ global_id			pause => before		event => global_id
-
-global_id_prefix		~ [a-zA-Z\200-\377_]
-global_id_suffix		~ [a-zA-Z\200-\377_0-9]*
-global_id				~ <global_id_prefix>global_id_suffix
-
 :lexeme					~ generic_id		pause => before		event => generic_id
 
-generic_id				~ <global_id_prefix>global_id_suffix
+generic_id_prefix		~ [a-zA-Z\200-\377_]
+generic_id_suffix		~ [a-zA-Z\200-\377_0-9]*
+generic_id				~ <generic_id_prefix>generic_id_suffix
 
 :lexeme					~ graph_literal		pause => before		event => graph_literal
 
@@ -271,7 +262,7 @@ open_bracket			~ '['
 
 :lexeme					~ node_port			pause => before		event => node_port
 
-node_port_prefix		~ <global_id_prefix>global_id_suffix
+node_port_prefix		~ <generic_id_prefix>generic_id_suffix
 node_port				~ node_port_prefix<colon>node_port_prefix
 
 :lexeme					~ node_port_compass	pause => before		event => node_port_compass
@@ -302,7 +293,7 @@ END_OF_GRAMMAR
 
 	$self -> items(Tree::DAG_Node -> new({name => 'Root', attributes => {type => '', value => ''} }));
 
-	for my $type (qw/Prolog Graphs/)
+	for my $type (qw/Prolog Graph/)
 	{
 		my($node) = Tree::DAG_Node -> new({name => $type, attributes => {type => '', value => ''} });
 
@@ -318,13 +309,13 @@ sub attribute_field
 	my($self, $input)  = @_;
 	my(@char)          = split(//, $input);
 	my($char_count)    = 0;
-	my($count_quotes)  = 0;
+	my($quote_count)   = 0;
 	my($field)         = '';
 	my($html)          = 'no';
 	my($previous_char) = '';
+	my($result)        = '';
 
 	my($char);
-	my($result);
 
 	for my $i (0 .. $#char)
 	{
@@ -333,7 +324,7 @@ sub attribute_field
 		$char = $char[$i];
 		$html = 'yes' if ( ($html eq 'no') && ($char eq '<') && ($field eq '') );
 
-		$self -> log(debug => "Char: $char. HTML: $html. count_quotes: $count_quotes.");
+		$self -> log(debug => "Char: <$char>. HTML: $html. quote_count: $quote_count. Field: $field.");
 
 		if ($char eq '"')
 		{
@@ -347,7 +338,7 @@ sub attribute_field
 				next;
 			}
 
-			$count_quotes++;
+			$quote_count++;
 
 			$field .= $char;
 
@@ -362,7 +353,7 @@ sub attribute_field
 
 			# First quote is start of field.
 
-			if ($count_quotes == 1)
+			if ($quote_count == 1)
 			{
 				$previous_char = $char;
 
@@ -371,9 +362,9 @@ sub attribute_field
 
 			# Second quote is end of field.
 
-			$count_quotes = 0;
-			$result       = $field;
-			$field        = '';
+			$quote_count = 0;
+			$result      = $field;
+			$field       = '';
 
 			$self -> log(debug => "Result 1: $result.");
 
@@ -393,25 +384,41 @@ sub attribute_field
 
 			last;
 		}
-		elsif ( ($char =~ /\s/) && ($count_quotes == 0) )
+		elsif ($quote_count == 0)
 		{
-			# Discard spaces outside quotes and outside HTML.
+			if ($html eq 'no')
+			{
+				# Discard '=' outside quotes, and finish.
 
-			$field         .= $char if ($html eq 'yes');
+				if ($char eq '=')
+				{
+					next if (length($field) == 0);
+
+					$result = $field;
+					$field  = '';
+
+					$self -> log(debug => "Result 2: $result.");
+
+					last;
+				}
+
+				# Discard spaces outside quotes, and possibly finish.
+
+				if ($char =~ /\s/)
+				{
+					next if (length($field) == 0);
+
+					$result = $field;
+					$field  = '';
+
+					$self -> log(debug => "Result 3: $result.");
+
+					last;
+				}
+			}
+
+			$field         .= $char;
 			$previous_char = $char;
-
-			next;
-		}
-		elsif ( ($char eq '=') && ($count_quotes == 0) )
-		{
-			# Discard '=' outside quotes.
-
-			$result = $field;
-			$field  = '';
-
-			$self -> log(debug => "Result 2: $result.");
-
-			last;
 		}
 		else
 		{
@@ -423,13 +430,8 @@ sub attribute_field
 
 	$result = $field if ($field ne '');
 	$result =~ s/^"(.+)"$/$1/;
-
-	$self -> log(debug => "Result: $result.");
-	$self -> log(debug => "Input:  $input.");
-
 	$input  = substr($input, $char_count);
-
-	$self -> log(debug => "Input:  $input.");
+	$input  =~ s/^\s+//;
 
 	return ($result, $input);
 
@@ -539,7 +541,7 @@ sub process
 
 	my($attribute_list);
 	my(@event, $event_name);
-	my($generic_id, $global_id);
+	my($generic_id);
 	my($lexeme_name, $lexeme, $literal);
 	my($node_port);
 	my($span, $start);
@@ -595,7 +597,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "edge_literal => '$literal'");
-			$self -> process_token('Graphs', 'edge', $literal);
+			$self -> process_token('Graph', 'edge', $literal);
 		}
 		elsif ($event_name eq 'equals_literal')
 		{
@@ -603,7 +605,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "equals_literal => '$literal'");
-			$self -> process_token('Graphs', 'equals_literal', $literal);
+			$self -> process_token('Graph', 'equals_literal', $literal);
 		}
 		elsif ($event_name eq 'generic_id')
 		{
@@ -617,15 +619,7 @@ sub process
 			}
 
 			$self -> log(debug => "generic_id => '$generic_id'. type => $type");
-			$self -> process_token('Graphs', $type, $generic_id);
-		}
-		elsif ($event_name eq 'global_id')
-		{
-			$pos       = $self -> recce -> lexeme_read($lexeme_name);
-			$global_id = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "global_id => '$global_id'");
-			$self -> process_token('Prolog', 'global_id', $global_id);
+			$self -> process_token('Graph', $type, $generic_id);
 		}
 		elsif ($event_name eq 'graph_literal')
 		{
@@ -641,7 +635,7 @@ sub process
 			$node_port = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "node_port => '$literal'");
-			$self -> process_token('Graphs', 'node_port', $node_port);
+			$self -> process_token('Graph', 'node_port', $node_port);
 		}
 		elsif ($event_name eq 'node_port_compass')
 		{
@@ -649,7 +643,7 @@ sub process
 			$node_port = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "node_port_compass => '$literal'");
-			$self -> process_token('Graphs', 'node_port_compass', $node_port);
+			$self -> process_token('Graph', 'node_port_compass', $node_port);
 		}
 		elsif ($event_name eq 'open_brace')
 		{
@@ -678,7 +672,7 @@ sub process
 			$attribute_list = substr($string, $start + 1, $pos - $start - 1);
 
 			$self -> log(debug => "index() => attribute list: $attribute_list");
-			$self -> process_attribute($level, $attribute_list);
+			$self -> process_attributes($level, $attribute_list);
 		}
 		elsif ($event_name eq 'strict_literal')
 		{
@@ -707,7 +701,7 @@ sub process_assignment
 	my($self) = @_;
 	my($node)      = Tree::DAG_Node -> new({name => 'assignment', attributes => {type => '', value => ''} });
 	my(@daughters) = $self -> items -> daughters;
-	my($index)     = 1; # Graphs not Prolog.
+	my($index)     = 1; # 0 => Prolog, 1 => Graph.
 
 	$daughters[$index] -> add_daughter($node);
 
@@ -715,23 +709,26 @@ sub process_assignment
 
 # --------------------------------------------------
 
-sub process_attribute
+sub process_attributes
 {
 	my($self, $level, $input) = @_;
 
 	my($key);
 	my($value);
 
-	($key, $input)   = $self -> attribute_field($input);
-	($value, $input) = $self -> attribute_field($input);
-	my($node)        = Tree::DAG_Node -> new({name => 'attribute', attributes => {type => $key, value => $value} });
-	my(@daughters)   = $self -> items -> daughters;
-	my($index)       = 1; # Graphs not Prolog.
-	@daughters       = $daughters[$index] -> daughters;
+	while (length($input) > 0)
+	{
+		($key, $input)   = $self -> attribute_field($input);
+		($value, $input) = $self -> attribute_field($input);
+		my($node)        = Tree::DAG_Node -> new({name => 'attribute', attributes => {type => $key, value => $value} });
+		my(@daughters)   = $self -> items -> daughters;
+		my($index)       = 1; # 0 => Prolog, 1 => Graph.
+		@daughters       = $daughters[$index] -> daughters;
 
-	$daughters[$#daughters] -> add_daughter($node);
+		$daughters[$#daughters] -> add_daughter($node);
+	}
 
-} # End of process_attribute.
+} # End of process_attributes.
 
 # --------------------------------------------------
 
@@ -740,7 +737,7 @@ sub process_brace
 	my($self, $level, $name) = @_;
 	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {type => '', value => $name} });
 	my(@daughters) = $self -> items -> daughters;
-	my($index)     = 1; # Graphs not Prolog.
+	my($index)     = 1; # 0 => Prolog, 1 => Graph.
 
 	$daughters[$index] -> add_daughter($node);
 
@@ -753,7 +750,7 @@ sub process_bracket
 	my($self, $name) = @_;
 	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {type => '', value => $name} });
 	my(@daughters) = $self -> items -> daughters;
-	my($index)     = 1; # Graphs not Prolog.
+	my($index)     = 1; # 0 => Prolog, 1 => Graph.
 	@daughters     = $daughters[$index] -> daughters;
 
 	$daughters[$#daughters] -> add_daughter($node);

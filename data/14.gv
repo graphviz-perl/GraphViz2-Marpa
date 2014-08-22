@@ -1,4 +1,81 @@
 digraph graph_14
 {
-	node_14
+	node_14_1
+	[
+		color      = red
+		fontcolor  = blue
+		shape      = egg
+	]
+	node_14_2
+	[
+		"color"    = red
+		fontcolor  = blue
+		shape      = egg
+	]
+	node_14_3
+	[
+		color      = "red"
+		fontcolor  = blue
+		shape      = egg
+	]
+	node_14_4
+	[
+		"color"     = "red"
+		fontcolor   = blue
+		shape       = egg
+	]
+	node_14_5
+	[
+		color       = red
+		"fontcolor" = blue
+		shape       = egg
+	]
+	node_14_6
+	[
+		color       = red
+		fontcolor   = "blue"
+		shape       = egg
+	]
+	node_14_7
+	[
+		color       = red
+		"fontcolor" = "blue"
+		shape       = egg
+	]
+	node_14_8
+	[
+		color       = red
+		fontcolor   = blue
+		"shape"     = egg
+	]
+	node_14_9
+	[
+		color       = red
+		fontcolor   = blue
+		"shape"     = "egg"
+	]
+	node_14_10
+	[
+		"color"     = red
+		"fontcolor" = blue
+		shape       = egg
+	]
+	node_14_11
+	[
+		"color"     = "red"
+		"fontcolor" = blue
+		shape       = egg
+	]
+	node_14_12
+	[
+		"color"     = red
+		"fontcolor" = "blue"
+		shape       = egg
+	]
+	node_14_13
+	[
+		"color"     = "red"
+		"fontcolor" = "blue"
+		shape       = egg
+	]
 }
