@@ -291,11 +291,11 @@ END_OF_GRAMMAR
 		})
 	);
 
-	$self -> items(Tree::DAG_Node -> new({name => 'Root', attributes => {type => '', value => ''} }));
+	$self -> items(Tree::DAG_Node -> new({name => 'Root'}));
 
 	for my $type (qw/Prolog Graph/)
 	{
-		my($node) = Tree::DAG_Node -> new({name => $type, attributes => {type => '', value => ''} });
+		my($node) = Tree::DAG_Node -> new({name => $type});
 
 		$self -> items -> add_daughter($node);
 	}
@@ -699,7 +699,7 @@ sub process
 sub process_assignment
 {
 	my($self) = @_;
-	my($node)      = Tree::DAG_Node -> new({name => 'assignment', attributes => {type => '', value => ''} });
+	my($node)      = Tree::DAG_Node -> new({name => 'assignment'});
 	my(@daughters) = $self -> items -> daughters;
 	my($index)     = 1; # 0 => Prolog, 1 => Graph.
 
@@ -735,7 +735,7 @@ sub process_attributes
 sub process_brace
 {
 	my($self, $level, $name) = @_;
-	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {type => '', value => $name} });
+	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $name} });
 	my(@daughters) = $self -> items -> daughters;
 	my($index)     = 1; # 0 => Prolog, 1 => Graph.
 
@@ -748,7 +748,7 @@ sub process_brace
 sub process_bracket
 {
 	my($self, $name) = @_;
-	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {type => '', value => $name} });
+	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $name} });
 	my(@daughters) = $self -> items -> daughters;
 	my($index)     = 1; # 0 => Prolog, 1 => Graph.
 	@daughters     = $daughters[$index] -> daughters;
@@ -762,7 +762,7 @@ sub process_bracket
 sub process_token
 {
 	my($self, $context, $name, $value) = @_;
-	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {type => '', value => $value} });
+	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $value} });
 	my(@daughters) = $self -> items -> daughters;
 	my($index)     = $context eq 'Prolog' ? 0 : 1;
 
