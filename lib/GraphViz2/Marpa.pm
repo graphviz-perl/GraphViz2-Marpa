@@ -188,7 +188,7 @@ node_statement			::= generic_id_token attribute_tokens
 
 # Attribute stuff.
 # These have no body between the '[]' because they are parsed manually in order to
-# preserve whitespace (which is discarded by this grammar). See attribute_list().
+# preserve whitespace (which is discarded by this grammar). See process_attributes().
 
 attribute_tokens		::=
 attribute_tokens		::= open_bracket close_bracket

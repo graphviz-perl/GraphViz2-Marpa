@@ -4,23 +4,42 @@ digraph graph_16
 	[
 		shape = "record"
 	]
+
 	edge
 	[
 		color = "red"
 		penwidth = 3
 	]
+
 	node_16_1
 	[
 		label = "<p11> left|<p12> middle|<p13> right"
 	]
+
 	node_16_2
 	[
 		label = "<p21> one|<p22> two"
 	]
+
 	node_16_1:p11 -> node_16_2:p22:s
 	[
 		arrowtail = "odot"
 		arrowhead = "odiamond"
 		dir       = "both"
 	]
+
+	subgraph subgraph_18_1
+	{
+		node_16_3
+
+		node_16_4
+
+		node_16_3 -> node_16_4
+		[
+			arrowtail = "empty"
+			arrowhead = "halfopen"
+			dir       = "both"
+		]
+	}
+
 }
