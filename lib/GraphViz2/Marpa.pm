@@ -147,7 +147,7 @@ lexeme default			= latm => 1
 
 graph_definition		::= prolog_tokens graph_statement_tokens
 
-prolog_tokens			::= strict_token graph_type global_id
+prolog_tokens			::= strict_token graph_type global_id_type
 
 strict_token			::=
 strict_token			::= strict_literal
@@ -155,12 +155,12 @@ strict_token			::= strict_literal
 graph_type				::= digraph_literal
 							| graph_literal
 
-global_id				::=
-global_id				::= generic_id_token
+global_id_type			::=
+global_id_type			::= global_id_token
 
-generic_id_token		::= generic_id
-							| ('"') generic_id ('"')
-							| ('<') generic_id ('>')
+global_id_token			::= global_id
+							| ('"') global_id ('"')
+							| ('<') global_id ('>')
 
 # The graph proper.
 
@@ -185,6 +185,12 @@ statement				::= node_statement
 # Node stuff.
 
 node_statement			::= generic_id_token attribute_tokens
+
+# This differs from global_id_token only in triggering a different event.
+
+generic_id_token		::= generic_id
+							| ('"') generic_id ('"')
+							| ('<') generic_id ('>')
 
 # Attribute stuff.
 # These have no body between the '[]' because they are parsed manually in order to
@@ -247,6 +253,10 @@ equals_literal			~ '='
 generic_id_prefix		~ [a-zA-Z\200-\377_]
 generic_id_suffix		~ [a-zA-Z\200-\377_0-9]*
 generic_id				~ <generic_id_prefix>generic_id_suffix
+
+:lexeme					~ global_id			pause => before		event => global_id
+
+global_id				~ <generic_id_prefix>generic_id_suffix
 
 :lexeme					~ graph_literal		pause => before		event => graph_literal
 
@@ -541,7 +551,7 @@ sub process
 
 	my($attribute_list);
 	my(@event, $event_name);
-	my($generic_id);
+	my($generic_id, $global_id);
 	my($lexeme_name, $lexeme, $literal);
 	my($node_port);
 	my($span, $start);
@@ -621,6 +631,15 @@ sub process
 			$self -> log(debug => "generic_id => '$generic_id'. type => $type");
 			$self -> process_token('Graph', $type, $generic_id);
 		}
+		elsif ($event_name eq 'global_id')
+		{
+			$pos       = $self -> recce -> lexeme_read($lexeme_name);
+			$global_id = substr($string, $start, $pos - $start);
+			$type      = 'node_id';
+
+			$self -> log(debug => "global_id => '$global_id'. type => $type");
+			$self -> process_token('Graph', $type, $global_id);
+		}
 		elsif ($event_name eq 'graph_literal')
 		{
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
@@ -698,7 +717,7 @@ sub process
 
 sub process_assignment
 {
-	my($self) = @_;
+	my($self)      = @_;
 	my($node)      = Tree::DAG_Node -> new({name => 'assignment'});
 	my(@daughters) = $self -> items -> daughters;
 	my($index)     = 1; # 0 => Prolog, 1 => Graph.
