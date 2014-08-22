@@ -17,9 +17,17 @@ use Moo;
 
 use Tree::DAG_Node;
 
-use Types::Standard qw/Any Str/;
+use Types::Standard qw/Any Int Str/;
 
 use Try::Tiny;
+
+has counter =>
+(
+	default  => sub{return 1},
+	is       => 'rw',
+	isa      => Int,
+	required => 0,
+);
 
 has description =>
 (
@@ -301,16 +309,29 @@ END_OF_GRAMMAR
 		})
 	);
 
-	$self -> items(Tree::DAG_Node -> new({name => 'Root'}));
+	# Since $self -> items has not been initialized yet,
+	# we can't call our add_daughter() until after this statement.
 
-	for my $type (qw/Prolog Graph/)
+	$self -> items(Tree::DAG_Node -> new({name => 'Root', attributes => {counter => 1} }));
+
+	for my $name (qw/Prolog Graph/)
 	{
-		my($node) = Tree::DAG_Node -> new({name => $type});
-
-		$self -> items -> add_daughter($node);
+		$self -> add_daughter($self -> items, $name, {});
 	}
 
 } # End of BUILD.
+
+# ------------------------------------------------
+
+sub add_daughter
+{
+	my($self, $tree, $name, $attributes)  = @_;
+	$$attributes{counter} = $self -> counter($self -> counter + 1);
+	my($node)             = Tree::DAG_Node -> new({name => $name, attributes => $attributes});
+
+	$tree -> add_daughter($node);
+
+} # End of add_daughter.
 
 # ------------------------------------------------
 
@@ -538,6 +559,75 @@ sub log
 
 # --------------------------------------------------
 
+sub post_process
+{
+	my($self) = @_;
+
+	# Walk the tree, moving attributes of edges off the head node
+	# (where they ended up) and attached them to the edge.
+	# The Tree::DAG_Node docs warn against modifying the tree,
+	# so we use a stack to track all the edges found, and post-process them.
+
+	my(@stack);
+
+	$self -> items -> walk_down
+	({
+		callback => sub
+		{
+			my($node) = @_;
+			my($name) = $node -> name;
+
+			push @stack, $node if ($name eq 'edge');
+
+			# Keep recursing.
+
+			return 1;
+		},
+		_depth => 0,
+	});
+
+	# If the DOT file is valid, these edges have a next sibling which is a node.
+	# And if that node has attributes, they belong to the corresponding edge.
+	# So we shift them backwards off the node to the edge.
+
+	my($arrowhead_node, @arrowhead_daughters);
+	my($next_sibling, $node_attributes, $next_name);
+	my(@self_and_sibling, $sibling, $sibling_attributes);
+
+	for my $node (@stack)
+	{
+		$node_attributes  = $node -> attributes;
+		@self_and_sibling = $node -> self_and_sisters;
+
+		for my $i (0 .. $#self_and_sibling)
+		{
+			$sibling            = $self_and_sibling[$i];
+			$sibling_attributes = $sibling -> attributes;
+
+			if ($$node_attributes{counter} == $$sibling_attributes{counter})
+			{
+				if ($i < ($#self_and_sibling - 1) )
+				{
+					$next_name = $self_and_sibling[$i + 1] -> name;
+
+					if ($next_name =~ /(?:node_id|node_port|node_port_compass)/)
+					{
+						$arrowhead_node      = $self_and_sibling[$i + 1];
+						@arrowhead_daughters = $arrowhead_node -> clear_daughters;
+
+						$node -> add_daughters(@arrowhead_daughters);
+					}
+				}
+
+				last;
+			}
+		}
+	}
+
+} # End of post_process.
+
+# --------------------------------------------------
+
 sub process
 {
 	my($self)   = @_;
@@ -718,11 +808,10 @@ sub process
 sub process_assignment
 {
 	my($self)      = @_;
-	my($node)      = Tree::DAG_Node -> new({name => 'assignment'});
 	my(@daughters) = $self -> items -> daughters;
 	my($index)     = 1; # 0 => Prolog, 1 => Graph.
 
-	$daughters[$index] -> add_daughter($node);
+	$self -> add_daughter($daughters[$index], 'assignment', {});
 
 } # End of process_assignment.
 
@@ -732,19 +821,24 @@ sub process_attributes
 {
 	my($self, $level, $input) = @_;
 
-	my($key);
+	my($name);
 	my($value);
 
 	while (length($input) > 0)
 	{
-		($key, $input)   = $self -> attribute_field($input);
+		($name, $input)  = $self -> attribute_field($input);
 		($value, $input) = $self -> attribute_field($input);
-		my($node)        = Tree::DAG_Node -> new({name => 'attribute', attributes => {type => $key, value => $value} });
 		my(@daughters)   = $self -> items -> daughters;
 		my($index)       = 1; # 0 => Prolog, 1 => Graph.
 		@daughters       = $daughters[$index] -> daughters;
 
-		$daughters[$#daughters] -> add_daughter($node);
+		# Bracket/attribute note 2 of 2:
+		# Attach the brackets and attributes to the last parsed node,
+		# which is the last daughter within the Graph part of the tree.
+		# This means attributes for an edge are attached to the head node.
+		# Post-processing of the whole tree makes them belong to the edge.
+
+		$self -> add_daughter($daughters[$#daughters], 'assignment', {type => $name, value => $value});
 	}
 
 } # End of process_attributes.
@@ -754,11 +848,10 @@ sub process_attributes
 sub process_brace
 {
 	my($self, $level, $name) = @_;
-	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $name} });
 	my(@daughters) = $self -> items -> daughters;
 	my($index)     = 1; # 0 => Prolog, 1 => Graph.
 
-	$daughters[$index] -> add_daughter($node);
+	$self -> add_daughter($daughters[$index], $name, {value => $name});
 
 } # End of process_brace.
 
@@ -767,12 +860,17 @@ sub process_brace
 sub process_bracket
 {
 	my($self, $name) = @_;
-	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $name} });
 	my(@daughters) = $self -> items -> daughters;
 	my($index)     = 1; # 0 => Prolog, 1 => Graph.
 	@daughters     = $daughters[$index] -> daughters;
 
-	$daughters[$#daughters] -> add_daughter($node);
+	# Bracket/attribute note 1 of 2:
+	# Attach the brackets and attributes to the last parsed node,
+	# which is the last daughter within the Graph part of the tree.
+	# This means attributes for an edge are attached to the head node.
+	# Post-processing of the whole tree makes them belong to the edge.
+
+	$self -> add_daughter($daughters[$#daughters], $name, {value => $name});
 
 } # End of process_bracket.
 
@@ -785,7 +883,7 @@ sub process_token
 	my(@daughters) = $self -> items -> daughters;
 	my($index)     = $context eq 'Prolog' ? 0 : 1;
 
-	$daughters[$index] -> add_daughter($node);
+	$self -> add_daughter($daughters[$index], $name, {value => $value});
 
 } # End of process_token.
 
@@ -828,6 +926,7 @@ sub run
 	{
 		if (defined $self -> process)
 		{
+			$self -> post_process;
 			$self -> log(info => join("\n", @{$self -> items -> tree2string}) );
 		}
 		else
