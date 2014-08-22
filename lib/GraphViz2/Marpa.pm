@@ -21,14 +21,6 @@ use Types::Standard qw/Any Int Str/;
 
 use Try::Tiny;
 
-has counter =>
-(
-	default  => sub{return 1},
-	is       => 'rw',
-	isa      => Int,
-	required => 0,
-);
-
 has description =>
 (
 	default  => sub{return ''},
@@ -114,6 +106,14 @@ has renderer =>
 	default  => sub{return ''},
 	is       => 'rw',
 	isa      => Any,
+	required => 0,
+);
+
+has uid =>
+(
+	default  => sub{return 0},
+	is       => 'rw',
+	isa      => Int,
 	required => 0,
 );
 
@@ -312,7 +312,7 @@ END_OF_GRAMMAR
 	# Since $self -> items has not been initialized yet,
 	# we can't call our add_daughter() until after this statement.
 
-	$self -> items(Tree::DAG_Node -> new({name => 'Root', attributes => {counter => 1} }));
+	$self -> items(Tree::DAG_Node -> new({name => 'Root', attributes => {uid => 0} }));
 
 	for my $name (qw/Prolog Graph/)
 	{
@@ -326,8 +326,8 @@ END_OF_GRAMMAR
 sub add_daughter
 {
 	my($self, $tree, $name, $attributes)  = @_;
-	$$attributes{counter} = $self -> counter($self -> counter + 1);
-	my($node)             = Tree::DAG_Node -> new({name => $name, attributes => $attributes});
+	$$attributes{uid} = $self -> uid($self -> uid + 1);
+	my($node)         = Tree::DAG_Node -> new({name => $name, attributes => $attributes});
 
 	$tree -> add_daughter($node);
 
@@ -604,7 +604,7 @@ sub post_process
 			$sibling            = $self_and_sibling[$i];
 			$sibling_attributes = $sibling -> attributes;
 
-			if ($$node_attributes{counter} == $$sibling_attributes{counter})
+			if ($$node_attributes{uid} == $$sibling_attributes{uid})
 			{
 				if ($i < ($#self_and_sibling - 1) )
 				{
