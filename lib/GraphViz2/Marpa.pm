@@ -326,7 +326,7 @@ END_OF_GRAMMAR
 	);
 
 	# Since $self -> tree has not been initialized yet,
-	# we can't call our add_daughter() until after this statement.
+	# we can't call our _add_daughter() until after this statement.
 
 	$self -> tree(Tree::DAG_Node -> new({name => 'Root', attributes => {uid => 0} }));
 
@@ -334,7 +334,7 @@ END_OF_GRAMMAR
 
 	for my $name (qw/Prolog Graph/)
 	{
-		$self -> add_daughter($name, {});
+		$self -> _add_daughter($name, {});
 	}
 
 	# The 'Prolog' daughter is the parent of all items in the prolog,
@@ -353,7 +353,7 @@ END_OF_GRAMMAR
 
 # ------------------------------------------------
 
-sub add_daughter
+sub _add_daughter
 {
 	my($self, $name, $attributes)  = @_;
 	$$attributes{uid} = $self -> uid($self -> uid + 1);
@@ -362,11 +362,11 @@ sub add_daughter
 
 	$$stack[$#$stack] -> add_daughter($node);
 
-} # End of add_daughter.
+} # End of _add_daughter.
 
 # ------------------------------------------------
 
-sub attribute_field
+sub _attribute_field
 {
 	my($self, $input)  = @_;
 	my(@char)          = split(//, $input);
@@ -497,13 +497,13 @@ sub attribute_field
 
 	return ($result, $input);
 
-} # End of attribute_field.
+} # End of _attribute_field.
 
 # -----------------------------------------------
 # $target is qr/], at the end of a list of attributes.
 # The special case is <<...>>, as used in attributes.
 
-sub find_terminator
+sub _find_terminator
 {
 	my($self, $stringref, $target, $start) = @_;
 	my(@char)   = split(//, substr($$stringref, $start) );
@@ -576,7 +576,7 @@ sub find_terminator
 
 	return $start + $offset;
 
-} # End of find_terminator.
+} # End of _find_terminator.
 
 # --------------------------------------------------
 
@@ -590,7 +590,7 @@ sub log
 
 # --------------------------------------------------
 
-sub post_process
+sub _post_process
 {
 	my($self) = @_;
 
@@ -656,11 +656,11 @@ sub post_process
 		}
 	}
 
-} # End of post_process.
+} # End of _post_process.
 
 # --------------------------------------------------
 
-sub process
+sub _process
 {
 	my($self)   = @_;
 	my($string) = $self -> graph_text;
@@ -702,7 +702,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "close_brace => '$literal'");
-			$self -> process_brace($literal);
+			$self -> _process_brace($literal);
 		}
 		elsif ($event_name eq 'close_bracket')
 		{
@@ -710,7 +710,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "close_bracket => '$literal'");
-			$self -> process_bracket($literal);
+			$self -> _process_bracket($literal);
 		}
 		elsif ($event_name eq 'digraph_literal')
 		{
@@ -718,7 +718,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "digraph_literal => '$literal'");
-			$self -> process_token('literal', $literal);
+			$self -> _process_token('literal', $literal);
 		}
 		elsif ($event_name eq 'edge_literal')
 		{
@@ -726,7 +726,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "edge_literal => '$literal'");
-			$self -> process_token('edge', $literal);
+			$self -> _process_token('edge', $literal);
 		}
 		elsif ($event_name eq 'equals_literal')
 		{
@@ -734,7 +734,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "literal => '$literal'");
-			$self -> process_token('literal', $literal);
+			$self -> _process_token('literal', $literal);
 		}
 		elsif ($event_name eq 'generic_id')
 		{
@@ -752,7 +752,7 @@ sub process
 			}
 
 			$self -> log(debug => "generic_id => '$generic_id'. type => $type");
-			$self -> process_token($type, $generic_id);
+			$self -> _process_token($type, $generic_id);
 		}
 		elsif ($event_name eq 'global_id')
 		{
@@ -760,7 +760,7 @@ sub process
 			$global_id = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "global_id => '$global_id'. type => 'node_id'");
-			$self -> process_token('node_id', $global_id);
+			$self -> _process_token('node_id', $global_id);
 		}
 		elsif ($event_name eq 'graph_literal')
 		{
@@ -768,7 +768,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "graph_literal => '$literal'");
-			$self -> process_token('literal', $literal);
+			$self -> _process_token('literal', $literal);
 		}
 		elsif ($event_name eq 'node_port')
 		{
@@ -776,7 +776,7 @@ sub process
 			$node_port = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "node_port => '$literal'");
-			$self -> process_token('node_port', $node_port);
+			$self -> _process_token('node_port', $node_port);
 		}
 		elsif ($event_name eq 'node_port_compass')
 		{
@@ -784,7 +784,7 @@ sub process
 			$node_port = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "node_port_compass => '$literal'");
-			$self -> process_token('node_port_compass', $node_port);
+			$self -> _process_token('node_port_compass', $node_port);
 		}
 		elsif ($event_name eq 'open_brace')
 		{
@@ -792,7 +792,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "open_brace => '$literal'");
-			$self -> process_brace($literal);
+			$self -> _process_brace($literal);
 		}
 		elsif ($event_name eq 'open_bracket')
 		{
@@ -800,14 +800,14 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "open_bracket => '$literal'");
-			$self -> process_bracket($literal);
+			$self -> _process_bracket($literal);
 
-			$pos = $self -> find_terminator(\$string, qr/]/, $start);
+			$pos = $self -> _find_terminator(\$string, qr/]/, $start);
 
 			$attribute_list = substr($string, $start + 1, $pos - $start - 1);
 
 			$self -> log(debug => "index() => attribute list: $attribute_list");
-			$self -> process_attributes($attribute_list);
+			$self -> _process_attributes($attribute_list);
 		}
 		elsif ($event_name eq 'strict_literal')
 		{
@@ -815,7 +815,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "strict_literal => '$literal'");
-			$self -> process_token('literal', $literal);
+			$self -> _process_token('literal', $literal);
 		}
 		else
 		{
@@ -827,11 +827,11 @@ sub process
 
 	return $self -> recce -> value;
 
-} # End of process.
+} # End of _process.
 
 # --------------------------------------------------
 
-sub process_attributes
+sub _process_attributes
 {
 	my($self, $attribute_list) = @_;
 
@@ -840,17 +840,17 @@ sub process_attributes
 
 	while (length($attribute_list) > 0)
 	{
-		($name, $attribute_list)  = $self -> attribute_field($attribute_list);
-		($value, $attribute_list) = $self -> attribute_field($attribute_list);
+		($name, $attribute_list)  = $self -> _attribute_field($attribute_list);
+		($value, $attribute_list) = $self -> _attribute_field($attribute_list);
 
-		$self -> add_daughter('attribute', {type => $name, value => $value});
+		$self -> _add_daughter('attribute', {type => $name, value => $value});
 	}
 
-} # End of process_attributes.
+} # End of _process_attributes.
 
 # --------------------------------------------------
 
-sub process_brace
+sub _process_brace
 {
 	my($self, $name) = @_;
 
@@ -879,7 +879,7 @@ sub process_brace
 	if ($name eq '{')
 	{
 		$self -> brace_count($self -> brace_count + 1);
-		$self -> add_daughter($name, {value => $name});
+		$self -> _add_daughter($name, {value => $name});
 
 		my(@daughters) = $$stack[$#$stack] -> daughters;
 
@@ -890,15 +890,15 @@ sub process_brace
 		pop @$stack;
 
 		$self -> stack($stack);
-		$self -> add_daughter($name, {value => $name});
+		$self -> _add_daughter($name, {value => $name});
 		$self -> brace_count($self -> brace_count - 1);
 	}
 
-} # End of process_brace.
+} # End of _process_brace.
 
 # --------------------------------------------------
 
-sub process_bracket
+sub _process_bracket
 {
 	my($self, $name) = @_;
 
@@ -909,8 +909,6 @@ sub process_bracket
 
 	if ($name eq '[')
 	{
-#		$self -> add_daughter($name, {value => $name});
-
 		my(@daughters) = $$stack[$#$stack] -> daughters;
 
 		push @$stack, $daughters[$#daughters];
@@ -920,20 +918,19 @@ sub process_bracket
 		pop @$stack;
 
 		$self -> stack($stack);
-#		$self -> add_daughter($name, {value => $name});
 	}
 
-} # End of process_bracket.
+} # End of _process_bracket.
 
 # --------------------------------------------------
 
-sub process_token
+sub _process_token
 {
 	my($self, $name, $value) = @_;
 
-	$self -> add_daughter($name, {value => $value});
+	$self -> _add_daughter($name, {value => $value});
 
-} # End of process_token.
+} # End of _process_token.
 
 # --------------------------------------------------
 
@@ -972,9 +969,9 @@ sub run
 
 	try
 	{
-		if (defined $self -> process)
+		if (defined $self -> _process)
 		{
-			$self -> post_process;
+			$self -> _post_process;
 			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
 		}
 		else
