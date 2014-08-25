@@ -17,7 +17,7 @@ use Moo;
 
 use Tree::DAG_Node;
 
-use Types::Standard qw/Any Int Str/;
+use Types::Standard qw/Any ArrayRef Int Str/;
 
 use Try::Tiny;
 
@@ -106,6 +106,14 @@ has renderer =>
 	default  => sub{return ''},
 	is       => 'rw',
 	isa      => Any,
+	required => 0,
+);
+
+has stack =>
+(
+	default  => sub{return []},
+	is       => 'rw',
+	isa      => ArrayRef,
 	required => 0,
 );
 
@@ -318,6 +326,15 @@ END_OF_GRAMMAR
 	{
 		$self -> add_daughter($self -> items, $name, {});
 	}
+
+	# The 'Graph' daughter becomes the root for all nodes representing real, live things in the graph,
+	# and hence is the first node pushed into the stack.
+	# Hereafter, parents are searched for in the stack, not in the items.
+
+	my(@daughters) = $self -> items -> daughters;
+	my($index)     = 1; # 0 => Prolog, 1 => Graph.
+
+	$self -> stack([$daughters[$index] ]);
 
 } # End of BUILD.
 
@@ -725,10 +742,9 @@ sub process
 		{
 			$pos       = $self -> recce -> lexeme_read($lexeme_name);
 			$global_id = substr($string, $start, $pos - $start);
-			$type      = 'node_id';
 
-			$self -> log(debug => "global_id => '$global_id'. type => $type");
-			$self -> process_token('Graph', $type, $global_id);
+			$self -> log(debug => "global_id => '$global_id'. type => 'node_id'");
+			$self -> process_token('Graph', 'node_id', $global_id);
 		}
 		elsif ($event_name eq 'graph_literal')
 		{
@@ -766,10 +782,6 @@ sub process
 		}
 		elsif ($event_name eq 'open_bracket')
 		{
-			# Read the open_bracket lexeme, but don't do lexeme_read()
-			# at the bottom of the for loop, because we're just about
-			# to fiddle $pos to skip the attributes.
-
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
@@ -852,6 +864,9 @@ sub process_brace
 	my($index)     = 1; # 0 => Prolog, 1 => Graph.
 
 	$self -> add_daughter($daughters[$index], $name, {value => $name});
+
+	# When a '{' is encountered, the previous thing will be its parent, and that thing gets pushed.
+	# And when a '}' is encountered, it's processed and then the stack is popped.
 
 } # End of process_brace.
 
