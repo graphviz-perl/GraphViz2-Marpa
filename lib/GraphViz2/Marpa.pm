@@ -21,6 +21,14 @@ use Types::Standard qw/Any ArrayRef Int Str/;
 
 use Try::Tiny;
 
+has brace_count =>
+(
+	default  => sub{return 0},
+	is       => 'rw',
+	isa      => Int,
+	required => 0,
+);
+
 has description =>
 (
 	default  => sub{return ''},
@@ -50,14 +58,6 @@ has input_file =>
 	default  => sub{return ''},
 	is       => 'rw',
 	isa      => Str,
-	required => 0,
-);
-
-has items =>
-(
-	default  => sub{return ''},
-	is       => 'rw',
-	isa      => Any,
 	required => 0,
 );
 
@@ -114,6 +114,14 @@ has stack =>
 	default  => sub{return []},
 	is       => 'rw',
 	isa      => ArrayRef,
+	required => 0,
+);
+
+has tree =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Any,
 	required => 0,
 );
 
@@ -317,24 +325,29 @@ END_OF_GRAMMAR
 		})
 	);
 
-	# Since $self -> items has not been initialized yet,
+	# Since $self -> tree has not been initialized yet,
 	# we can't call our add_daughter() until after this statement.
 
-	$self -> items(Tree::DAG_Node -> new({name => 'Root', attributes => {uid => 0} }));
+	$self -> tree(Tree::DAG_Node -> new({name => 'Root', attributes => {uid => 0} }));
+
+	$self -> stack([$self -> tree -> root]);
 
 	for my $name (qw/Prolog Graph/)
 	{
-		$self -> add_daughter($self -> items, $name, {});
+		$self -> add_daughter($name, {});
 	}
 
-	# The 'Graph' daughter becomes the root for all nodes representing real, live things in the graph,
-	# and hence is the first node pushed into the stack.
-	# Hereafter, parents are searched for in the stack, not in the items.
+	# The 'Prolog' daughter is the parent of all items in the prolog,
+	# so it gets pushed onto the stack.
+	# Later, when the 1st '{' is encountered, the 'Graph' daughter replaces it.
 
-	my(@daughters) = $self -> items -> daughters;
-	my($index)     = 1; # 0 => Prolog, 1 => Graph.
+	my(@daughters) = $self -> tree -> daughters;
+	my($index)     = 0; # 0 => Prolog, 1 => Graph.
+	my($stack)     = $self -> stack;
 
-	$self -> stack([$daughters[$index] ]);
+	push @$stack, $daughters[$index];
+
+	$self -> stack($stack);
 
 } # End of BUILD.
 
@@ -342,11 +355,12 @@ END_OF_GRAMMAR
 
 sub add_daughter
 {
-	my($self, $tree, $name, $attributes)  = @_;
+	my($self, $name, $attributes)  = @_;
 	$$attributes{uid} = $self -> uid($self -> uid + 1);
 	my($node)         = Tree::DAG_Node -> new({name => $name, attributes => $attributes});
+	my($stack)        = $self -> stack;
 
-	$tree -> add_daughter($node);
+	$$stack[$#$stack] -> add_daughter($node);
 
 } # End of add_daughter.
 
@@ -587,7 +601,7 @@ sub post_process
 
 	my(@stack);
 
-	$self -> items -> walk_down
+	$self -> tree -> walk_down
 	({
 		callback => sub
 		{
@@ -605,7 +619,7 @@ sub post_process
 
 	# If the DOT file is valid, these edges have a next sibling which is a node.
 	# And if that node has attributes, they belong to the corresponding edge.
-	# So we shift them backwards off the node to the edge.
+	# So we shift them off the node and onto the edge.
 
 	my($arrowhead_node, @arrowhead_daughters);
 	my($next_sibling, $node_attributes, $next_name);
@@ -650,7 +664,6 @@ sub process
 	my($self)   = @_;
 	my($string) = $self -> graph_text;
 	my($length) = length $string;
-	my($level)  = 0;
 
 	$self -> log(info => "Input: $string");
 
@@ -688,9 +701,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "close_brace => '$literal'");
-			$self -> process_brace($level, $literal);
-
-			$level--;
+			$self -> process_brace($literal);
 		}
 		elsif ($event_name eq 'close_bracket')
 		{
@@ -706,7 +717,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "digraph_literal => '$literal'");
-			$self -> process_token('Prolog', 'literal', $literal);
+			$self -> process_token('literal', $literal);
 		}
 		elsif ($event_name eq 'edge_literal')
 		{
@@ -714,15 +725,15 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "edge_literal => '$literal'");
-			$self -> process_token('Graph', 'edge', $literal);
+			$self -> process_token('edge', $literal);
 		}
 		elsif ($event_name eq 'equals_literal')
 		{
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
-			$self -> log(debug => "equals_literal => '$literal'");
-			$self -> process_token('Graph', 'equals_literal', $literal);
+			$self -> log(debug => "literal => '$literal'");
+			$self -> process_token('literal', $literal);
 		}
 		elsif ($event_name eq 'generic_id')
 		{
@@ -734,9 +745,13 @@ sub process
 			{
 				$type = 'class';
 			}
+			elsif ($generic_id eq 'subgraph')
+			{
+				$type = 'literal';
+			}
 
 			$self -> log(debug => "generic_id => '$generic_id'. type => $type");
-			$self -> process_token('Graph', $type, $generic_id);
+			$self -> process_token($type, $generic_id);
 		}
 		elsif ($event_name eq 'global_id')
 		{
@@ -744,7 +759,7 @@ sub process
 			$global_id = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "global_id => '$global_id'. type => 'node_id'");
-			$self -> process_token('Graph', 'node_id', $global_id);
+			$self -> process_token('node_id', $global_id);
 		}
 		elsif ($event_name eq 'graph_literal')
 		{
@@ -752,7 +767,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "graph_literal => '$literal'");
-			$self -> process_token('Prolog', 'literal', $literal);
+			$self -> process_token('literal', $literal);
 		}
 		elsif ($event_name eq 'node_port')
 		{
@@ -760,7 +775,7 @@ sub process
 			$node_port = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "node_port => '$literal'");
-			$self -> process_token('Graph', 'node_port', $node_port);
+			$self -> process_token('node_port', $node_port);
 		}
 		elsif ($event_name eq 'node_port_compass')
 		{
@@ -768,17 +783,15 @@ sub process
 			$node_port = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "node_port_compass => '$literal'");
-			$self -> process_token('Graph', 'node_port_compass', $node_port);
+			$self -> process_token('node_port_compass', $node_port);
 		}
 		elsif ($event_name eq 'open_brace')
 		{
-			$level++;
-
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "open_brace => '$literal'");
-			$self -> process_brace($level, $literal);
+			$self -> process_brace($literal);
 		}
 		elsif ($event_name eq 'open_bracket')
 		{
@@ -793,7 +806,7 @@ sub process
 			$attribute_list = substr($string, $start + 1, $pos - $start - 1);
 
 			$self -> log(debug => "index() => attribute list: $attribute_list");
-			$self -> process_attributes($level, $attribute_list);
+			$self -> process_attributes($attribute_list);
 		}
 		elsif ($event_name eq 'strict_literal')
 		{
@@ -801,7 +814,7 @@ sub process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "strict_literal => '$literal'");
-			$self -> process_token('Prolog', 'literal', $literal);
+			$self -> process_token('literal', $literal);
 		}
 		else
 		{
@@ -819,11 +832,9 @@ sub process
 
 sub process_assignment
 {
-	my($self)      = @_;
-	my(@daughters) = $self -> items -> daughters;
-	my($index)     = 1; # 0 => Prolog, 1 => Graph.
+	my($self) = @_;
 
-	$self -> add_daughter($daughters[$index], 'assignment', {});
+	$self -> add_daughter('assignment', {});
 
 } # End of process_assignment.
 
@@ -831,26 +842,17 @@ sub process_assignment
 
 sub process_attributes
 {
-	my($self, $level, $input) = @_;
+	my($self, $attribute_list) = @_;
 
 	my($name);
 	my($value);
 
-	while (length($input) > 0)
+	while (length($attribute_list) > 0)
 	{
-		($name, $input)  = $self -> attribute_field($input);
-		($value, $input) = $self -> attribute_field($input);
-		my(@daughters)   = $self -> items -> daughters;
-		my($index)       = 1; # 0 => Prolog, 1 => Graph.
-		@daughters       = $daughters[$index] -> daughters;
+		($name, $attribute_list)  = $self -> attribute_field($attribute_list);
+		($value, $attribute_list) = $self -> attribute_field($attribute_list);
 
-		# Bracket/attribute note 2 of 2:
-		# Attach the brackets and attributes to the last parsed node,
-		# which is the last daughter within the Graph part of the tree.
-		# This means attributes for an edge are attached to the head node.
-		# Post-processing of the whole tree makes them belong to the edge.
-
-		$self -> add_daughter($daughters[$#daughters], 'assignment', {type => $name, value => $value});
+		$self -> add_daughter('assignment', {type => $name, value => $value});
 	}
 
 } # End of process_attributes.
@@ -859,14 +861,55 @@ sub process_attributes
 
 sub process_brace
 {
-	my($self, $level, $name) = @_;
-	my(@daughters) = $self -> items -> daughters;
-	my($index)     = 1; # 0 => Prolog, 1 => Graph.
+	my($self, $name) = @_;
 
-	$self -> add_daughter($daughters[$index], $name, {value => $name});
+	$self -> brace_count($self -> brace_count + 1);
 
-	# When a '{' is encountered, the previous thing will be its parent, and that thing gets pushed.
-	# And when a '}' is encountered, it's processed and then the stack is popped.
+	# When the 1st '{' is encountered, the 'Graph' daughter of the root
+	# becomes the parent of all other tree nodes, replacing the 'Prolog' daughter.
+
+	if ($self -> brace_count == 1)
+	{
+		my($stack) = $self -> stack;
+
+		pop @$stack;
+
+		my(@daughters) = $self -> tree -> daughters;
+		my($index)     = 1; # 0 => Prolog, 1 => Graph.
+
+		push @$stack, $daughters[$index];
+
+		$self -> stack($stack);
+	}
+
+	# When a '{' is encountered, the last thing pushed becomes it's parent.
+	# Likewise, when a '}' is encountered, we pop the stack.
+
+	my($stack) = $self -> stack;
+
+	if ($name eq '{')
+	{
+		if ($self -> brace_count > 1)
+		{
+			my(@daughters) = $$stack[$#$stack] -> daughters;
+
+			push @$stack, $daughters[$#daughters];
+		}
+
+		$self -> add_daughter($name, {value => $name});
+	}
+	else
+	{
+		$self -> add_daughter($name, {value => $name});
+		$self -> brace_count($self -> brace_count - 1);
+
+		if ($self -> brace_count > 1)
+		{
+			pop @$stack;
+
+			$self -> stack($stack);
+		}
+	}
 
 } # End of process_brace.
 
@@ -875,17 +918,28 @@ sub process_brace
 sub process_bracket
 {
 	my($self, $name) = @_;
-	my(@daughters) = $self -> items -> daughters;
-	my($index)     = 1; # 0 => Prolog, 1 => Graph.
-	@daughters     = $daughters[$index] -> daughters;
 
-	# Bracket/attribute note 1 of 2:
-	# Attach the brackets and attributes to the last parsed node,
-	# which is the last daughter within the Graph part of the tree.
-	# This means attributes for an edge are attached to the head node.
-	# Post-processing of the whole tree makes them belong to the edge.
+	# When a '[' is encountered, the last thing pushed becomes it's parent.
+	# Likewise, if ']' is encountered, we pop the stack.
 
-	$self -> add_daughter($daughters[$#daughters], $name, {value => $name});
+	my($stack) = $self -> stack;
+
+	if ($name eq '[')
+	{
+		my(@daughters) = $$stack[$#$stack] -> daughters;
+
+		push @$stack, $daughters[$#daughters];
+
+		$self -> add_daughter($name, {value => $name});
+	}
+	else
+	{
+		$self -> add_daughter($name, {value => $name});
+
+		pop @$stack;
+
+		$self -> stack($stack);
+	}
 
 } # End of process_bracket.
 
@@ -893,12 +947,9 @@ sub process_bracket
 
 sub process_token
 {
-	my($self, $context, $name, $value) = @_;
-	my($node)      = Tree::DAG_Node -> new({name => $name, attributes => {value => $value} });
-	my(@daughters) = $self -> items -> daughters;
-	my($index)     = $context eq 'Prolog' ? 0 : 1;
+	my($self, $name, $value) = @_;
 
-	$self -> add_daughter($daughters[$index], $name, {value => $value});
+	$self -> add_daughter($name, {value => $value});
 
 } # End of process_token.
 
@@ -941,8 +992,8 @@ sub run
 	{
 		if (defined $self -> process)
 		{
-			$self -> post_process;
-			$self -> log(info => join("\n", @{$self -> items -> tree2string}) );
+#			$self -> post_process;
+			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
 		}
 		else
 		{
