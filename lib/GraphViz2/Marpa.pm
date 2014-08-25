@@ -599,7 +599,7 @@ sub post_process
 	# The Tree::DAG_Node docs warn against modifying the tree,
 	# so we use a stack to track all the edges found, and post-process them.
 
-	my(@stack);
+	my(@edge);
 
 	$self -> tree -> walk_down
 	({
@@ -608,7 +608,7 @@ sub post_process
 			my($node) = @_;
 			my($name) = $node -> name;
 
-			push @stack, $node if ($name eq 'edge');
+			push @edge, $node if ($name eq 'edge');
 
 			# Keep recursing.
 
@@ -622,23 +622,26 @@ sub post_process
 	# So we shift them off the node and onto the edge.
 
 	my($arrowhead_node, @arrowhead_daughters);
-	my($next_sibling, $node_attributes, $next_name);
+	my($edge_attributes);
+	my($next_sibling, $next_name);
 	my(@self_and_sibling, $sibling, $sibling_attributes);
 
-	for my $node (@stack)
+	for my $edge (@edge)
 	{
-		$node_attributes  = $node -> attributes;
-		@self_and_sibling = $node -> self_and_sisters;
+		$edge_attributes  = $edge -> attributes;
+		@self_and_sibling = $edge -> self_and_sisters;
 
 		for my $i (0 .. $#self_and_sibling)
 		{
 			$sibling            = $self_and_sibling[$i];
 			$sibling_attributes = $sibling -> attributes;
 
-			if ($$node_attributes{uid} == $$sibling_attributes{uid})
+			if ($$edge_attributes{uid} == $$sibling_attributes{uid})
 			{
-				if ($i < ($#self_and_sibling - 1) )
+				if ($i < $#self_and_sibling)
 				{
+					$self -> log(info => "Processing $i");
+
 					$next_name = $self_and_sibling[$i + 1] -> name;
 
 					if ($next_name =~ /(?:node_id|node_port|node_port_compass)/)
@@ -646,7 +649,7 @@ sub post_process
 						$arrowhead_node      = $self_and_sibling[$i + 1];
 						@arrowhead_daughters = $arrowhead_node -> clear_daughters;
 
-						$node -> add_daughters(@arrowhead_daughters);
+						$edge -> add_daughters(@arrowhead_daughters);
 					}
 				}
 
@@ -830,16 +833,6 @@ sub process
 
 # --------------------------------------------------
 
-sub process_assignment
-{
-	my($self) = @_;
-
-	$self -> add_daughter('assignment', {});
-
-} # End of process_assignment.
-
-# --------------------------------------------------
-
 sub process_attributes
 {
 	my($self, $attribute_list) = @_;
@@ -852,7 +845,7 @@ sub process_attributes
 		($name, $attribute_list)  = $self -> attribute_field($attribute_list);
 		($value, $attribute_list) = $self -> attribute_field($attribute_list);
 
-		$self -> add_daughter('assignment', {type => $name, value => $value});
+		$self -> add_daughter('attribute', {type => $name, value => $value});
 	}
 
 } # End of process_attributes.
@@ -863,12 +856,10 @@ sub process_brace
 {
 	my($self, $name) = @_;
 
-	$self -> brace_count($self -> brace_count + 1);
-
 	# When the 1st '{' is encountered, the 'Graph' daughter of the root
 	# becomes the parent of all other tree nodes, replacing the 'Prolog' daughter.
 
-	if ($self -> brace_count == 1)
+	if ($self -> brace_count == 0)
 	{
 		my($stack) = $self -> stack;
 
@@ -889,26 +880,20 @@ sub process_brace
 
 	if ($name eq '{')
 	{
-		if ($self -> brace_count > 1)
-		{
-			my(@daughters) = $$stack[$#$stack] -> daughters;
-
-			push @$stack, $daughters[$#daughters];
-		}
-
+		$self -> brace_count($self -> brace_count + 1);
 		$self -> add_daughter($name, {value => $name});
+
+		my(@daughters) = $$stack[$#$stack] -> daughters;
+
+		push @$stack, $daughters[$#daughters];
 	}
 	else
 	{
+		pop @$stack;
+
+		$self -> stack($stack);
 		$self -> add_daughter($name, {value => $name});
 		$self -> brace_count($self -> brace_count - 1);
-
-		if ($self -> brace_count > 1)
-		{
-			pop @$stack;
-
-			$self -> stack($stack);
-		}
 	}
 
 } # End of process_brace.
@@ -926,19 +911,18 @@ sub process_bracket
 
 	if ($name eq '[')
 	{
+#		$self -> add_daughter($name, {value => $name});
+
 		my(@daughters) = $$stack[$#$stack] -> daughters;
 
 		push @$stack, $daughters[$#daughters];
-
-		$self -> add_daughter($name, {value => $name});
 	}
 	else
 	{
-		$self -> add_daughter($name, {value => $name});
-
 		pop @$stack;
 
 		$self -> stack($stack);
+#		$self -> add_daughter($name, {value => $name});
 	}
 
 } # End of process_bracket.
@@ -992,7 +976,7 @@ sub run
 	{
 		if (defined $self -> process)
 		{
-#			$self -> post_process;
+			$self -> post_process;
 			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
 		}
 		else
@@ -1009,6 +993,16 @@ sub run
 
 
 	$self -> log(error => 'Parse failed') if ($result == 1);
+
+	# Clean up the stack by popping the Root.
+
+	my($stack) = $self -> stack;
+
+	pop @$stack;
+
+	$self -> stack($stack);
+	$self -> log(debug => 'Brace count:  ' . $self -> brace_count . ' (0 expected)');
+	$self -> log(debug => 'Stack size:   ' . $#{$self -> stack} . ' (0 expected)');
 
 	# Return 0 for success and 1 for failure.
 
