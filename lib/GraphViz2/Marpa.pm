@@ -194,7 +194,7 @@ statement_list			::= statement*
 
 # Note: Subgraphs are handled by the statement type 'graph_statement_tokens'.
 # Hence subgraph sub_1 {...} and subgraph {...} and sub_1 {...} and {...} are all output as:
-# o The optional literal 'subgraph', which is classified as a node_id.
+# o The optional literal 'subgraph', which is classified as a literal.
 # o The optional subgraph id, which is also classified as a node_id.
 # o The literal '{'.
 # o The body of the subgraph.
@@ -594,9 +594,9 @@ sub post_process
 {
 	my($self) = @_;
 
-	# Walk the tree, moving attributes of edges off the head node
-	# (where they ended up) and attached them to the edge.
-	# The Tree::DAG_Node docs warn against modifying the tree,
+	# Walk the tree, moving attributes of edges off the edge's head node
+	# (where they ended up) and attached them to the edge itself.
+	# The Tree::DAG_Node docs warn against modifying the tree during a walk,
 	# so we use a stack to track all the edges found, and post-process them.
 
 	my(@edge);
