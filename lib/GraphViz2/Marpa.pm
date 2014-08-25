@@ -640,8 +640,6 @@ sub post_process
 			{
 				if ($i < $#self_and_sibling)
 				{
-					$self -> log(info => "Processing $i");
-
 					$next_name = $self_and_sibling[$i + 1] -> name;
 
 					if ($next_name =~ /(?:node_id|node_port|node_port_compass)/)
