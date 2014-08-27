@@ -972,21 +972,21 @@ sub run
 	{
 		$result = 1;
 
-		$self -> log(error => "Exception: $_");
+		$self -> log(info => "Exception: $_");
 	};
 
+	if ($result == 0)
+	{
+		# Clean up the stack by popping the Root.
 
-	$self -> log(error => 'Parse failed') if ($result == 1);
+		my($stack) = $self -> stack;
 
-	# Clean up the stack by popping the Root.
+		pop @$stack;
 
-	my($stack) = $self -> stack;
-
-	pop @$stack;
-
-	$self -> stack($stack);
-	$self -> log(debug => 'Brace count:  ' . $self -> brace_count . ' (0 expected)');
-	$self -> log(debug => 'Stack size:   ' . $#{$self -> stack} . ' (0 expected)');
+		$self -> stack($stack);
+		$self -> log(debug => 'Brace count:  ' . $self -> brace_count . ' (0 expected)');
+		$self -> log(debug => 'Stack size:   ' . $#{$self -> stack} . ' (0 expected)');
+	}
 
 	# Return 0 for success and 1 for failure.
 
