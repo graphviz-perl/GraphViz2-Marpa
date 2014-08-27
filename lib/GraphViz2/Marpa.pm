@@ -215,9 +215,17 @@ node_statement			::= generic_id_token attribute_tokens
 generic_id_token		::= generic_id
 							| ('"') generic_id ('"')
 							| ('<') generic_id ('>')
+							| number
+							| ('"') number_list ('"')
+
+number_list				::= number
+							| number comma_literal number_list
+
+number					::= float
+							| integer
 
 # Attribute stuff.
-# These have no body between the '[]' because they are parsed manually in order to
+# These have no body between the '[]' because it is parsed manually in order to
 # preserve whitespace (which is discarded by this grammar). See process_attributes().
 
 attribute_tokens		::=
@@ -245,7 +253,7 @@ subgraph_statement		::= graph_statement_tokens
 
 # Assignment stuff.
 
-assignment_statement	::= generic_id equals_literal generic_id
+assignment_statement	::= generic_id equals_literal generic_id_token
 
 # Lexeme-level stuff, in alphabetical order.
 
@@ -258,6 +266,14 @@ close_brace				~ '}'
 close_bracket			~ ']'
 
 colon					~ ':'
+
+:lexeme					~ comma_literal		pause => before		event => comma_literal
+
+comma_literal			~ ','
+
+digit					~ [0-9]
+digit_any				~ digit*
+digit_many				~ digit+
 
 :lexeme					~ digraph_literal	pause => before		event => digraph_literal
 
@@ -272,6 +288,11 @@ edge_literal			~ '--'
 
 equals_literal			~ '='
 
+:lexeme					~ float				pause => before		event => float
+
+float					~ sign_maybe digit_any '.' digit_many
+							| sign_maybe digit_many '.' digit_any
+
 :lexeme					~ generic_id		pause => before		event => generic_id
 
 generic_id_prefix		~ [a-zA-Z\200-\377_]
@@ -285,6 +306,13 @@ global_id				~ <generic_id_prefix>generic_id_suffix
 :lexeme					~ graph_literal		pause => before		event => graph_literal
 
 graph_literal			~ 'graph'
+
+:lexeme					~ integer			pause => before		event => integer
+
+integer					~ sign_maybe non_zero digit_any
+							| zero
+
+non_zero				~ [1-9]
 
 :lexeme					~ open_brace		pause => before		event => open_brace
 
@@ -303,9 +331,14 @@ node_port				~ node_port_prefix<colon>node_port_prefix
 
 node_port_compass		~ node_port_prefix<colon>node_port_prefix<colon>node_port_prefix
 
+sign_maybe				~ [+-]
+sign_maybe				~
+
 :lexeme					~ strict_literal	pause => before		event => strict_literal
 
 strict_literal			~ 'strict'
+
+zero					~ '0'
 
 # White space.
 
@@ -662,9 +695,10 @@ sub _post_process
 
 sub _process
 {
-	my($self)   = @_;
-	my($string) = $self -> graph_text;
-	my($length) = length $string;
+	my($self)         = @_;
+	my($string)       = $self -> graph_text;
+	my($length)       = length $string;
+	my($simple_token) = qr/(?:comma|digraph_literal|edge_literal|equals_literal|float|global_id|graph_literal|integer|node_port|node_port_compass|strict_literal)/;
 
 	$self -> log(info => "Input: $string");
 
@@ -701,7 +735,7 @@ sub _process
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
-			$self -> log(debug => "close_brace => '$literal'");
+			$self -> log(debug => "open_brace => '$literal'");
 			$self -> _process_brace($literal);
 		}
 		elsif ($event_name eq 'close_bracket')
@@ -709,32 +743,8 @@ sub _process
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
-			$self -> log(debug => "close_bracket => '$literal'");
+			$self -> log(debug => "open_brace => '$literal'");
 			$self -> _process_bracket($literal);
-		}
-		elsif ($event_name eq 'digraph_literal')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "digraph_literal => '$literal'");
-			$self -> _process_token('literal', $literal);
-		}
-		elsif ($event_name eq 'edge_literal')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "edge_literal => '$literal'");
-			$self -> _process_token('edge', $literal);
-		}
-		elsif ($event_name eq 'equals_literal')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "literal => '$literal'");
-			$self -> _process_token('literal', $literal);
 		}
 		elsif ($event_name eq 'generic_id')
 		{
@@ -753,38 +763,6 @@ sub _process
 
 			$self -> log(debug => "generic_id => '$generic_id'. type => $type");
 			$self -> _process_token($type, $generic_id);
-		}
-		elsif ($event_name eq 'global_id')
-		{
-			$pos       = $self -> recce -> lexeme_read($lexeme_name);
-			$global_id = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "global_id => '$global_id'. type => 'node_id'");
-			$self -> _process_token('node_id', $global_id);
-		}
-		elsif ($event_name eq 'graph_literal')
-		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "graph_literal => '$literal'");
-			$self -> _process_token('literal', $literal);
-		}
-		elsif ($event_name eq 'node_port')
-		{
-			$pos       = $self -> recce -> lexeme_read($lexeme_name);
-			$node_port = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "node_port => '$literal'");
-			$self -> _process_token('node_port', $node_port);
-		}
-		elsif ($event_name eq 'node_port_compass')
-		{
-			$pos       = $self -> recce -> lexeme_read($lexeme_name);
-			$node_port = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "node_port_compass => '$literal'");
-			$self -> _process_token('node_port_compass', $node_port);
 		}
 		elsif ($event_name eq 'open_brace')
 		{
@@ -809,13 +787,9 @@ sub _process
 			$self -> log(debug => "index() => attribute list: $attribute_list");
 			$self -> _process_attributes($attribute_list);
 		}
-		elsif ($event_name eq 'strict_literal')
+		elsif ($event_name =~ $simple_token)
 		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
-			$self -> log(debug => "strict_literal => '$literal'");
-			$self -> _process_token('literal', $literal);
+			($lexeme, $pos) = $self -> _process_lexeme(\$string, $start, $event_name, $lexeme_name);
 		}
 		else
 		{
@@ -921,6 +895,21 @@ sub _process_bracket
 	}
 
 } # End of _process_bracket.
+
+# --------------------------------------------------
+
+sub _process_lexeme
+{
+	my($self, $string, $start, $event_name, $lexeme_name) = @_;
+	my($pos)   = $self -> recce -> lexeme_read($lexeme_name);
+	my($value) = substr($$string, $start, $pos - $start);
+
+	$self -> log(debug => "$event_name => '$value'");
+	$self -> _process_token($event_name, $value);
+
+	return $pos;
+
+} # End of _process_lexeme.
 
 # --------------------------------------------------
 

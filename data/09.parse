@@ -1,6 +1,0 @@
-"type","value"
-strict              , "yes"
-digraph             , "yes"
-graph_id            , "graph_09"
-start_scope         , "1"
-end_scope           , "1"

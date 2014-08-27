@@ -1,7 +1,0 @@
-digraph graph_22
-{
-	node_22
-	[
-		fillcolor = "red"
-	]
-}

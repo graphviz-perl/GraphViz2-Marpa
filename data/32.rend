@@ -1,9 +1,0 @@
-digraph graph_32
-{
-	node_32
-	[
-		color = "red"
-		fontcolor = "green"
-		label = <<table><tr><td>html-style label with literal &lt;&gt;</td></tr></table>>
-	]
-}

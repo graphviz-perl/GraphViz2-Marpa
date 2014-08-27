@@ -1,9 +1,0 @@
-digraph graph_42_10
-{
-	node_42_10
-	[
-		fixedsize = "1"
-		height = "2"
-		width = "2"
-	]
-}

@@ -1,9 +1,0 @@
-digraph
-{
-	node_41
-	[
-		color = "red"
-		fontcolor = "green"
-		label = "ID-less graph"
-	]
-}

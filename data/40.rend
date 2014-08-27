@@ -1,8 +1,0 @@
-digraph graph_40
-{
-	node_40
-	[
-		color = "red"
-		fontcolor = "green"
-	]
-}
