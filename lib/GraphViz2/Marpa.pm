@@ -190,7 +190,7 @@ global_id_token			::= global_id
 
 graph_statement_tokens	::= open_brace statement_list close_brace
 
-statement_list			::= statement*
+statement_list			::= statement_token*
 
 # Note: Subgraphs are handled by the statement type 'graph_statement_tokens'.
 # Hence subgraph sub_1 {...} and subgraph {...} and sub_1 {...} and {...} are all output as:
@@ -199,6 +199,11 @@ statement_list			::= statement*
 # o The literal '{'.
 # o The body of the subgraph.
 # o The literal '}'.
+
+statement_token			::= statement statement_terminator
+
+statement_terminator	::= semicolon_literal
+statement_terminator	::=
 
 statement				::= node_statement
 							| edge_statement
@@ -229,7 +234,7 @@ number					::= float
 # preserve whitespace (which is discarded by this grammar). See process_attributes().
 
 attribute_tokens		::=
-attribute_tokens		::= open_bracket close_bracket
+attribute_tokens		::= open_bracket close_bracket statement_terminator
 
 # Edge stuff.
 
@@ -336,6 +341,8 @@ sign_maybe				~
 
 :lexeme					~ strict_literal	pause => before		event => strict_literal
 
+semicolon_literal		~ ';'
+
 strict_literal			~ 'strict'
 
 zero					~ '0'
@@ -401,7 +408,7 @@ sub _add_daughter
 
 sub _attribute_field
 {
-	my($self, $input)  = @_;
+	my($self, $type, $input) = @_;
 	my(@char)          = split(//, $input);
 	my($char_count)    = 0;
 	my($quote_count)   = 0;
@@ -467,7 +474,7 @@ sub _attribute_field
 
 			$i++;
 
-			$self -> log(debug => "Input:    " . join('', @char[$i .. $#char]) . '.');
+			$self -> log(debug => "Input: " . join('', @char[$i .. $#char]) . '.');
 
 			while ( ($i < $#char) && ($char[$i] =~ /[=\s]/) )
 			{
@@ -475,7 +482,7 @@ sub _attribute_field
 				$char_count++;
 			}
 
-			$self -> log(debug => "Input:    " . join('', @char[$i .. $#char]) . '.');
+			$self -> log(debug => "Input: " . join('', @char[$i .. $#char]) . '.');
 
 			last;
 		}
@@ -525,20 +532,27 @@ sub _attribute_field
 
 	$result = $field if ($field ne '');
 	$result =~ s/^"(.+)"$/$1/;
+
+	$self -> log(debug => "Input 1: $input.");
+
 	$input  = substr($input, $char_count);
+
+	$self -> log(debug => "Input 2: $input.");
+
 	$input  =~ s/^\s+//;
+
+	$self -> log(debug => "Input 3: $input.");
 
 	return ($result, $input);
 
 } # End of _attribute_field.
 
 # -----------------------------------------------
-# $target is qr/], at the end of a list of attributes.
 # The special case is <<...>>, as used in attributes.
 
 sub _find_terminator
 {
-	my($self, $stringref, $target, $start) = @_;
+	my($self, $stringref, $start) = @_;
 	my(@char)   = split(//, substr($$stringref, $start) );
 	my($offset) = 0;
 	my($quote)  = '';
@@ -554,7 +568,7 @@ sub _find_terminator
 		if ($quote)
 		{
 			# Ignore an escaped quote.
-			# The first 2 backslashes are just to fix syntax highlighting in UltraEdit.
+			# The first few backslashes are just to fix syntax highlighting in UltraEdit.
 
 			next if ( ($char =~ /[\]\"\'>]/) && ($i > 0) && ($char[$i - 1] eq '\\') );
 
@@ -592,10 +606,9 @@ sub _find_terminator
 			}
 
 			# 3: <.
-			# In the case of attributes ($target eq '}') but not nodes names,
-			# quotes can be <...> or <<...>>.
+			# In the case of attributes but not nodes names, quotes can be <...> or <<...>>.
 
-			if ( ($target =~ ']') && ($char =~ '<') )
+			if ($char =~ '<')
 			{
 				$quote = '>';
 				$angle = 1 if ( ($i < $#char) && ($char[$i + 1] eq '<') );
@@ -603,7 +616,7 @@ sub _find_terminator
 				next;
 			}
 
-			last if ($char =~ $target);
+			last if ($char eq ']');
 		}
 	}
 
@@ -735,7 +748,7 @@ sub _process
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
-			$self -> log(debug => "open_brace => '$literal'");
+			$self -> log(debug => "close_brace => '$literal'");
 			$self -> _process_brace($literal);
 		}
 		elsif ($event_name eq 'close_bracket')
@@ -743,7 +756,7 @@ sub _process
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
 
-			$self -> log(debug => "open_brace => '$literal'");
+			$self -> log(debug => "close_bracket => '$literal'");
 			$self -> _process_bracket($literal);
 		}
 		elsif ($event_name eq 'generic_id')
@@ -780,7 +793,7 @@ sub _process
 			$self -> log(debug => "open_bracket => '$literal'");
 			$self -> _process_bracket($literal);
 
-			$pos = $self -> _find_terminator(\$string, qr/]/, $start);
+			$pos = $self -> _find_terminator(\$string, $start);
 
 			$attribute_list = substr($string, $start + 1, $pos - $start - 1);
 
@@ -814,10 +827,17 @@ sub _process_attributes
 
 	while (length($attribute_list) > 0)
 	{
-		($name, $attribute_list)  = $self -> _attribute_field($attribute_list);
-		($value, $attribute_list) = $self -> _attribute_field($attribute_list);
+		($name, $attribute_list)  = $self -> _attribute_field('name', $attribute_list);
+		($value, $attribute_list) = $self -> _attribute_field('value', $attribute_list);
 
 		$self -> _add_daughter('attribute', {type => $name, value => $value});
+
+		# Discard statement teminators.
+
+		while (substr($attribute_list, 0, 1) =~ /[;,]/)
+		{
+			substr($attribute_list, 0, 1) = '';
+		}
 	}
 
 } # End of _process_attributes.

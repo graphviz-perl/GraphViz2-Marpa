@@ -1,3 +1,4 @@
 digraph graph_10
 {
+	edge ["color" = "green",]
 }
