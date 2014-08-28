@@ -163,7 +163,7 @@ source					=> \(<<'END_OF_GRAMMAR'),
 
 :default				::= action => [values]
 
-lexeme default			= latm => 1
+lexeme default			= latm => 1    # Active the Longest Acceptable Token Match option.
 
 :start 					::= graph_definition
 
@@ -180,11 +180,7 @@ graph_type				::= digraph_literal
 							| graph_literal
 
 global_id_type			::=
-global_id_type			::= global_id_token
-
-global_id_token			::= global_id
-							| ('"') global_id ('"')
-							| ('<') global_id ('>')
+global_id_type			::= generic_id_token
 
 # The graph proper.
 
@@ -215,19 +211,17 @@ statement				::= node_statement
 
 node_statement			::= generic_id_token attribute_tokens
 
-# This differs from global_id_token only in triggering a different event.
-
 generic_id_token		::= generic_id
 							| ('"') generic_id ('"')
 							| ('<') generic_id ('>')
 							| number
 							| ('"') number_list ('"')
 
-number_list				::= number
-							| number comma_literal number_list
-
 number					::= float
 							| integer
+
+number_list				::= number
+							| number comma_literal number_list
 
 # Attribute stuff.
 # These have no body between the '[]' because they is parsed manually in order to
@@ -305,10 +299,6 @@ generic_id_prefix		~ [a-zA-Z\200-\377_]
 generic_id_suffix		~ [a-zA-Z\200-\377_0-9]*
 generic_id				~ <generic_id_prefix>generic_id_suffix
 
-:lexeme					~ global_id			pause => before		event => global_id
-
-global_id				~ <generic_id_prefix>generic_id_suffix
-
 :lexeme					~ graph_literal		pause => before		event => graph_literal
 
 graph_literal			~ 'graph'
@@ -380,7 +370,7 @@ END_OF_GRAMMAR
 
 	# The 'Prolog' daughter is the parent of all items in the prolog,
 	# so it gets pushed onto the stack.
-	# Later, when the 1st '{' is encountered, the 'Graph' daughter replaces it.
+	# Later, when 'digraph' or 'graph' is encountered, the 'Graph' daughter replaces it.
 
 	my(@daughters) = $self -> tree -> daughters;
 	my($index)     = 0; # 0 => Prolog, 1 => Graph.
@@ -709,10 +699,11 @@ sub _post_process
 
 sub _process
 {
-	my($self)         = @_;
-	my($string)       = $self -> graph_text;
-	my($length)       = length $string;
-	my($simple_token) = qr/(?:comma|digraph_literal|edge_literal|equals_literal|float|global_id|graph_literal|integer|node_port|node_port_compass|strict_literal)/;
+	my($self)          = @_;
+	my($string)        = $self -> graph_text;
+	my($length)        = length $string;
+	my($digraph_graph) = qr/(?:digraph_literal|graph_literal)/;
+	my($simple_token)  = qr/(?:comma|edge_literal|equals_literal|float|integer|node_port|node_port_compass|strict_literal)/;
 
 	$self -> log(info => "Input: $string");
 
@@ -720,9 +711,8 @@ sub _process
 
 	my($attribute_list);
 	my(@event, $event_name);
-	my($generic_id, $global_id);
+	my($generic_id);
 	my($lexeme_name, $lexeme, $literal);
-	my($node_port);
 	my($span, $start);
 	my($type);
 
@@ -744,7 +734,11 @@ sub _process
 		$self -> log(debug => "pause_span($lexeme_name) => start: $start. span: $span. " .
 			"lexeme: $lexeme. event: $event_name");
 
-		if ($event_name eq 'close_brace')
+		if ($event_name =~ $simple_token)
+		{
+			($lexeme, $pos) = $self -> _process_lexeme(\$string, $start, $event_name, $lexeme_name);
+		}
+		elsif ($event_name eq 'close_brace')
 		{
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
@@ -801,9 +795,13 @@ sub _process
 			$self -> log(debug => "index() => attribute list: $attribute_list");
 			$self -> _process_attributes($attribute_list);
 		}
-		elsif ($event_name =~ $simple_token)
+		elsif ($event_name =~ $digraph_graph)
 		{
-			($lexeme, $pos) = $self -> _process_lexeme(\$string, $start, $event_name, $lexeme_name);
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "$event_name => '$literal'");
+			$self -> _process_digraph_graph($event_name, $literal);
 		}
 		else
 		{
@@ -916,6 +914,30 @@ sub _process_bracket
 	}
 
 } # End of _process_bracket.
+
+# --------------------------------------------------
+
+sub _process_digraph_graph
+{
+	my($self, $name, $value) = @_;
+
+	$self -> _add_daughter($name, {value => $value});
+
+	# When 'digraph' or 'graph' is encountered, the 'Graph' daughter of the root
+	# becomes the parent of all other tree nodes, replacing the 'Prolog' daughter.
+
+	my($stack) = $self -> stack;
+
+	pop @$stack;
+
+	my(@daughters) = $self -> tree -> daughters;
+	my($index)     = 1; # 0 => Prolog, 1 => Graph.
+
+	push @$stack, $daughters[$index];
+
+	$self -> stack($stack);
+
+} # End of _process_digraph_graph.
 
 # --------------------------------------------------
 

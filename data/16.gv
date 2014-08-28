@@ -1,15 +1,15 @@
-digraph graph_16
+strict digraph graph_16
 {
 	node
 	[
-		shape = "record"
-	]
+		shape = "record",
+	];
 
 	edge
 	[
 		color = "red"
-		penwidth = 3
-	]
+		penwidth = 3,
+	];
 
 	node_16_1
 	[
@@ -23,16 +23,16 @@ digraph graph_16
 
 	node_16_1:p11 -> node_16_2:p22:s
 	[
-		arrowtail = "odot"
+		arrowtail = "odot",
 		arrowhead = "odiamond"
 		dir       = "both"
-	]
+	];
 
 	subgraph subgraph_18_1
 	{
 		node_16_3
 
-		node_16_4
+		node_16_4;
 
 		node_16_3 -> node_16_4
 		[
