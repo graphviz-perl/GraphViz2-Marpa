@@ -481,9 +481,9 @@ sub _attribute_field
 		{
 			if ($html eq 'no')
 			{
-				# Discard '=' outside quotes, and finish.
+				# Discard some chars outside quotes, and possibly finish.
 
-				if ($char eq '=')
+				if ($char =~ /[=\s;,]/)
 				{
 					next if (length($field) == 0);
 
@@ -491,20 +491,6 @@ sub _attribute_field
 					$field  = '';
 
 					$self -> log(debug => "Result 2: $result.");
-
-					last;
-				}
-
-				# Discard spaces outside quotes, and possibly finish.
-
-				if ($char =~ /\s/)
-				{
-					next if (length($field) == 0);
-
-					$result = $field;
-					$field  = '';
-
-					$self -> log(debug => "Result 3: $result.");
 
 					last;
 				}
@@ -530,7 +516,7 @@ sub _attribute_field
 
 	$self -> log(debug => "Input 2: $input.");
 
-	$input  =~ s/^\s+//;
+	$input  =~ s/^[\s;,]+//;
 
 	$self -> log(debug => "Input 3: $input.");
 
@@ -833,10 +819,14 @@ sub _process_attributes
 
 		# Discard attribute teminators.
 
-		while (substr($attribute_list, 0, 1) =~ /[;,]/)
+		$self -> log(info => "Before: <$attribute_list>");
+
+		while ($attribute_list =~ /^[;,]/)
 		{
 			substr($attribute_list, 0, 1) = '';
 		}
+
+		$self -> log(info => "After:  <$attribute_list>");
 	}
 
 } # End of _process_attributes.

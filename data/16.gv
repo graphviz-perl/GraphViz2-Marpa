@@ -24,8 +24,8 @@ strict digraph graph_16
 	node_16_1:p11 -> node_16_2:p22:s
 	[
 		arrowtail = "odot",
-		arrowhead = "odiamond"
-		dir       = "both"
+		arrowhead = "odiamond";
+		dir       = both;
 	];
 
 	subgraph subgraph_18_1
@@ -37,8 +37,8 @@ strict digraph graph_16
 		node_16_3 -> node_16_4
 		[
 			arrowtail = "empty"
-			arrowhead = "halfopen"
-			dir       = "both"
+			arrowhead = "halfopen",
+			dir       = "both",
 		]
 	}
 }
