@@ -207,7 +207,7 @@ statement_terminator	::=
 
 statement				::= node_statement
 							| edge_statement
-#							| attribute_statement		# Handled by node_statement.
+#							| attribute_statement		# Todo.
 							| assignment_statement
 							| subgraph_statement
 
@@ -230,8 +230,9 @@ number					::= float
 							| integer
 
 # Attribute stuff.
-# These have no body between the '[]' because it is parsed manually in order to
-# preserve whitespace (which is discarded by this grammar). See process_attributes().
+# These have no body between the '[]' because they is parsed manually in order to
+# preserve whitespace (which is discarded by this grammar). See _process_attributes().
+# See also the same method for the handling of attribute terminators: [;,].
 
 attribute_tokens		::=
 attribute_tokens		::= open_bracket close_bracket statement_terminator
@@ -832,7 +833,7 @@ sub _process_attributes
 
 		$self -> _add_daughter('attribute', {type => $name, value => $value});
 
-		# Discard statement teminators.
+		# Discard attribute teminators.
 
 		while (substr($attribute_list, 0, 1) =~ /[;,]/)
 		{
