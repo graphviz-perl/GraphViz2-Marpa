@@ -233,7 +233,10 @@ attribute_tokens		::= open_bracket close_bracket statement_terminator
 
 # Edge stuff.
 
-edge_statement			::= edge_node_token edge_literal edge_node_token attribute_tokens
+edge_statement			::= edge_node_token			edge_literal edge_node_token	attribute_tokens
+							| edge_node_token 		edge_literal subgraph_statement	attribute_tokens
+							| subgraph_statement	edge_literal edge_node_token	attribute_tokens
+							| subgraph_statement	edge_literal subgraph_statement	attribute_tokens
 
 edge_node_token			::= generic_id
 							| node_port_id
@@ -819,14 +822,10 @@ sub _process_attributes
 
 		# Discard attribute teminators.
 
-		$self -> log(info => "Before: <$attribute_list>");
-
 		while ($attribute_list =~ /^[;,]/)
 		{
 			substr($attribute_list, 0, 1) = '';
 		}
-
-		$self -> log(info => "After:  <$attribute_list>");
 	}
 
 } # End of _process_attributes.
@@ -978,7 +977,7 @@ sub run
 
 		# Discard comments and combine lines into a single string.
 
-		$self -> graph_text(join(' ', grep{! /^#/} @$ara_ref) );
+		$self -> graph_text(join(' ', grep{! m!^(?:#|//)!} @$ara_ref) );
 	}
 	else
 	{
