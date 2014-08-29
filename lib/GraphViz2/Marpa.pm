@@ -233,12 +233,17 @@ attribute_tokens		::= open_bracket close_bracket statement_terminator
 
 # Edge stuff.
 
-edge_statement			::= edge_node_token			edge_literal edge_node_token	attribute_tokens
-							| edge_node_token 		edge_literal subgraph_statement	attribute_tokens
-							| subgraph_statement	edge_literal edge_node_token	attribute_tokens
-							| subgraph_statement	edge_literal subgraph_statement	attribute_tokens
+edge_statement			::= edge_segment attribute_tokens
 
-edge_node_token			::= generic_id
+edge_segment			::= edge_tail edge_literal edge_head
+
+edge_tail				::= edge_node_token
+							| subgraph_statement
+
+edge_head				::= edge_tail
+							|  edge_tail edge_literal edge_head
+
+edge_node_token			::= generic_id_token
 							| node_port_id
 							| node_port_compass_id
 
@@ -355,7 +360,8 @@ END_OF_GRAMMAR
 	(
 		Marpa::R2::Scanless::R -> new
 		({
-			grammar => $self -> grammar,
+			grammar         => $self -> grammar,
+			#trace_terminals => 99,
 		})
 	);
 
@@ -977,7 +983,7 @@ sub run
 
 		# Discard comments and combine lines into a single string.
 
-		$self -> graph_text(join(' ', grep{! m!^(?:#|//)!} @$ara_ref) );
+		$self -> graph_text(join("\n", grep{! m!^\s*(?:#|//)!} @$ara_ref) );
 	}
 	else
 	{
