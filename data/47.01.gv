@@ -1,0 +1,9 @@
+digraph graph_47_01
+{
+	big ->
+	{
+		small
+		smaller
+		smallest
+	}
+}
