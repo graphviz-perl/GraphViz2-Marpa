@@ -41,168 +41,6 @@ our $VERSION = '1.14';
 
 # -----------------------------------------------
 
-sub generate_code_attributes_csv
-{
-	my($self, $heading)  = @_;
-	my(@script)          = grep{/pl$/} @$heading;
-	my($script_dir_name) = 'scripts';
-
-	my(@lines);
-	my(@mutators, %mutators);
-	my($name);
-	my($script_file_name);
-
-	for my $script (@script)
-	{
-		$script_file_name      = File::Spec -> catfile($script_dir_name, $script);
-		@lines                 = read_file($script_file_name, {chomp => 1});
-		@mutators              = grep{s/=.//; $_} grep{s/^\t'(.+)'.+/$1/; $1} @lines;
-		$mutators{$script}     = {} if (! $mutators{$script});
-		$mutators{$script}{$_} = 1 for @mutators;
-	}
-
-	my(@module)      = grep{/pm$/} @$heading;
-	my(%module_name) =
-	(
-		'DFA.pm'      => 'GraphViz2::Marpa::Lexer::DFA',
-		'Lexer.pm'    => 'GraphViz2::Marpa::Lexer',
-		'Marpa.pm'    => 'GraphViz2::Marpa',
-		'Parser.pm'   => 'GraphViz2::Marpa::Parser',
-		'Renderer.pm' => 'GraphViz2::Marpa::Renderer::GraphViz2',
-	);
-
-	my($module_file_name);
-
-	for my $module (@module)
-	{
-		$module_file_name      = module_path($module_name{$module}) || die "Unable to find $module\n";
-		@lines                 = read_file($module_file_name, {chomp => 1});
-		@mutators              = grep{s/=.//; $_} grep{s/^fieldhash my %([^\s]+).+/$1/; $1} @lines;
-		$mutators{$module}     = {} if (! $mutators{$module});
-		$mutators{$module}{$_} = 1 for @mutators;
-	}
-
-	my(%names);
-
-	for my $row (keys %mutators)
-	{
-		for my $column (keys %{$mutators{$row} })
-		{
-			$names{$column}{$row} = defined($mutators{$row}{$column}) ? 'Y' : '.';
-		}
-	}
-
-	my($data_dir_name)  = 'data';
-	my($code_file_name) = File::Spec -> catfile($data_dir_name, 'code.attributes.csv');
-	my($csv)            = Text::CSV -> new;
-
-	my($status);
-
-	open(OUT, '>', $code_file_name) || die "Can't open(> $code_file_name)";
-
-	$csv -> combine('Mutator', @$heading) || die "Can't combine headings\n";
-
-	print OUT $csv -> string, "\n";
-
-	my(@column);
-
-	for my $mutator (sort keys %names)
-	{
-		@column = ();
-
-		for $name (@$heading)
-		{
-			push @column, $mutator if ($#column < 0);
-			push @column, $names{$mutator}{$name};
-		}
-
-		$csv -> combine(@column) || die "Can't combine columns\n";
-
-		print OUT $csv -> string, "\n";
-	}
-
-	close OUT;
-
-} # End of generate_code_attributes_csv.
-
-# -----------------------------------------------
-
-sub generate_code_attributes_index
-{
-	my($self)    = @_;
-	my(@heading) = qw/lex.pl Lexer.pm DFA.pm parse.pl Parser.pm rend.pl g2m.pl Marpa.pm Renderer.pm/;
-
-	$self -> generate_code_attributes_csv(\@heading);
-
-	my($data_dir_name)   = 'data';
-	my($code_file_name)  = File::Spec -> catfile($data_dir_name, 'code.attributes.csv');
-	my($code_attributes) = Text::CSV::Slurp -> new -> load(file => $code_file_name, allow_whitespace => 1);
-
-	my($column, @column);
-	my(@row);
-
-	for $column ('Mutator', @heading)
-	{
-		push @column, {td => $column};
-	}
-
-	push @row, [@column];
-
-	for my $item (@$code_attributes)
-	{
-		@column = ();
-
-		for $column ('Mutator', @heading)
-		{
-			push @column, {td => $$item{$column} };
-		}
-
-		push @row, [@column];
-	}
-
-	@column = ();
-
-	for $column ('Mutator', @heading)
-	{
-		push @column, {td => $column};
-	}
-
-	push @row, [@column];
-
-	my($config)    = $self -> config;
-	my($templater) = Text::Xslate -> new
-	(
-		input_layer => '',
-		path        => $$config{template_path},
-	);
-	my($html_dir_name) = 'html';
-	my($file_name)     = File::Spec -> catfile($html_dir_name, 'code.attributes.html');
-
-	open(OUT, '>', $file_name);
-	print OUT $templater -> render
-	(
-	'code.attributes.tx',
-	{
-		border          => 1,
-		default_css     => "$$config{css_url}/default.css",
-		environment     => $self -> generate_demo_environment,
-		fancy_table_css => "$$config{css_url}/fancy.table.css",
-		title           => 'Code and Command Line Attributes for GraphViz2::Marpa',
-		row             => \@row,
-		summary         => 'Code attributes',
-		version         => $VERSION,
-	},
-	);
-	close OUT;
-
-	# Return 0 for success and 1 for failure.
-
-	return 0;
-
-} # End of generate_code_attributes_index.
-
-# -----------------------------------------------
-
 sub generate_demo_index
 {
 	my($self)          = @_;
@@ -308,79 +146,6 @@ sub generate_demo_environment
 	return \@environment;
 
 } # End of generate_demo_environment.
-
-# ------------------------------------------------
-
-sub generate_stt_index
-{
-	my($self) = @_;
-	my(@heading)       = qw/Start Accept State Event Next Entry Exit Regexp Interpretation/;
-	my($data_dir_name) = 'data';
-	my($stt_file_name) = File::Spec -> catfile($data_dir_name, 'default.stt.csv');
-	my($stt)           = Text::CSV::Slurp -> new -> load(file => $stt_file_name, allow_whitespace => 1);
-
-	my($column, @column);
-	my(@row);
-
-	for $column (@heading)
-	{
-		push @column, {td => $column};
-	}
-
-	push @row, [@column];
-
-	for my $item (@$stt)
-	{
-		@column = ();
-
-		for $column (@heading)
-		{
-			push @column, {td => mark_raw($$item{$column} || '.')};
-		}
-
-		push @row, [@column];
-	}
-
-	@column = ();
-
-	for $column (@heading)
-	{
-		push @column, {td => $column};
-	}
-
-	push @row, [@column];
-
-	my($config)    = $self -> config;
-	my($templater) = Text::Xslate -> new
-	(
-		input_layer => '',
-		path        => $$config{template_path},
-	);
-	my($html_dir_name) = 'html';
-	my($file_name)     = File::Spec -> catfile($html_dir_name, 'stt.html');
-
-	open(OUT, '>', $file_name) || die "Can't open(> $file_name): $!";
-	print OUT $templater -> render
-	(
-	'stt.tx',
-	{
-		border          => 1,
-		default_css     => "$$config{css_url}/default.css",
-		environment     => $self -> generate_demo_environment,
-		fancy_table_css => "$$config{css_url}/fancy.table.css",
-		title           => 'State Transition Table for GraphViz2::Marpa::Lexer',
-		row             => \@row,
-		summary         => 'STT',
-		version         => $VERSION,
-	},
-	);
-	close OUT;
-
-	# Return 0 for success and 1 for failure.
-
-	return 0;
-
-} # End of generate_stt_index.
 
 # ------------------------------------------------
 
@@ -496,14 +261,6 @@ Key-value pairs accepted in the parameter list:
 
 =head1 Methods
 
-=head2 generate_code_attributes_csv()
-
-Generate data/code.attributes.csv, for conversion into html/code.attributes.html.
-
-=head2 generate_code_attributes_index()
-
-Generate html/code.attributes.html.
-
 =head2 generate_demo_index()
 
 Generates html/index.html.
@@ -517,10 +274,6 @@ Called by generate_demo_index().
 Generates a table to be inserted into html/index.html.
 
 See scripts/generate.demo.pl.
-
-=head2 generate_stt_index()
-
-Generate html/stt.html.
 
 =head2 get_files($dir_name, $type)
 
