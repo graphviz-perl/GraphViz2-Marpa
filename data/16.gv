@@ -1,16 +1,5 @@
 strict digraph graph_16
 {
-	node
-	[
-		shape = "record",
-	];
-
-	edge
-	[
-		color = "red"
-		penwidth = 3,
-	];
-
 	node_16_1
 	[
 		label = "<p11> left|<p12> middle|<p13> right"
@@ -27,18 +16,4 @@ strict digraph graph_16
 		arrowhead = "odiamond";
 		dir       = both;
 	];
-
-	subgraph subgraph_18_1
-	{
-		node_16_3
-
-		node_16_4;
-
-		node_16_3 -> node_16_4
-		[
-			arrowtail = "empty"
-			arrowhead = "halfopen",
-			dir       = "both",
-		]
-	}
 }

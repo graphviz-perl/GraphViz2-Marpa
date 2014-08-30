@@ -247,13 +247,9 @@ edge_node_token			::= generic_id_token
 							| node_port_id
 							| node_port_compass_id
 
-node_port_id			::= node_port
-							| ('"') node_port ('"')
-							| ('<') node_port ('>')
+node_port_id			::= generic_id_token<colon>generic_id_token
 
-node_port_compass_id	::= node_port_compass
-							| ('"') node_port_compass ('"')
-							| ('<') node_port_compass ('>')
+node_port_compass_id	::= node_port_id<colon>generic_id_token
 
 # Subgraph stuff.
 
@@ -272,6 +268,8 @@ close_brace				~ '}'
 :lexeme					~ close_bracket		pause => before		event => close_bracket
 
 close_bracket			~ ']'
+
+:lexeme					~ colon				pause => before		event => colon
 
 colon					~ ':'
 
@@ -325,15 +323,6 @@ open_brace				~ '{'
 :lexeme					~ open_bracket		pause => before		event => open_bracket
 
 open_bracket			~ '['
-
-:lexeme					~ node_port			pause => before		event => node_port
-
-node_port_prefix		~ <generic_id_prefix>generic_id_suffix
-node_port				~ node_port_prefix<colon>node_port_prefix
-
-:lexeme					~ node_port_compass	pause => before		event => node_port_compass
-
-node_port_compass		~ node_port_prefix<colon>node_port_prefix<colon>node_port_prefix
 
 sign_maybe				~ [+-]
 sign_maybe				~
@@ -533,6 +522,113 @@ sub _attribute_field
 
 } # End of _attribute_field.
 
+# --------------------------------------------------
+
+sub compress_node_port_compass
+{
+	my($self, $edge_list, $compass_present) = @_;
+
+	# Collapse node:port and node:port:_compass into 1 node each.
+	# These are the possibilities:
+	# $i	+ 1		+ 2		+ 3		+ 4		+ 5		Compass present
+	# Edge	Node									No
+	# Edge	Node	Colon	Node					No
+	# Edge	Node	Colon	Node	Colon	Node	Yes
+
+	my($edge_attributes);
+	my(@node, $new_name, $node_attributes);
+	my($offset_1, $offset_2);
+	my($port_compass);
+	my(@self_and_sibling, $sibling, $sibling_attributes);
+
+	if ($compass_present)
+	{
+		$offset_1 = 5;
+		$offset_2 = 4;
+	}
+	else
+	{
+		$offset_1 = 3;
+		$offset_2 = 2;
+	}
+
+	for my $edge (@$edge_list)
+	{
+		$edge_attributes  = $edge -> attributes;
+		@self_and_sibling = $edge -> self_and_sisters;
+		$port_compass     = undef;
+
+		for my $i (0 .. $#self_and_sibling)
+		{
+			$sibling            = $self_and_sibling[$i];
+			$sibling_attributes = $sibling -> attributes;
+
+			if ($$edge_attributes{uid} == $$sibling_attributes{uid})
+			{
+				# We found our edge, so analyze the corresponding nodes.
+				# For $compass_present => 1, the node follows,
+				# but for $compass_present => 0, the node precedes.
+
+				@node = ('', '');
+
+				if ($compass_present)
+				{
+					if ( ($i + $offset_1) <= $#self_and_sibling)
+					{
+						$node[0] = $self_and_sibling[$i + 2] -> name;
+						$node[1] = $self_and_sibling[$i + 4] -> name;
+
+						if ("$node[0]$node[1]" eq 'coloncolon')
+						{
+							$port_compass = $i + 1;
+
+							last;
+						}
+					}
+				}
+				else
+				{
+					if ( ($i - 3) >= 0)
+					{
+						$node[0] = $self_and_sibling[$i - 2] -> name;
+
+						if ($node[0] eq 'colon')
+						{
+							$port_compass = $i - 3;
+
+							last;
+						}
+					}
+				}
+			}
+		}
+
+		if ($port_compass)
+		{
+			$new_name = '';
+
+			for (my $i = $port_compass; $i <= ($port_compass + $offset_2); $i++)
+			{
+				$node_attributes  = $self_and_sibling[$i] -> attributes;
+				$new_name        .= $$node_attributes{value};
+			}
+
+			$self -> log(info => "Port_compass: $port_compass. New_name: $new_name");
+
+			$node_attributes = $self_and_sibling[$port_compass] -> attributes;
+
+			$self_and_sibling[$port_compass] -> name('node_port_compass_id');
+			$self_and_sibling[$port_compass] -> attributes({%$node_attributes, value => $new_name});
+			$edge -> set_daughters($self_and_sibling[$port_compass + $offset_2] -> daughters);
+
+			splice(@self_and_sibling, ($port_compass + 1), $offset_2);
+
+			$edge -> mother -> set_daughters(@self_and_sibling);
+		}
+	}
+
+} # End of compress_node_port_compass.
+
 # -----------------------------------------------
 # The special case is <<...>>, as used in attributes.
 
@@ -640,7 +736,7 @@ sub _post_process
 			my($node) = @_;
 			my($name) = $node -> name;
 
-			push @edge, $node if ($name eq 'edge');
+			push @edge, $node if ($name eq 'edge_literal');
 
 			# Keep recursing.
 
@@ -649,44 +745,8 @@ sub _post_process
 		_depth => 0,
 	});
 
-	# If the DOT file is valid, these edges have a next sibling which is a node.
-	# And if that node has attributes, they belong to the corresponding edge.
-	# So we shift them off the node and onto the edge.
-
-	my($arrowhead_node, @arrowhead_daughters);
-	my($edge_attributes);
-	my($next_sibling, $next_name);
-	my(@self_and_sibling, $sibling, $sibling_attributes);
-
-	for my $edge (@edge)
-	{
-		$edge_attributes  = $edge -> attributes;
-		@self_and_sibling = $edge -> self_and_sisters;
-
-		for my $i (0 .. $#self_and_sibling)
-		{
-			$sibling            = $self_and_sibling[$i];
-			$sibling_attributes = $sibling -> attributes;
-
-			if ($$edge_attributes{uid} == $$sibling_attributes{uid})
-			{
-				if ($i < $#self_and_sibling)
-				{
-					$next_name = $self_and_sibling[$i + 1] -> name;
-
-					if ($next_name =~ /(?:node_id|node_port|node_port_compass)/)
-					{
-						$arrowhead_node      = $self_and_sibling[$i + 1];
-						@arrowhead_daughters = $arrowhead_node -> clear_daughters;
-
-						$edge -> add_daughters(@arrowhead_daughters);
-					}
-				}
-
-				last;
-			}
-		}
-	}
+	$self -> compress_node_port_compass(\@edge, 1);
+	$self -> compress_node_port_compass(\@edge, 0);
 
 } # End of _post_process.
 
@@ -698,7 +758,7 @@ sub _process
 	my($string)        = $self -> graph_text;
 	my($length)        = length $string;
 	my($digraph_graph) = qr/(?:digraph_literal|graph_literal)/;
-	my($simple_token)  = qr/(?:comma|edge_literal|equals_literal|float|integer|node_port|node_port_compass|strict_literal)/;
+	my($simple_token)  = qr/(?:colon|comma|edge_literal|equals_literal|float|integer|node_port|strict_literal)/;
 
 	$self -> log(info => "Input: $string");
 
