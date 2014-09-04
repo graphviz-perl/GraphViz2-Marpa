@@ -30,11 +30,14 @@ strict digraph graph_16
 
 	subgraph subgraph_16_1
 	{
-		node_16_3
+		node_16_3 -> { node_16_4 }
+		[
+			arrowtail = "halfopen"
+			arrowhead = "empty",
+			dir       = "both",
+		]
 
-		node_16_4;
-
-		node_16_3 -> node_16_4
+		node_16_5 -> { node_16_6 }
 		[
 			arrowtail = "empty"
 			arrowhead = "halfopen",
