@@ -203,7 +203,7 @@ statement_terminator	::=
 
 statement				::= node_statement
 							| edge_statement
-#							| attribute_statement		# Todo.
+							| attribute_statement
 							| assignment_statement
 							| subgraph_statement
 
@@ -222,14 +222,6 @@ number					::= float
 
 number_list				::= number
 							| number comma_literal number_list
-
-# Attribute stuff.
-# These have no body between the '[]' because they is parsed manually in order to
-# preserve whitespace (which is discarded by this grammar). See _process_attributes().
-# See also the same method for the handling of attribute terminators: [;,].
-
-attribute_tokens		::=
-attribute_tokens		::= open_bracket close_bracket statement_terminator
 
 # Edge stuff.
 
@@ -251,6 +243,20 @@ node_port_id			::= generic_id_token<colon>generic_id_token
 
 node_port_compass_id	::= node_port_id<colon>generic_id_token
 
+# Attribute stuff.
+# These have no body between the '[]' because they is parsed manually in order to
+# preserve whitespace (which is discarded by this grammar). See _process_attributes().
+# See also the same method for the handling of attribute terminators: [;,].
+
+attribute_tokens		::=
+attribute_tokens		::= open_bracket close_bracket statement_terminator
+
+attribute_statement		::= node_statement # Search for 'class'! It's in _process().
+
+# Assignment stuff.
+
+assignment_statement	::= generic_id equals_literal generic_id_token
+
 # Subgraph stuff.
 
 subgraph_statement		::= subgraph_prefix subgraph_id_token graph_statement_tokens
@@ -260,10 +266,6 @@ subgraph_prefix			::= subgraph_literal
 
 subgraph_id_token		::=
 subgraph_id_token		::= generic_id_token
-
-# Assignment stuff.
-
-assignment_statement	::= generic_id equals_literal generic_id_token
 
 # Lexeme-level stuff, in alphabetical order.
 
@@ -414,7 +416,7 @@ sub _adjust_edge_attributes
 	my($mother);
 	my($name, $next_daughter, $next_name);
 
-	for my $uid (sort keys %$mothers)
+	for my $uid (keys %$mothers)
 	{
 		$mother    = $$mothers{$uid};
 		@daughters = $mother -> daughters;
