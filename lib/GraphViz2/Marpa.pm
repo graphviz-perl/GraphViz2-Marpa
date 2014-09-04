@@ -403,6 +403,49 @@ sub _add_daughter
 
 } # End of _add_daughter.
 
+# --------------------------------------------------
+
+sub _adjust_edge_attributes
+{
+	my($self, $mothers) = @_;
+
+	my($attributes);
+	my(@daughters);
+	my($mother);
+	my($name, $next_daughter, $next_name);
+
+	for my $uid (sort keys %$mothers)
+	{
+		$mother    = $$mothers{$uid};
+		@daughters = $mother -> daughters;
+
+		for my $i (0 .. $#daughters)
+		{
+			$name = $daughters[$i] -> name;
+
+			if ($name eq 'edge_literal')
+			{
+				$attributes = $daughters[$i] -> attributes;
+
+				# This test is redundant if we know the input file is syntactally valid,
+				# since then there must necessarily be a next daughter after an edge.
+
+				if ($i < $#daughters)
+				{
+					$next_name = $daughters[$i + 1] -> name;
+
+					if ($next_name =~ /(?:node_(?:|port_|compass_)id)/)
+					{
+						$daughters[$i] -> set_daughters($daughters[$i + 1] -> clear_daughters);
+					}
+				}
+			}
+		}
+	}
+
+
+} # End of _adjust_edge_attributes.
+
 # ------------------------------------------------
 
 sub _attribute_field
@@ -534,7 +577,7 @@ sub _attribute_field
 
 # --------------------------------------------------
 
-sub compress_node_port_compass
+sub _compress_node_port_compass
 {
 	my($self, $mothers) = @_;
 
@@ -570,7 +613,7 @@ sub compress_node_port_compass
 			{
 				if ( ($i + $offset) <= $#daughters)
 				{
-					if ($self -> compress_nodes($mothers, $uid, \@daughters, $i, $offset) )
+					if ($self -> _compress_nodes($mothers, $uid, \@daughters, $i, $offset) )
 					{
 						# Reprocess the mother's daughters after compressing ($offset + 1) nodes.
 
@@ -586,11 +629,11 @@ sub compress_node_port_compass
 		}
 	}
 
-} # End of compress_node_port_compass.
+} # End of _compress_node_port_compass.
 
 # -----------------------------------------------
 
-sub compress_nodes
+sub _compress_nodes
 {
 	my($self, $mothers, $uid, $daughters, $i, $offset) = @_;
 	my($found) = 0;
@@ -602,7 +645,9 @@ sub compress_nodes
 
 	if ("$name[0]$name[1]" eq 'coloncolon')
 	{
-		# Preserve the attributes of the last node, if they belong to the edge.
+		# Preserve the attributes of the last node, since they belong to the edge.
+		# Here we attach them to the new node which is a combination of several nodes.
+		# Later, the caller of compress_node_port_compass() will move them back to the edge.
 
 		my(@edge_daughters) = ( ($i + $offset) == $#$daughters) ? $$daughters[$i + $offset] -> daughters : ();
 		$found              = 1;
@@ -631,7 +676,7 @@ sub compress_nodes
 
 	return $found;
 
-} # End of compress_nodes;
+} # End of _compress_nodes;
 
 # -----------------------------------------------
 # The special case is <<...>>, as used in attributes.
@@ -729,8 +774,7 @@ sub _post_process
 	# Walk the tree, find the edges, and then stockpile their mothers.
 	# Later, compress the [node]:[port]:[compass] quintuplets and the
 	# [node]:[port] triplets each into a single node, either [node:port:compass]
-	# or [node:port]. Then look for edges hanging off the edge's head node,
-	# and move them back to belong to the edge itself.
+	# or [node:port].
 	# The Tree::DAG_Node docs warn against modifying the tree during a walk,
 	# so we use a hash to track all the mothers found, and post-process them.
 
@@ -757,7 +801,12 @@ sub _post_process
 		_depth => 0,
 	});
 
-	$self -> compress_node_port_compass(\%mothers);
+	$self -> _compress_node_port_compass(\%mothers);
+
+	# Now look for edges hanging off the edge's head node/subgraph,
+	# and move them back to belong to the edge itself.
+
+	$self -> _adjust_edge_attributes(\%mothers);
 
 } # End of _post_process.
 
