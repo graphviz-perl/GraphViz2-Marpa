@@ -583,10 +583,10 @@ sub _compress_node_port_compass
 
 	# Compress node:port and node:port:compass into 1 node each.
 	# These are the possibilities:
-	# $i	+ 1		+ 2		+ 3		+ 4		Terminator
-	# Node									-
-	# Node	Colon	Node					Port
-	# Node	Colon	Node	Colon	Node	Compass
+	# $i	+ 1		+ 2		+ 3		+ 4
+	# Node
+	# Node	Colon	Port
+	# Node	Colon	Port	Colon	Compass
 	#
 	# We use a stack so we can reprocess a daughter list after
 	# compressing a set of daughters.
@@ -606,8 +606,8 @@ sub _compress_node_port_compass
 		MIDDLE_LOOP:
 		for my $i (0 .. $#daughters)
 		{
-			# We try the longest possible match first, since the alternative will
-			# accidently find the first part of the longest match.
+			# We try the longest possible match first, since the alternative
+			# would accidently find the first part of the longest match.
 
 			for (my $offset = 4; $offset > 0; $offset -= 2)
 			{
@@ -649,7 +649,7 @@ sub _compress_nodes
 		# Here we attach them to the new node which is a combination of several nodes.
 		# Later, the caller of compress_node_port_compass() will move them back to the edge.
 
-		my(@edge_daughters) = ( ($i + $offset) == $#$daughters) ? $$daughters[$i + $offset] -> daughters : ();
+		my(@edge_daughters) = ( ($i + $offset) <= $#$daughters) ? $$daughters[$i + $offset] -> daughters : ();
 		$found              = 1;
 		my($new_name)       = '';
 
