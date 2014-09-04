@@ -253,7 +253,13 @@ node_port_compass_id	::= node_port_id<colon>generic_id_token
 
 # Subgraph stuff.
 
-subgraph_statement		::= graph_statement_tokens
+subgraph_statement		::= subgraph_prefix subgraph_id_token graph_statement_tokens
+
+subgraph_prefix			::=
+subgraph_prefix			::= subgraph_literal
+
+subgraph_id_token		::=
+subgraph_id_token		::= generic_id_token
 
 # Assignment stuff.
 
@@ -324,14 +330,18 @@ open_brace				~ '{'
 
 open_bracket			~ '['
 
+semicolon_literal		~ ';'
+
 sign_maybe				~ [+-]
 sign_maybe				~
 
 :lexeme					~ strict_literal	pause => before		event => strict_literal
 
-semicolon_literal		~ ';'
-
 strict_literal			~ 'strict'
+
+:lexeme					~ subgraph_literal	pause => before		event => subgraph_literal
+
+subgraph_literal		~ 'subgraph'
 
 zero					~ '0'
 
@@ -349,7 +359,7 @@ END_OF_GRAMMAR
 	(
 		Marpa::R2::Scanless::R -> new
 		({
-			grammar         => $self -> grammar,
+			grammar          => $self -> grammar,
 			#trace_terminals => 99,
 		})
 	);
@@ -526,108 +536,102 @@ sub _attribute_field
 
 sub compress_node_port_compass
 {
-	my($self, $edge_list, $compass_present) = @_;
+	my($self, $mothers) = @_;
 
-	# Collapse node:port and node:port:_compass into 1 node each.
+	# Compress node:port and node:port:compass into 1 node each.
 	# These are the possibilities:
-	# $i	+ 1		+ 2		+ 3		+ 4		+ 5		Compass present
-	# Edge	Node									No
-	# Edge	Node	Colon	Node					No
-	# Edge	Node	Colon	Node	Colon	Node	Yes
+	# $i	+ 1		+ 2		+ 3		+ 4		Terminator
+	# Node									-
+	# Node	Colon	Node					Port
+	# Node	Colon	Node	Colon	Node	Compass
+	#
+	# We use a stack so we can reprocess a daughter list after
+	# compressing a set of daughters.
 
-	my($edge_attributes);
-	my(@node, $new_name, $node_attributes);
-	my($offset_1, $offset_2);
-	my($port_compass);
-	my(@self_and_sibling, $sibling, $sibling_attributes);
+	my(@stack) = keys %$mothers;
 
-	if ($compass_present)
+	my(@daughters);
+	my(@edge_daughters);
+	my($mother);
+	my(@name, $new_name, $node_attributes);
+
+	while (my $uid = shift @stack)
 	{
-		$offset_1 = 5;
-		$offset_2 = 4;
-	}
-	else
-	{
-		$offset_1 = 3;
-		$offset_2 = 2;
-	}
+		$mother    = $$mothers{$uid};
+		@daughters = $mother -> daughters;
 
-	for my $edge (@$edge_list)
-	{
-		$edge_attributes  = $edge -> attributes;
-		@self_and_sibling = $edge -> self_and_sisters;
-		$port_compass     = undef;
-
-		for my $i (0 .. $#self_and_sibling)
+		MIDDLE_LOOP:
+		for my $i (0 .. $#daughters)
 		{
-			$sibling            = $self_and_sibling[$i];
-			$sibling_attributes = $sibling -> attributes;
+			# We try the longest possible match first, since the alternative will
+			# accidently find the first part of the longest match.
 
-			if ($$edge_attributes{uid} == $$sibling_attributes{uid})
+			for (my $offset = 4; $offset > 0; $offset -= 2)
 			{
-				# We found our edge, so analyze the corresponding nodes.
-				# For $compass_present => 1, the node follows,
-				# but for $compass_present => 0, the node precedes.
-
-				@node = ('', '');
-
-				if ($compass_present)
+				if ( ($i + $offset) <= $#daughters)
 				{
-					if ( ($i + $offset_1) <= $#self_and_sibling)
+					if ($self -> compress_nodes($mothers, $uid, \@daughters, $i, $offset) )
 					{
-						$node[0] = $self_and_sibling[$i + 2] -> name;
-						$node[1] = $self_and_sibling[$i + 4] -> name;
+						# Reprocess the mother's daughters after compressing ($offset + 1) nodes.
 
-						if ("$node[0]$node[1]" eq 'coloncolon')
-						{
-							$port_compass = $i + 1;
+						unshift @stack, $uid;
 
-							last;
-						}
-					}
-				}
-				else
-				{
-					if ( ($i - 3) >= 0)
-					{
-						$node[0] = $self_and_sibling[$i - 2] -> name;
+						# I hate jumps, but I need to exit these 2 loops immediately,
+						# since the mother's daughter list has just been fiddled.
 
-						if ($node[0] eq 'colon')
-						{
-							$port_compass = $i - 3;
-
-							last;
-						}
+						last MIDDLE_LOOP;
 					}
 				}
 			}
-		}
-
-		if ($port_compass)
-		{
-			$new_name = '';
-
-			for (my $i = $port_compass; $i <= ($port_compass + $offset_2); $i++)
-			{
-				$node_attributes  = $self_and_sibling[$i] -> attributes;
-				$new_name        .= $$node_attributes{value};
-			}
-
-			$self -> log(info => "Port_compass: $port_compass. New_name: $new_name");
-
-			$node_attributes = $self_and_sibling[$port_compass] -> attributes;
-
-			$self_and_sibling[$port_compass] -> name('node_port_compass_id');
-			$self_and_sibling[$port_compass] -> attributes({%$node_attributes, value => $new_name});
-			$edge -> set_daughters($self_and_sibling[$port_compass + $offset_2] -> daughters);
-
-			splice(@self_and_sibling, ($port_compass + 1), $offset_2);
-
-			$edge -> mother -> set_daughters(@self_and_sibling);
 		}
 	}
 
 } # End of compress_node_port_compass.
+
+# -----------------------------------------------
+
+sub compress_nodes
+{
+	my($self, $mothers, $uid, $daughters, $i, $offset) = @_;
+	my($found) = 0;
+
+	my(@name);
+
+	$name[0] = $$daughters[$i + 1] -> name;
+	$name[1] = ($offset == 4) ? $$daughters[$i + 3] -> name : 'colon';
+
+	if ("$name[0]$name[1]" eq 'coloncolon')
+	{
+		# Preserve the attributes of the last node, if they belong to the edge.
+
+		my(@edge_daughters) = ( ($i + $offset) == $#$daughters) ? $$daughters[$i + $offset] -> daughters : ();
+		$found              = 1;
+		my($new_name)       = '';
+
+		my($node_attributes);
+
+		for (my $j = $i; $j <= ($i + $offset); $j++)
+		{
+			$node_attributes  = $$daughters[$j] -> attributes;
+			$new_name        .= $$node_attributes{value};
+		}
+
+		splice(@$daughters, ($i + 1), $offset);
+
+		# We update the attributes with the node's real name.
+		# The tree node's name will still be 'node_id'.
+
+		$node_attributes         = $$daughters[$i] -> attributes;
+		$$node_attributes{value} = $new_name;
+
+		$$daughters[$i] -> attributes($node_attributes);
+		$$daughters[$i] -> set_daughters(@edge_daughters) if ($#edge_daughters >= 0);
+		$$mothers{$uid} -> set_daughters(@$daughters);
+	}
+
+	return $found;
+
+} # End of compress_nodes;
 
 # -----------------------------------------------
 # The special case is <<...>>, as used in attributes.
@@ -722,12 +726,15 @@ sub _post_process
 {
 	my($self) = @_;
 
-	# Walk the tree, moving attributes of edges off the edge's head node
-	# (where they ended up) and attached them to the edge itself.
+	# Walk the tree, find the edges, and then stockpile their mothers.
+	# Later, compress the [node]:[port]:[compass] quintuplets and the
+	# [node]:[port] triplets each into a single node, either [node:port:compass]
+	# or [node:port]. Then look for edges hanging off the edge's head node,
+	# and move them back to belong to the edge itself.
 	# The Tree::DAG_Node docs warn against modifying the tree during a walk,
-	# so we use a stack to track all the edges found, and post-process them.
+	# so we use a hash to track all the mothers found, and post-process them.
 
-	my(@edge);
+	my(%mothers);
 
 	$self -> tree -> walk_down
 	({
@@ -736,7 +743,12 @@ sub _post_process
 			my($node) = @_;
 			my($name) = $node -> name;
 
-			push @edge, $node if ($name eq 'edge_literal');
+			if ($name eq 'edge_literal')
+			{
+				my($attributes)  = $node -> mother -> attributes;
+				my($uid)         = $$attributes{uid};
+				$mothers{$uid}   = $node -> mother if (! $mothers{$uid});
+			}
 
 			# Keep recursing.
 
@@ -745,8 +757,7 @@ sub _post_process
 		_depth => 0,
 	});
 
-	$self -> compress_node_port_compass(\@edge, 1);
-	$self -> compress_node_port_compass(\@edge, 0);
+	$self -> compress_node_port_compass(\%mothers);
 
 } # End of _post_process.
 
@@ -758,7 +769,7 @@ sub _process
 	my($string)        = $self -> graph_text;
 	my($length)        = length $string;
 	my($digraph_graph) = qr/(?:digraph_literal|graph_literal)/;
-	my($simple_token)  = qr/(?:colon|comma|edge_literal|equals_literal|float|integer|node_port|strict_literal)/;
+	my($simple_token)  = qr/(?:colon|comma|edge_literal|equals_literal|float|integer|node_port|strict_literal|subgraph_literal)/;
 
 	$self -> log(info => "Input: $string");
 

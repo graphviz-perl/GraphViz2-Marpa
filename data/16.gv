@@ -16,4 +16,18 @@ strict digraph graph_16
 		arrowhead = "odiamond";
 		dir       = both;
 	];
+
+    subgraph subgraph_16_1
+    {
+        node_16_3
+
+        node_16_4;
+
+        node_16_3 -> node_16_4
+        [
+            arrowtail = "empty"
+            arrowhead = "halfopen",
+            dir       = "both",
+        ]
+    }
 }
