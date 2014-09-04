@@ -1,4 +1,4 @@
-strict digraph graph_16
+STRICT digraph graph_16
 {
 	node
 	[
@@ -37,7 +37,7 @@ strict digraph graph_16
 			dir       = "both",
 		]
 
-		node_16_5 -> { node_16_6 }
+		node_16_5 -> node_16_6
 		[
 			arrowtail = "empty"
 			arrowhead = "halfopen",

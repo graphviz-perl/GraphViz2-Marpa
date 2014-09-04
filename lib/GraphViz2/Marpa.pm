@@ -289,7 +289,7 @@ digit_many				~ digit+
 
 :lexeme					~ digraph_literal	pause => before		event => digraph_literal
 
-digraph_literal			~ 'digraph'
+digraph_literal			~ 'digraph':i
 
 :lexeme					~ edge_literal		pause => before		event => edge_literal
 
@@ -313,7 +313,7 @@ generic_id				~ <generic_id_prefix>generic_id_suffix
 
 :lexeme					~ graph_literal		pause => before		event => graph_literal
 
-graph_literal			~ 'graph'
+graph_literal			~ 'graph':i
 
 :lexeme					~ integer			pause => before		event => integer
 
@@ -337,11 +337,11 @@ sign_maybe				~
 
 :lexeme					~ strict_literal	pause => before		event => strict_literal
 
-strict_literal			~ 'strict'
+strict_literal			~ 'strict':i
 
 :lexeme					~ subgraph_literal	pause => before		event => subgraph_literal
 
-subgraph_literal		~ 'subgraph'
+subgraph_literal		~ 'subgraph':i
 
 zero					~ '0'
 
@@ -875,7 +875,7 @@ sub _process
 			$generic_id = substr($string, $start, $pos - $start);
 			$type       = 'node_id';
 
-			if ($generic_id =~ /^(?:graph|node|edge)$/)
+			if ($generic_id =~ /^(?:graph|node|edge)$/i)
 			{
 				$type = 'class';
 			}
