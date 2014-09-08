@@ -1,6 +1,8 @@
+# Hash comment
+
 strict digraph graph_53
 {
-	label   = "Complex Syntax Test"
+	label   = "Complex\rSyntax\lTest"
 	rankdir = TB
 
 	A [shape = oval]
@@ -14,7 +16,7 @@ strict digraph graph_53
 		C
 		node [shape = oval]
 		D
-		#ordering = out
+		ordering = out
 		A -> B
 		C -> D
 	}

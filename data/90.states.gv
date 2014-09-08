@@ -6,6 +6,10 @@ The command line is
 and the file is:
 */
 digraph states {
+// Embedded comment # 1.
+#  Embedded comment # 2.
+/* Embedded comment # 3. */
+
     size="3,2";
 	rankdir=LR;
     node [shape=ellipse];

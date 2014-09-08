@@ -1,4 +1,8 @@
+# Prefix comment.
+
 graph graph_12
 {
 	size = "6,7"
 }
+
+# Suffix comment.

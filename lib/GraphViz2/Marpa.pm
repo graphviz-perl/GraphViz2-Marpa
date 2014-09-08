@@ -169,7 +169,18 @@ lexeme default			= latm => 1    # Active the Longest Acceptable Token Match opti
 
 # The prolog to the graph.
 
-graph_definition		::= prolog_tokens graph_statement_tokens
+graph_definition		::= graph_body
+							| comments graph_body
+							| graph_body comments
+							| comments graph_body comments
+
+comments				::= comment+
+
+comment					::= <C style comment>
+							| <Cplusplus style comment>
+							| <hash comment>
+
+graph_body				::= prolog_tokens graph_statement_tokens
 
 prolog_tokens			::= strict_token graph_type global_id_type
 
@@ -206,7 +217,7 @@ statement				::= node_statement
 							| attribute_statement
 							| assignment_statement
 							| subgraph_statement
-
+							| comments
 # Node stuff.
 
 node_statement			::= generic_id_token attribute_tokens
@@ -346,12 +357,13 @@ strict_literal			~ 'strict':i
 
 :lexeme					~ string			pause => before		event => string
 
-string					~ stringbody
+string					~ string_body
 
-stringbody				~ stringbodychar*
+string_body				~ string_char*
 
-stringbodychar			~ [^"] | escapedquote
-escapedquote			~ '\"'
+string_char				~ [^"] | escaped_quote | escaped_char
+escaped_quote			~ '\"'
+escaped_char			~ '\' string_char
 
 # Comment with " matching 2nd last \", for the UltraEdit syntax highlighter.
 
@@ -360,6 +372,37 @@ escapedquote			~ '\"'
 subgraph_literal		~ 'subgraph':i
 
 zero					~ '0'
+
+# C and C++ comment handling copied from MarpaX::Languages::C::AST.
+
+<C style comment>					~ '/*' <comment interior> '*/'
+
+<comment interior>					~ <optional non stars> <optional star prefixed segments> <optional pre final stars>
+
+<optional non stars>				~ [^*]*
+<optional star prefixed segments>	~ <star prefixed segment>*
+<star prefixed segment>				~ <stars> [^/*] <optional star free text>
+<stars>								~ [*]+
+<optional star free text>			~ [^*]*
+<optional pre final stars>			~ [*]*
+
+<Cplusplus style comment>			~ '//' <Cplusplus comment interior>
+<Cplusplus comment interior>		~ [^\n]*
+
+# Hash comment handling copied from Marpa::R2's metag.bnf.
+
+<hash comment>						~ <terminated hash comment>
+										| <unterminated final hash comment>
+
+<terminated hash comment>			~ '#' <hash comment body> <vertical space char>
+
+<unterminated final hash comment>	~ '#' <hash comment body>
+
+<hash comment body>					~ <hash comment char>*
+
+<vertical space char>				~ [\x{A}\x{B}\x{C}\x{D}\x{2028}\x{2029}]
+
+<hash comment char>					~ [^\x{A}\x{B}\x{C}\x{D}\x{2028}\x{2029}]
 
 # White space.
 
@@ -836,7 +879,7 @@ sub _process
 	my($digraph_graph) = qr/(?:digraph_literal|graph_literal)/;
 	my($simple_token)  = qr/(?:colon|comma|edge_literal|float|integer|node_port|strict_literal|subgraph_literal)/;
 
-	$self -> log(info => "Input: $string");
+	$self -> log(info => "Input:\n$string");
 
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
 
@@ -1122,17 +1165,15 @@ sub run
 	}
 	elsif ($self -> input_file)
 	{
-		my($ara_ref) = read_file
+		$self -> graph_text
+					(
+						scalar
+						read_file
 						(
 							$self -> input_file,
-							array_ref  => 1,
-							binmode    => ':encoding(UTF-8)',
-							chomp      => 1,
-						);
-
-		# Discard comments and combine lines into a single string.
-
-		$self -> graph_text(join("\n", grep{! m!^\s*(?:#|//)!} @$ara_ref) );
+							binmode => ':encoding(UTF-8)',
+						)
+					);
 	}
 	else
 	{
