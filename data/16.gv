@@ -1,5 +1,13 @@
+/* C comment. */
+
+// C++ comment.
+
+# Hash comment.
+
 STRICT digraph graph_16
 {
+	label   = "\"Standard\"\rSyntax\lTest"
+
 	node
 	[
 		shape = "record",
