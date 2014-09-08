@@ -199,14 +199,6 @@ graph_statement_tokens	::= open_brace statement_list close_brace
 
 statement_list			::= statement_token*
 
-# Note: Subgraphs are handled by the statement type 'graph_statement_tokens'.
-# Hence subgraph sub_1 {...} and subgraph {...} and sub_1 {...} and {...} are all output as:
-# o The optional literal 'subgraph', which is classified as a literal.
-# o The optional subgraph id, which is also classified as a node_id.
-# o The literal '{'.
-# o The body of the subgraph.
-# o The literal '}'.
-
 statement_token			::= statement statement_terminator
 
 statement_terminator	::= semicolon_literal
@@ -272,6 +264,13 @@ attribute_statement		::= node_statement # Search for 'class'! It's in _process()
 assignment_statement	::= generic_id equals_literal generic_id_token
 
 # Subgraph stuff.
+# Subgraphs are handled by the statement type 'graph_statement_tokens'.
+# Hence subgraph sub_1 {...} and subgraph {...} and sub_1 {...} and {...} are all output as:
+# o The optional literal 'subgraph', which is classified as a literal.
+# o The optional subgraph id, which is classified as a node_id.
+# o The literal '{'.
+# o The body of the subgraph.
+# o The literal '}'.
 
 subgraph_statement		::= subgraph_prefix subgraph_id_token graph_statement_tokens
 
