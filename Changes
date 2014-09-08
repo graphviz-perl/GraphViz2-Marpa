@@ -1,5 +1,10 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+2.00  Tue Sep  9 09:36:00 2014
+	- Rewrite from Marpa::XS to Marpa::R2, and hence build new, and much more sophisticated, grammar.
+	- Include sample graphs shipped with Graphviz, in data/ as new test data.
+	- Rewrite docs.
+
 1.14  Tue Jul  8 08:59:00 2014
 	- Patch test files to report test counts.
 
