@@ -14,7 +14,7 @@ strict digraph graph_53
 		C
 		node [shape = oval]
 		D
-		ordering = out
+		#ordering = out
 		A -> B
 		C -> D
 	}

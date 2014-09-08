@@ -8,14 +8,12 @@ do
 		echo Expect data/08.gv to be the first to succeed.
 	fi
 
-	echo -n "$i. "
-
 	scripts/g2m.sh $i -max notice
 
 	if [ "$?" -eq "0" ]
 	then
-		echo Parse OK
+		echo OK. $i.
 	else
-		echo Parse failed
+		echo Fail. $i.
 	fi
 done

@@ -212,7 +212,7 @@ statement				::= node_statement
 node_statement			::= generic_id_token attribute_tokens
 
 generic_id_token		::= generic_id
-							| ('"') generic_id ('"')
+							| ('"') string ('"')
 							| ('<') generic_id ('>')
 							| number
 							| ('"') number_list ('"')
@@ -245,8 +245,8 @@ node_port_compass_id	::= node_port_id<colon>generic_id_token
 
 # Attribute stuff.
 # These have no body between the '[]' because they is parsed manually in order to
-# preserve whitespace (which is discarded by this grammar). See _process_attributes().
-# See also the same method for the handling of attribute terminators: [;,].
+# preserve whitespace in double-quoted strings, which is otherwise discarded by this grammar.
+# See _process_attributes(). See also the same method for the handling of attribute terminators: [;,].
 
 attribute_tokens		::=
 attribute_tokens		::= open_bracket close_bracket statement_terminator
@@ -254,6 +254,9 @@ attribute_tokens		::= open_bracket close_bracket statement_terminator
 attribute_statement		::= node_statement # Search for 'class'! It's in _process().
 
 # Assignment stuff.
+# There is nothing after 'equals_literal' because it is parsed manually in order to
+# preserve whitespace in double-quoted strings, which is otherwise discarded by this grammar.
+# See _attribute_field().
 
 assignment_statement	::= generic_id equals_literal generic_id_token
 
@@ -340,6 +343,17 @@ sign_maybe				~
 :lexeme					~ strict_literal	pause => before		event => strict_literal
 
 strict_literal			~ 'strict':i
+
+:lexeme					~ string			pause => before		event => string
+
+string					~ stringbody
+
+stringbody				~ stringbodychar*
+
+stringbodychar			~ [^"] | escapedquote
+escapedquote			~ '\"'
+
+# Comment with " matching 2nd last \", for the UltraEdit syntax highlighter.
 
 :lexeme					~ subgraph_literal	pause => before		event => subgraph_literal
 
@@ -820,17 +834,17 @@ sub _process
 	my($string)        = $self -> graph_text;
 	my($length)        = length $string;
 	my($digraph_graph) = qr/(?:digraph_literal|graph_literal)/;
-	my($simple_token)  = qr/(?:colon|comma|edge_literal|equals_literal|float|integer|node_port|strict_literal|subgraph_literal)/;
+	my($simple_token)  = qr/(?:colon|comma|edge_literal|float|integer|node_port|strict_literal|subgraph_literal)/;
 
 	$self -> log(info => "Input: $string");
 
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
 
-	my($attribute_list);
+	my($attribute_list, $attribute_value);
 	my(@event, $event_name);
 	my($generic_id);
 	my($lexeme_name, $lexeme, $literal);
-	my($span, $start);
+	my($span, $start, $s);
 	my($type);
 
 	for
@@ -840,7 +854,7 @@ sub _process
 		$pos = $self -> recce -> resume($pos)
 	)
 	{
-		$self -> log(debug => "read() => pos: $pos");
+		$self -> log(debug => "read() => pos: $pos. ");
 
 		@event          = @{$self -> recce -> events};
 		$event_name     = ${$event[0]}[0];
@@ -849,11 +863,11 @@ sub _process
 		$lexeme         = $self -> recce -> literal($start, $span);
 
 		$self -> log(debug => "pause_span($lexeme_name) => start: $start. span: $span. " .
-			"lexeme: $lexeme. event: $event_name");
+			"lexeme: $lexeme. event: $event_name. ");
 
 		if ($event_name =~ $simple_token)
 		{
-			($lexeme, $pos) = $self -> _process_lexeme(\$string, $start, $event_name, $lexeme_name);
+			$pos = $self -> _process_lexeme(\$string, $start, $event_name, $lexeme_name);
 		}
 		elsif ($event_name eq 'close_brace')
 		{
@@ -912,6 +926,15 @@ sub _process
 			$self -> log(debug => "index() => attribute list: $attribute_list");
 			$self -> _process_attributes($attribute_list);
 		}
+		elsif ($event_name eq 'string')
+		{
+			$pos     = $self -> recce -> lexeme_read($lexeme_name);
+			$literal = substr($string, $start, $pos - $start);
+
+			$self -> log(debug => "string => '$literal'");
+			$self -> _process_token($event_name, $literal);
+		}
+		# From here on are the low-frequency events.
 		elsif ($event_name =~ $digraph_graph)
 		{
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
@@ -919,6 +942,26 @@ sub _process
 
 			$self -> log(debug => "$event_name => '$literal'");
 			$self -> _process_digraph_graph($event_name, $literal);
+		}
+		elsif ($event_name eq 'equals_literal')
+		{
+			$pos = $self -> _process_lexeme(\$string, $start, $event_name, $lexeme_name);
+
+=pod
+
+			$attribute_value  = substr($string, $start + 1);
+			($generic_id, $s) = $self -> _attribute_field('value', $attribute_value);
+			$string           = $s;
+			$pos              = 0;
+
+			$self -> _process_token('node_id', $generic_id);
+
+			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
+			$self -> log(info => "Value 2: <$generic_id>");
+			$self -> log(info => 'Next 50 chars: <' . substr($string, $pos, 50) . '>');
+
+=cut
+
 		}
 		else
 		{
