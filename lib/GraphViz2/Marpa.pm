@@ -946,22 +946,6 @@ sub _process
 		elsif ($event_name eq 'equals_literal')
 		{
 			$pos = $self -> _process_lexeme(\$string, $start, $event_name, $lexeme_name);
-
-=pod
-
-			$attribute_value  = substr($string, $start + 1);
-			($generic_id, $s) = $self -> _attribute_field('value', $attribute_value);
-			$string           = $s;
-			$pos              = 0;
-
-			$self -> _process_token('node_id', $generic_id);
-
-			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
-			$self -> log(info => "Value 2: <$generic_id>");
-			$self -> log(info => 'Next 50 chars: <' . substr($string, $pos, 50) . '>');
-
-=cut
-
 		}
 		else
 		{
