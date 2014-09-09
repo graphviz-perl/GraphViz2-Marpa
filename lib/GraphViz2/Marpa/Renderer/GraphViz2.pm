@@ -3,168 +3,74 @@ package GraphViz2::Marpa::Renderer::GraphViz2;
 use strict;
 use warnings;
 
-use GraphViz2::Marpa::Utils;
-
-use Hash::FieldHash ':all';
-
 use Log::Handler;
 
-use Set::Array;
+use Moo;
 
-use Text::CSV::Slurp;
+has logger =>
+(
+	default  => sub{return undef},
+	is       => 'rw',
+	isa      => Any,
+	required => 0,
+);
 
-fieldhash my %items         => 'items';
-fieldhash my %logger        => 'logger';
-fieldhash my %maxlevel      => 'maxlevel';
-fieldhash my %minlevel      => 'minlevel';
-fieldhash my %output_file   => 'output_file';
-fieldhash my %output_string => 'output_string';
-fieldhash my %parsed_file   => 'parsed_file';
-fieldhash my %tokens        => 'tokens';
-fieldhash my %utils         => 'utils';
+has maxlevel =>
+(
+	default  => sub{return 'info'},
+	is       => 'rw',
+	isa      => Str,
+	required => 0,
+);
 
-our $VERSION = '1.14';
+has minlevel =>
+(
+	default  => sub{return 'error'},
+	is       => 'rw',
+	isa      => Str,
+	required => 0,
+);
 
-# --------------------------------------------------
+has output_file =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Str,
+	required => 0,
+);
 
-sub format_attributes
-{
-	my($self, $attributes) = @_;
+has tree =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Any,
+	required => 0,
+);
 
-	# Strip off the port attributes.
 
-	my(@edge_attributes);
-	my($name);
-	my(%port_attributes);
-	my($value);
-
-	while (@$attributes)
-	{
-		($name, $value) = (shift @$attributes, shift @$attributes);
-
-		if ($name =~ /(?:compass_point|port_id)/)
-		{
-			$port_attributes{$name} = $value;
-		}
-		else
-		{
-			push @edge_attributes, $name, $value;
-		}
-	}
-
-	# If there are any port attributes, add them to the preceeding node.
-
-	if (scalar keys %port_attributes)
-	{
-		my($node) = $self -> items -> pop;
-		my($name) = $$node{value};
-		$name     = "$name:$port_attributes{port_id}"       if (defined $port_attributes{port_id});
-		$name     = "$name:$port_attributes{compass_point}" if (defined $port_attributes{compass_point});
-
-		$self -> new_item($name, $$node{newline}, $$node{juxtaposed}, $$node{spaced});
-	}
-
-	# Now output the edges attributes, if any.
-
-	if (scalar @edge_attributes)
-	{
-		$self -> new_item('[', 1, 0);
-
-		while (@edge_attributes)
-		{
-			($name, $value) = (shift @edge_attributes, shift @edge_attributes);
-			$value          = qq|"$value"| if ($value !~ /^<</); # No quotes for HTML-like labels.
-
-			$self -> new_item(qq|$name = $value|, 1, 0, 0);
-		}
-
-		$self -> new_item(']', 1, 0, 0);
-	}
-
-} # End of format_attributes.
+our $VERSION = '2.00';
 
 # --------------------------------------------------
 
-sub format_output
+sub BUILD
 {
-	my($self)       = @_;
-	my($depth)      = 0;
-	my($output)     = '';
-	my($last_value) = '';
-
-	my($newline);
-	my($value);
-
-	for my $item ($self -> items -> print)
-	{
-		$newline = $$item{newline};
-		$value   = $$item{value};
-
-		if ($newline)
-		{
-			$output .= "\n";
-		}
-
-		if ($value =~ /[}\]]/)
-		{
-			$depth--;
-		}
-
-		# Check for '--' and '->'. They are space-separated from the previous item. Likewise a subgraph id.
-		# Ports and colons are juxtaposed with the previous item.
-		# Lastly, if the $value is, don't ouput any spaces around it.
-
-		$output .= ($$item{juxtaposed} ? '' : $$item{spaced} ? $value ? ' ' : '' : ("\t" x $depth) ) . $value;
-
-		if ($value =~ /[{[]/)
-		{
-			$depth++;
-		}
-
-		$last_value = $value;
-	}
-
-	$output .= "\n";
-
-	$self -> output_string($output);
-
-	return $output;
-
-} # End of format_output.
-
-# --------------------------------------------------
-
-sub _init
-{
-	my($self, $arg)      = @_;
-	$$arg{items}         = Set::Array -> new;
-	$$arg{logger}        ||= defined($$arg{logger}) ? $$arg{logger} : undef; # Caller can set.
-	$$arg{maxlevel}      ||= 'notice'; # Caller can set.
-	$$arg{minlevel}      ||= 'error';  # Caller can set.
-	$$arg{output_file}   ||= '';       # Caller can set.
-	$$arg{output_string} = '';
-	$$arg{parsed_file}   ||= ''; # Caller can set.
-	$$arg{tokens}        ||= []; # Caller can set.
-	$$arg{utils}         = GraphViz2::Marpa::Utils -> new;
-	$self                = from_hash($self, $arg);
+	my($self) = @_;
 
 	if (! defined $self -> logger)
 	{
 		$self -> logger(Log::Handler -> new);
 		$self -> logger -> add
 		(
-		 screen =>
-		 {
-			 maxlevel       => $self -> maxlevel,
-			 message_layout => '%m',
-			 minlevel       => $self -> minlevel,
-		 }
+			screen =>
+			{
+				maxlevel       => $self -> maxlevel,
+				message_layout => '%m',
+				minlevel       => $self -> minlevel,
+			}
 		);
 	}
 
-	return $self;
-
-} # End of _init.
+} # End of BUILD.
 
 # --------------------------------------------------
 
@@ -178,184 +84,9 @@ sub log
 
 # --------------------------------------------------
 
-sub new
-{
-	my($class, %arg) = @_;
-	my($self)        = bless {}, $class;
-	$self            = $self -> _init(\%arg);
-
-	return $self;
-
-}	# End of new.
-
-# --------------------------------------------------
-
-sub new_id
-{
-	my($self, $last_type, $type, $value) = @_;
-
-	my($newline);
-
-	if ($last_type eq 'edge_id')
-	{
-		$newline = 0;
-	}
-	elsif ($type eq 'edge_id')
-	{
-		$newline = 0;
-	}
-	else
-	{
-		$newline = 1;
-	}
-
-	# Some node names must be enclosed in "...".
-
-	if ( ($type eq 'node_id') and ($value !~ /^[A-Za-z0-9][A-Za-z0-9_]*$/) )
-	{
-		$value = qq|"$value"|;
-	}
-
-	$self -> items -> push
-		({
-			juxtaposed => 0,
-			newline    => $newline,
-			spaced     => $last_type eq 'edge_id' ? 1 : $value =~ /^-/ ? 1 : 0,
-			value      => $value,
-		 });
-
-} # End of new_id.
-
-# --------------------------------------------------
-
-sub new_item
-{
-	my($self, $value, $newline, $juxtaposed, $spaced) = @_;
-
-	$self -> items -> push
-		({
-			juxtaposed => $juxtaposed,
-			newline    => $newline,
-			spaced     => $spaced,
-			value      => $value,
-		 });
-
-} # End of new_item.
-
-# --------------------------------------------------
-
 sub run
 {
 	my($self) = @_;
-
-	if ($#{$self -> tokens} < 0)
-	{
-		my($parsed_file) = Text::CSV::Slurp -> new -> load(file => $self -> parsed_file, allow_whitespace => 1);
-
-		for my $record (@$parsed_file)
-		{
-			push @{$self -> tokens}, {type => $$record{type}, value => $$record{value} };
-		}
-	}
-
-	my($depth)     = 0;
-	my($last_type) = '';
-	my($output)    = '';
-	my(@token)     = @{$self -> tokens};
-
-	my(@attributes);
-	my(@output);
-	my($token, $type);
-	my($value);
-
-	for my $i (0 .. $#token)
-	{
-		$token = $token[$i];
-		$type  = $$token{type};
-		$value = $$token{value};
-
-		# Since use feature qw/switch/ is being phased out,
-		# we now use a chain of 'if' statements.
-
-		if ($type eq 'attribute_id')
-		{
-			push @attributes, $value;
-		}
-		elsif ($type eq 'attribute_value')
-		{
-			push @attributes, $value;
-		}
-		elsif ($type eq 'close_brace')
-		{
-			$self -> new_item('}', 1, 0, 0);
-		}
-		elsif ($type eq 'class_id')
-		{
-			$self -> new_id($last_type, $type, $value);
-		}
-		elsif ($type eq 'digraph')
-		{
-			$self -> new_item($value eq 'no' ? 'graph' : 'digraph', 0, 0, 0);
-		}
-		elsif ($type eq 'edge_id')
-		{
-			$self -> new_id($last_type, $type, $value);
-		}
-		elsif ($type eq 'end_attribute')
-		{
-			$self -> format_attributes([@attributes]);
-		}
-		elsif ($type eq 'end_scope')
-		{
-			$self -> new_item('}', 1, 0, 0);
-		}
-		elsif ($type eq 'end_subgraph')
-		{
-		}
-		elsif ($type eq 'graph_id')
-		{
-			$self -> new_item($value, 0, 0, 1);
-		}
-		elsif ($type eq 'node_id')
-		{
-			$self -> new_id($last_type, $type, $value);
-		}
-		elsif ($type eq 'open_brace')
-		{
-			$self -> new_item('{', 1, 0, 0);
-		}
-		elsif ($type eq 'start_attribute')
-		{
-			@attributes = ();
-		}
-		elsif ($type eq 'start_scope')
-		{
-			$self -> new_item('{', 1, 0, 0);
-		}
-		elsif ($type eq 'start_subgraph')
-		{
-			$self -> new_item('subgraph', 1, 0, 0);
-		}
-		elsif ($type eq 'strict')
-		{
-			$self -> new_item($value eq 'no' ? '' : 'strict ', 0, 0, 0);
-		}
-		else
-		{
-			die "Unexpected type '$type' (with value '$value') in the input";
-		}
-
-		$last_type = $type;
-	}
-
-	my($output_file) = $self -> output_file;
-
-	if ($output_file)
-	{
-		open(OUT, '>', $output_file) || die "Can't open(> $output_file): $!";
-		print OUT $self -> format_output;
-		close OUT;
-	}
 
 	# Return 0 for success and 1 for failure.
 
@@ -371,7 +102,7 @@ sub run
 
 =head1 NAME
 
-L<GraphViz2::Marpa::Renderer::GraphViz2> - A renderer for lexed and parsed Graphviz dot files
+L<GraphViz2::Marpa::Renderer::GraphViz2> - A renderer for Graphviz dot files
 
 =head1 Synopsis
 
@@ -380,20 +111,12 @@ See L<GraphViz2::Marpa/Synopsis>.
 =head1 Description
 
 L<GraphViz2::Marpa::Renderer> provides a renderer for L<Graphviz|http://www.graphviz.org/> (dot) graph definitions
-lexed by L<GraphViz2::Marpa::Lexer> and parsed by L<GraphViz2::Marpa::Parser>.
+parsed by L<GraphViz2::Marpa>.
 
-It outputs a string to the output file, which (ideally) exactly matches the graph definition input to the lexer, although there might be small differences in the line-by-line
+It outputs a string to the output file, which (ideally) exactly matches the graph definition input to the paser, although there might be small differences in the line-by-line
 formatting.
 
 This module is the default rendering engine for L<GraphViz2::Marpa>.
-
-Demo lexer/parser output: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/index.html>.
-
-State Transition Table: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/default.stt.html>.
-
-Command line options and object attributes: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/code.attributes.html>.
-
-My article on this set of modules: L<http://www.perl.com/pub/2012/10/an-overview-of-lexing-and-parsing.html>.
 
 The Marpa grammar as an image: L<http://savage.net.au/Ron/html/graphviz2.marpa/Marpa.Grammar.svg>. This image was created
 with L<Graphviz|http://www.graphviz.org/> via L<GraphViz2>.
@@ -467,41 +190,17 @@ Default: ''.
 
 The default means the output file is not written. Use the L</output_string()> method to retrieve the string.
 
-=item o parsed_file => aParsedOutputFileName
+=item o tree => anObjectOfTypeTreeDAG_Node
 
-Specify the name of a CSV file of parsed tokens to read.
+Specify the tree tokens output by the parser.
 
-Default: ''.
-
-This file is read only if the token option (next) does not contain an arrayref of tokens to process.
-
-=item o tokens => $arrayref
-
-Specify the arrayref of tokens output by the parser.
-
-The format of this array is documented in L<GraphViz2::Marpa::Parser/How is the parsed graph stored in RAM?>.
+This tree is output from L<GraphViz2::Marpa>.
 
 Default: [].
 
 =back
 
 =head1 Methods
-
-=head2 format_attributes($attributes)
-
-$attributes is an arrayref of interleaved attribute ids and values.
-
-Called by L</run()>.
-
-=head2 format_output()
-
-Called by L</run()>.
-
-Sets L</output_string()>.
-
-=head2 items()
-
-Returns an arrayref of items output by the renderer.
 
 =head2 log($level, $s)
 
@@ -539,10 +238,6 @@ create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
 
 'minlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-=head2 new()
-
-See L</Constructor and Initialization> for details on the parameters accepted by L</new()>.
-
 =head2 output_file([$file_name])
 
 Here, the [] indicate an optional parameter.
@@ -553,45 +248,19 @@ If the output file name is not set, use the L</output_string()> method to retrie
 
 'output_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-=head2 output_string()
-
-Returns the text string of the rendered graph.
-
-To save the output in a file, use the 'output_file' parameter to L</new()>.
-
-=head2 parsed_file([$file_name])
-
-Here, the [] indicate an optional parameter.
-
-Get or set the name of the file of parsed tokens to read.
-
 =head2 run()
 
-'parsed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
-Renders the arrayref of items as a string and, optionally, writes that string to the output file.
-
-Calls L</format_output()>.
-
-See L</output_string()>.
+Renders the tree of parsed tokens as a string and, optionally, writes that string to the output file.
 
 Returns 0 for success and 1 for failure.
 
-=head2 tokens([$arrayref])
+=head2 tokens()
 
 Here, the [] indicate an optional parameter.
 
-Gets or sets the arrayref of tokens to be rendered.
+Gets or sets the tree of tokens to be rendered.
 
-'tokens' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
-=head2 utils([$aUtilsObject])
-
-Here, the [] indicate an optional parameter.
-
-Get or set the utils object.
-
-Default: A object of type L<GraphViz2::Marpa::Utils>.
+'tree' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head1 FAQ
 
@@ -600,7 +269,7 @@ Default: A object of type L<GraphViz2::Marpa::Utils>.
 Yes - at least in the sense that running dot with them as input will produce the same output files.
 This is using the default renderer, of course.
 
-Since comments in *.gv files are discarded, they can never be in the output files (*.lex, *.parse and *.rend).
+Since comments in *.gv files are discarded, they can never be in the output files (*.rend).
 
 So, if x.gv is formatted as I do, then x.rend will be formatted identically.
 

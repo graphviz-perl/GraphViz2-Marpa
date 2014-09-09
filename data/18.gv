@@ -2,16 +2,20 @@ digraph graph_18
 {
 	subgraph subgraph_18_1
 	{
+		node_18_1 [fillcolor = red]
 	}
-
+	->
 	subgraph
 	{
+		node_18_2 [fillcolor = green]
 	}
-
+	->
 	subgraph_18_2
 	{
+		node_18_3 [fillcolor = blue]
 	}
-
+	->
 	{
+		node_18_4 [fillcolor = maroon]
 	}
 }

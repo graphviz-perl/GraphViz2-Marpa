@@ -133,7 +133,7 @@ has uid =>
 	required => 0,
 );
 
-our $VERSION = '2.03';
+our $VERSION = '2.00';
 
 # --------------------------------------------------
 
@@ -878,7 +878,7 @@ sub _process
 	my($digraph_graph) = qr/(?:digraph_literal|graph_literal)/;
 	my($simple_token)  = qr/(?:colon|comma|edge_literal|float|integer|node_port|strict_literal|subgraph_literal)/;
 
-	$self -> log(info => "Input:\n$string");
+	$self -> log(debug => "Input:\n$string");
 
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
 
@@ -1188,7 +1188,7 @@ sub run
 		if (defined $self -> _process)
 		{
 			$self -> _post_process;
-			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
+			$self -> log(debug => join("\n", @{$self -> tree -> tree2string}) );
 		}
 		else
 		{
@@ -1199,7 +1199,7 @@ sub run
 	{
 		$result = 1;
 
-		$self -> log(info => "Exception: $_");
+		$self -> log(error => "Exception: $_");
 	};
 
 	if ($result == 0)
@@ -1213,11 +1213,30 @@ sub run
 		$self -> stack($stack);
 		$self -> log(debug => 'Brace count:  ' . $self -> brace_count . ' (0 expected)');
 		$self -> log(debug => 'Stack size:   ' . $#{$self -> stack} . ' (0 expected)');
+
+		my($output_file) = $self -> output_file;
+
+		if ($output_file)
+		{
+			$self -> renderer
+			(
+				GraphViz2::Marpa::Renderer::GraphViz2 -> new
+				(
+					logger      => $self -> logger,
+					maxlevel    => $self -> maxlevel,
+					minlevel    => $self -> minlevel,
+					output_file => $self -> output_file,
+					tree        => $self -> tree,
+				)
+			);
+
+			$self -> renderer -> run;
+		}
 	}
 
 	# Return 0 for success and 1 for failure.
 
-	$self -> log(info => "Parse result: $result (0 is success)");
+	$self -> log(debug => "Parse result: $result (0 is success)");
 
 	return $result;
 
@@ -1231,7 +1250,7 @@ sub run
 
 =head1 NAME
 
-GraphViz2::Marpa - A Perl lexer and parser for Graphviz dot files
+GraphViz2::Marpa - A Marpa-based parser for Graphviz dot files
 
 =head1 Synopsis
 
@@ -1239,17 +1258,9 @@ GraphViz2::Marpa - A Perl lexer and parser for Graphviz dot files
 
 =item o Display help
 
-	perl scripts/lex.pl   -h
-	perl scripts/parse.pl -h
 	perl scripts/g2m.pl   -h
 
-=item o Run the lexer
-
-	perl scripts/lex.pl -input_file x.gv -lexed_file x.lex
-
-	x.gv is a Graphviz dot file. x.lex will be a CSV file of lexed tokens.
-
-=item o Run the parser without running the lexer or the default renderer
+=item o Run the parser without running the default renderer
 
 	perl scripts/parse.pl -lexed_file x.lex -parsed_file x.parse
 
@@ -1261,27 +1272,17 @@ GraphViz2::Marpa - A Perl lexer and parser for Graphviz dot files
 
 	x.rend will be a Graphviz dot file.
 
-=item o Run the lexer, parser and default renderer
-
-	perl scripts/g2m.pl -input_file x.gv -lexed_file x.lex -parsed_file x.parse -output_file x.rend
-
 =back
 
 See also L</Scripts>.
 
 =head1 Description
 
-L<GraphViz2::Marpa> provides an L<Set::FA::Element>-based lexer and a L<Marpa::XS>-based parser for L<Graphviz|http://www.graphviz.org/> (dot) graph definitions.
+L<GraphViz2::Marpa> provides a L<Marpa::R2>-based parser for L<Graphviz|http://www.graphviz.org/> (dot) graph definitions.
 
-Both the lexer and the parser must be run to parse the dot file. See L</Scripts> for sample code.
+Demo output: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/index.html>.
 
-Demo lexer/parser output: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/index.html>.
-
-State Transition Table: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/stt.html>.
-
-Command line options and object attributes: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/code.attributes.html>.
-
-My article on this set of modules: L<http://www.perl.com/pub/2012/10/an-overview-of-lexing-and-parsing.html>.
+L<Marpa's homepage|http://savage.net.au/Marpa.html>.
 
 The Marpa grammar as an image: L<http://savage.net.au/Ron/html/graphviz2.marpa/Marpa.Grammar.svg>. This image was created
 with L<Graphviz|http://www.graphviz.org/> via L<GraphViz2>.
