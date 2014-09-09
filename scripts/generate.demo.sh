@@ -2,8 +2,9 @@
 
 for i in data/08.gv data/09.gv data/1*.gv data/2*.gv data/3*.gv data/4*.gv data/5*.gv data/9*.gv ;
 do
+	X=`basename $i .gv`
 
-	perl -Ilib scripts/g2m.sh -in $i -out html/$i.svg
+	perl -Ilib scripts/g2m.pl -in $i -out html/$X.svg
 
 	if [ "$?" -eq "0" ]
 	then

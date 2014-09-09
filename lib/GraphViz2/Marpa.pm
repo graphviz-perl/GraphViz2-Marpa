@@ -9,6 +9,8 @@ use charnames qw(:full :short);  # Unneeded in v5.16.
 
 use File::Slurp; # For read_file().
 
+use GraphViz2::Marpa::Renderer::GraphViz2;
+
 use Log::Handler;
 
 use Marpa::R2;

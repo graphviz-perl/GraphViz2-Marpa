@@ -7,6 +7,8 @@ use Log::Handler;
 
 use Moo;
 
+use Types::Standard qw/Any Str/;
+
 has logger =>
 (
 	default  => sub{return undef},
