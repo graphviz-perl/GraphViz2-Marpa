@@ -73,7 +73,7 @@ has logger =>
 
 has maxlevel =>
 (
-	default  => sub{return 'info'},
+	default  => sub{return 'notice'},
 	is       => 'rw',
 	isa      => Str,
 	required => 0,
@@ -217,16 +217,13 @@ statement				::= node_statement
 node_statement			::= generic_id_token attribute_tokens
 
 generic_id_token		::= generic_id
-							| ('"') string ('"')
 							| ('<') generic_id ('>')
 							| number
-							| ('"') number_list ('"')
+							| '"' string '"'
+							| empty_string
 
 number					::= float
 							| integer
-
-number_list				::= number
-							| number comma_literal number_list
 
 # Edge stuff.
 
@@ -296,10 +293,6 @@ close_bracket			~ ']'
 
 colon					~ ':'
 
-:lexeme					~ comma_literal		pause => before		event => comma_literal
-
-comma_literal			~ ','
-
 digit					~ [0-9]
 digit_any				~ digit*
 digit_many				~ digit+
@@ -313,9 +306,16 @@ digraph_literal			~ 'digraph':i
 edge_literal			~ '->'
 edge_literal			~ '--'
 
+:lexeme					~ empty_string		pause => before		event => string
+
+empty_string			~ '""'
+
 :lexeme					~ equals_literal	pause => before		event => equals_literal
 
 equals_literal			~ '='
+
+escaped_char			~ '\' string_char
+escaped_quote			~ '\"'
 
 :lexeme					~ float				pause => before		event => float
 
@@ -358,13 +358,9 @@ strict_literal			~ 'strict':i
 
 :lexeme					~ string			pause => before		event => string
 
-string					~ string_body
+string					~ string_char+
 
-string_body				~ string_char*
-
-string_char				~ [^"] | escaped_quote | escaped_char
-escaped_quote			~ '\"'
-escaped_char			~ '\' string_char
+string_char				~ escaped_char | escaped_quote | [^"]
 
 # Comment with " matching 2nd last \", for the UltraEdit syntax highlighter.
 
@@ -472,6 +468,7 @@ sub _adjust_edge_attributes
 	my($attributes);
 	my(@daughters);
 	my($mother);
+	my($offset);
 	my($name, $next_daughter, $next_name);
 
 	for my $uid (keys %$mothers)
@@ -481,30 +478,110 @@ sub _adjust_edge_attributes
 
 		for my $i (0 .. $#daughters)
 		{
+			# Find each edge.
+
 			$name = $daughters[$i] -> name;
 
-			if ($name eq 'edge_literal')
+			next if ($name ne 'literal');
+
+			$attributes = $daughters[$i] -> attributes;
+
+			next if (! $$attributes{value} || ($$attributes{value} !~ /-(?:-|>)/) );
+
+			# This test is redundant if we know the input file is syntactally valid,
+			# since then there must necessarily be a next daughter after an edge.
+			# And is the file known to be valid at this point?
+			# Yes, since we're in the post-processing phase, and Marpa has validated it.
+			# Unless, of course, there's a defect in our BNF for DOT.
+
+			#next if ($i < $#daughters);
+
+			# But what exactly is the thing at the head of the edge?
+			# It could be a node, or it could be a subgraph.
+
+			$self -> _adjust_head_attributes(\@daughters, $i);
+		}
+	}
+
+} # End of _adjust_edge_attributes.
+
+# --------------------------------------------------
+
+sub _adjust_head_attributes
+{
+	my($self, $daughters, $i) = @_;
+
+	# The head of the edge will be one of:
+	# o A node.
+	# o A subgraph, as in ['subgraph', 'id', '{', ..., '}'].
+	# o A subgraph, as in ['subgraph', '{', ..., '}'].
+	# o A subgraph, as in ['{', ..., '}'].
+	# In all 4 cases, we want to move the attributes, if any, off the last element in the list,
+	# and re-attach them to the tree node of the edge. And why do that?
+	# Because I think that's a good idea for when the graph is rendered.
+
+	my($name) = $$daughters[$i + 1] -> name;
+
+	if ($name =~ /(?:node_(?:|port_|compass_)id)/)
+	{
+		# It's a node.
+
+		$$daughters[$i] -> set_daughters($$daughters[$i + 1] -> clear_daughters);
+	}
+	elsif ($name eq 'literal')
+	{
+		my($attributes) = $$daughters[$i + 1] -> attributes;
+
+		my($offset);
+
+		if ($$attributes{value})
+		{
+			if ($$attributes{value} eq '{')
 			{
-				$attributes = $daughters[$i] -> attributes;
+				# Find '}'. It'll be the first '}' in this daughter list.
 
-				# This test is redundant if we know the input file is syntactally valid,
-				# since then there must necessarily be a next daughter after an edge.
-
-				if ($i < $#daughters)
+				for (my $j = $i + 2; $j <= $#$daughters; $j++)
 				{
-					$next_name = $daughters[$i + 1] -> name;
+					$attributes = $$daughters[$j] -> attributes;
 
-					if ($next_name =~ /(?:node_(?:|port_|compass_)id)/)
+					if ($$attributes{value} && ($$attributes{value} eq '}') )
 					{
-						$daughters[$i] -> set_daughters($daughters[$i + 1] -> clear_daughters);
+						$offset = $j;
+						$j      = $#$daughters;
+					}
+				}
+			}
+			elsif ( ( ($i + 2) < $#$daughters) && ($$attributes{value} eq 'subgraph') )
+			{
+				# Is the next item a subgraph id or a '{'?
+
+				my($name) = $$daughters[$i + 2] -> name;
+
+				if ($name eq 'node_id')
+				{
+					$offset = $i + 2;
+				}
+				elsif ( ($i + 3) < $#$daughters)
+				{
+					$attributes = $$daughters[$i + 3] -> attributes;
+
+					if ($$attributes{value} && ($$attributes{value} eq '{') )
+					{
+						$offset = $i + 3;
 					}
 				}
 			}
 		}
+
+		if ($offset)
+		{
+			# It's a subgraph.
+
+			$$daughters[$i] -> set_daughters($$daughters[$offset] -> clear_daughters);
+		}
 	}
 
-
-} # End of _adjust_edge_attributes.
+} # End of _adjust_head_attributes.
 
 # ------------------------------------------------
 
@@ -643,10 +720,10 @@ sub _compress_node_port_compass
 
 	# Compress node:port and node:port:compass into 1 node each.
 	# These are the possibilities:
-	# $i	+ 1		+ 2		+ 3		+ 4
-	# Node
-	# Node	Colon	Port
-	# Node	Colon	Port	Colon	Compass
+	# $i	+ 1		+ 2		+ 3		+ 4			Action
+	# Node										None
+	# Node	Colon	Port						Compress
+	# Node	Colon	Port	Colon	Compass		Compress
 	#
 	# We use a stack so we can reprocess a daughter list after
 	# compressing a set of daughters.
@@ -679,7 +756,7 @@ sub _compress_node_port_compass
 
 						unshift @stack, $uid;
 
-						# I hate jumps, but I need to exit these 2 loops immediately,
+						# I don't like jumps, but I need to exit these 2 loops immediately,
 						# since the mother's daughter list has just been fiddled.
 
 						last MIDDLE_LOOP;
@@ -698,12 +775,13 @@ sub _compress_nodes
 	my($self, $mothers, $uid, $daughters, $i, $offset) = @_;
 	my($found) = 0;
 
+	my(@attributes);
 	my(@name);
 
-	$name[0] = $$daughters[$i + 1] -> name;
-	$name[1] = ($offset == 4) ? $$daughters[$i + 3] -> name : 'colon';
+	$attributes[0] = $$daughters[$i + 1] -> attributes;
+	$attributes[1] = ($offset == 4) ? $$daughters[$i + 3] -> attributes : {value => ':'};
 
-	if ("$name[0]$name[1]" eq 'coloncolon')
+	if ("${$attributes[0]}{value}${$attributes[1]}{value}" eq '::')
 	{
 		# Preserve the attributes of the last node, since they belong to the edge.
 		# Here we attach them to the new node which is a combination of several nodes.
@@ -847,11 +925,16 @@ sub _post_process
 			my($node) = @_;
 			my($name) = $node -> name;
 
-			if ($name eq 'edge_literal')
+			if ($name eq 'literal')
 			{
-				my($attributes)  = $node -> mother -> attributes;
-				my($uid)         = $$attributes{uid};
-				$mothers{$uid}   = $node -> mother if (! $mothers{$uid});
+				my($attributes) = $node -> attributes;
+
+				if ($$attributes{value} && ($$attributes{value} =~ /-(?:-|>)/) )
+				{
+					$attributes    = $node -> mother -> attributes;
+					my($uid)       = $$attributes{uid};
+					$mothers{$uid} = $node -> mother if (! $mothers{$uid});
+				}
 			}
 
 			# Keep recursing.
@@ -863,7 +946,7 @@ sub _post_process
 
 	$self -> _compress_node_port_compass(\%mothers);
 
-	# Now look for edges hanging off the edge's head node/subgraph,
+	# Now look for attributes hanging off the edge's head node/subgraph,
 	# and move them back to belong to the edge itself.
 
 	$self -> _adjust_edge_attributes(\%mothers);
@@ -878,7 +961,8 @@ sub _process
 	my($string)        = $self -> graph_text;
 	my($length)        = length $string;
 	my($digraph_graph) = qr/(?:digraph_literal|graph_literal)/;
-	my($simple_token)  = qr/(?:colon|comma|edge_literal|float|integer|node_port|strict_literal|subgraph_literal)/;
+	my($literal_token) = qr/(?:colon|edge_literal|equals_literal|strict_literal|subgraph_literal)/;
+	my($simple_token)  = qr/(?:float|integer|node_port)/;
 
 	$self -> log(debug => "Input:\n$string");
 
@@ -911,7 +995,11 @@ sub _process
 
 		if ($event_name =~ $simple_token)
 		{
-			$pos = $self -> _process_lexeme(\$string, $start, $event_name, $lexeme_name);
+			$pos = $self -> _process_lexeme(\$string, $start, $event_name, $event_name, $lexeme_name);
+		}
+		elsif ($event_name =~ $literal_token)
+		{
+			$pos = $self -> _process_lexeme(\$string, $start, $event_name, 'literal', $lexeme_name);
 		}
 		elsif ($event_name eq 'close_brace')
 		{
@@ -974,6 +1062,7 @@ sub _process
 		{
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
 			$literal = substr($string, $start, $pos - $start);
+			$literal = '' if ($literal eq '""'); # Empty string is a special case.
 
 			$self -> log(debug => "string => '$literal'");
 			$self -> _process_token($event_name, $literal);
@@ -986,10 +1075,6 @@ sub _process
 
 			$self -> log(debug => "$event_name => '$literal'");
 			$self -> _process_digraph_graph($event_name, $literal);
-		}
-		elsif ($event_name eq 'equals_literal')
-		{
-			$pos = $self -> _process_lexeme(\$string, $start, $event_name, $lexeme_name);
 		}
 		else
 		{
@@ -1060,7 +1145,7 @@ sub _process_brace
 	if ($name eq '{')
 	{
 		$self -> brace_count($self -> brace_count + 1);
-		$self -> _add_daughter($name, {value => $name});
+		$self -> _add_daughter('literal', {value => $name});
 
 		my(@daughters) = $$stack[$#$stack] -> daughters;
 
@@ -1071,7 +1156,7 @@ sub _process_brace
 		pop @$stack;
 
 		$self -> stack($stack);
-		$self -> _add_daughter($name, {value => $name});
+		$self -> _add_daughter('literal', {value => $name});
 		$self -> brace_count($self -> brace_count - 1);
 	}
 
@@ -1109,7 +1194,7 @@ sub _process_digraph_graph
 {
 	my($self, $name, $value) = @_;
 
-	$self -> _add_daughter($name, {value => $value});
+	$self -> _add_daughter('literal', {value => $value});
 
 	# When 'digraph' or 'graph' is encountered, the 'Graph' daughter of the root
 	# becomes the parent of all other tree nodes, replacing the 'Prolog' daughter.
@@ -1131,12 +1216,12 @@ sub _process_digraph_graph
 
 sub _process_lexeme
 {
-	my($self, $string, $start, $event_name, $lexeme_name) = @_;
+	my($self, $string, $start, $event_name, $name, $lexeme_name) = @_;
 	my($pos)   = $self -> recce -> lexeme_read($lexeme_name);
 	my($value) = substr($$string, $start, $pos - $start);
 
 	$self -> log(debug => "$event_name => '$value'");
-	$self -> _process_token($event_name, $value);
+	$self -> _process_token($name, $value);
 
 	return $pos;
 
@@ -1190,7 +1275,7 @@ sub run
 		if (defined $self -> _process)
 		{
 			$self -> _post_process;
-			$self -> log(debug => join("\n", @{$self -> tree -> tree2string}) );
+			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
 		}
 		else
 		{
@@ -1238,7 +1323,7 @@ sub run
 
 	# Return 0 for success and 1 for failure.
 
-	$self -> log(debug => "Parse result: $result (0 is success)");
+	$self -> log(info => "Parse result: $result (0 is success)");
 
 	return $result;
 
