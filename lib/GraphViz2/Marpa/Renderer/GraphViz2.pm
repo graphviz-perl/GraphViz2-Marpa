@@ -106,7 +106,7 @@ sub format_node
 			$indent    = "\t" x ($depth - $offset);
 			$dot_input .= "\n$indent$value";
 			$dot_input .= "\n" if ($depth == 2); # The very first '{'.
-			$dot_input .= ' ' if ($value =~ /(?:--|->)/);
+			$dot_input .= "\n" if ($value =~ /(?:--|->)/);
 		}
 		elsif ($value =~ /(?:}|])/)
 		{
@@ -119,7 +119,7 @@ sub format_node
 		{
 			$offset                    = 2;
 			$indent                    = "\t" x ($depth - $offset);
-			$dot_input                 .= "\n$indent$value ";
+			$dot_input                 .= "$indent$value ";
 			${$$opts{previous_name} }  = $value;
 		}
 	}
