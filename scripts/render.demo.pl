@@ -1,11 +1,14 @@
 #!/usr/bin/env perl
 
+use feature qw/say unicode_strings/;
+use open qw(:std :utf8);
 use strict;
 use warnings;
-
-use GraphViz2::Marpa;
+use warnings qw(FATAL utf8);
 
 use Getopt::Long;
+
+use GraphViz2::Marpa;
 
 use Pod::Usage;
 
@@ -28,8 +31,6 @@ if ($option_parser -> getoptions
 {
 	pod2usage(1) if ($option{'help'});
 
-	# Return 0 for success and 1 for failure.
-
 	exit GraphViz2::Marpa -> new(%option) -> run;
 }
 else
@@ -43,7 +44,7 @@ __END__
 
 =head1 NAME
 
-gem.pl - Run GraphViz2::Marpa.
+gem.pl - Run GraphViz2::Marpa and the default rendering engine.
 
 =head1 SYNOPSIS
 

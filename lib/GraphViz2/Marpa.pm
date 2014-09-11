@@ -960,9 +960,9 @@ sub _process
 	my($self)          = @_;
 	my($string)        = $self -> graph_text;
 	my($length)        = length $string;
-	my($digraph_graph) = qr/(?:digraph_literal|graph_literal)/;
 	my($literal_token) = qr/(?:colon|edge_literal|equals_literal|strict_literal|subgraph_literal)/;
-	my($simple_token)  = qr/(?:float|integer|node_port)/;
+	my($prolog_token)  = qr/(?:digraph_literal|graph_literal)/;
+	my($simple_token)  = qr/(?:float|integer|node_id)/;
 
 	$self -> log(debug => "Input:\n$string");
 
@@ -1061,17 +1061,16 @@ sub _process
 		elsif ($event_name eq 'string')
 		{
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-			$literal = '' if ($literal eq '""'); # Empty string is a special case.
+			$literal = '"' . substr($string, $start, $pos - $start) . '"';
 
 			$self -> log(debug => "string => '$literal'");
 			$self -> _process_token($event_name, $literal);
 		}
 		# From here on are the low-frequency events.
-		elsif ($event_name =~ $digraph_graph)
+		elsif ($event_name =~ $prolog_token)
 		{
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
+			$literal = lc substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "$event_name => '$literal'");
 			$self -> _process_digraph_graph($event_name, $literal);
@@ -1101,6 +1100,7 @@ sub _process_attributes
 	{
 		($name, $attribute_list)  = $self -> _attribute_field('name', $attribute_list);
 		($value, $attribute_list) = $self -> _attribute_field('value', $attribute_list);
+		$value                    = qq("$value") if ($name eq 'label');
 
 		$self -> _add_daughter('attribute', {type => $name, value => $value});
 
@@ -1178,9 +1178,13 @@ sub _process_bracket
 		my(@daughters) = $$stack[$#$stack] -> daughters;
 
 		push @$stack, $daughters[$#daughters];
+
+	$self -> _process_token('literal', $name);
 	}
 	else
 	{
+		$self -> _process_token('literal', $name);
+
 		pop @$stack;
 
 		$self -> stack($stack);
@@ -1218,7 +1222,7 @@ sub _process_lexeme
 {
 	my($self, $string, $start, $event_name, $name, $lexeme_name) = @_;
 	my($pos)   = $self -> recce -> lexeme_read($lexeme_name);
-	my($value) = substr($$string, $start, $pos - $start);
+	my($value) = lc substr($$string, $start, $pos - $start);
 
 	$self -> log(debug => "$event_name => '$value'");
 	$self -> _process_token($name, $value);
@@ -1290,6 +1294,8 @@ sub run
 		$self -> log(error => "Exception: $_");
 	};
 
+	$self -> log(info => "Parse result: $result (0 is success)");
+
 	if ($result == 0)
 	{
 		# Clean up the stack by popping the Root.
@@ -1306,6 +1312,7 @@ sub run
 
 		if ($output_file)
 		{
+			$self -> log(debug => "Rendering to $output_file");
 			$self -> renderer
 			(
 				GraphViz2::Marpa::Renderer::GraphViz2 -> new
@@ -1323,8 +1330,6 @@ sub run
 	}
 
 	# Return 0 for success and 1 for failure.
-
-	$self -> log(info => "Parse result: $result (0 is success)");
 
 	return $result;
 

@@ -42,6 +42,8 @@ STRICT digraph graph_16
 	{
 		node [shape = square]
 
+		label = ""
+
 		node_16_3 -> { node [shape = circle] node_16_4 }
 		[
 			arrowhead = "empty",

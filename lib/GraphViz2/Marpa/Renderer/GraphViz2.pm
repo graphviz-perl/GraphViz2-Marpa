@@ -76,6 +76,67 @@ sub BUILD
 
 # --------------------------------------------------
 
+sub format_node
+{
+	my($self, $node, $opts) = @_;
+	my($name)           = $node -> name;
+	my($attributes)     = $node -> attributes;
+	my($attr_string)    = $self -> tree -> hashref2string($attributes);
+	my($type)           = $$attributes{type} || '';
+	my($value)          = $$attributes{value} || '';
+	my($depth)          = $$opts{_depth};
+	my($previous_name)  = ${$$opts{previous_name} };
+	my($previous_value) = ${$$opts{previous_value} };
+	my($dot_input)      = '';
+
+	my($indent);
+	my($offset);
+
+	if ($name eq 'literal')
+	{
+		if ($value =~ /(?:digraph|graph|strict|=)/)
+		{
+			$dot_input .= "$value ";
+		}
+		elsif ($value =~ /(?:\{|\[)/)
+		{
+			$offset    = ($previous_name =~ /(?:class|node_id|string)/) ? 3 : 2;
+			$indent    = "\t" x ($depth - $offset);
+			$dot_input .= "\n$indent$value\n";
+		}
+		elsif ($value =~ /(?:}|])/)
+		{
+			$offset    = ($previous_name =~ /(?:class|node_id|string)/) ? 3 : 2;
+			$indent    = "\t" x ($depth - $offset);
+			$dot_input .= "\n$indent$value\n";
+		}
+	}
+	elsif ($name =~ /(?:node_id|string)/)
+	{
+		$indent                    = ($previous_value eq '=') ? ' ' : "\t" x ($depth - 2);
+		$dot_input                 .= "$indent$value";
+		$dot_input                 .= ($previous_value eq '=') ? "\n" : ' ';
+		${$$opts{previous_name} }  = $name;
+	}
+	elsif ($name eq 'attribute')
+	{
+		$indent    = "\t" x ($depth - 2);
+		$dot_input .= "\n$indent$type = $value";
+	}
+	elsif ($name eq 'class')
+	{
+		$indent                    = "\t" x ($depth - 2);
+		$dot_input                 .= "\n$indent$value";
+		${$$opts{previous_name} }  = $name;
+	}
+
+	${$$opts{dot_input} }      .= $dot_input;
+	${$$opts{previous_value} } = $value;
+
+} # End of format_node.
+
+# --------------------------------------------------
+
 sub log
 {
 	my($self, $level, $s) = @_;
@@ -88,7 +149,38 @@ sub log
 
 sub run
 {
-	my($self) = @_;
+	my($self)           = @_;
+	my($dot_input)      = '';
+	my($previous_name)  = '';
+	my($previous_value) = '';
+
+	$self -> log(info => 'Rendering.....');
+
+	$self -> tree -> walk_down
+	({
+		callback => sub
+		{
+			my($node, $opts) = @_;
+
+			# Note: This $node is a Tree::DAG_Node node, not a Graphviz node.
+
+			$self -> format_node($node, $opts);
+
+			# Keep recursing.
+
+			return 1;
+		},
+		_depth         => 0,
+		dot_input      => \$dot_input,
+		previous_name  => \$previous_name,
+		previous_value => \$previous_value,
+	});
+
+	my($separator) = '-' x 50;
+
+	$self -> log(info => $separator);
+	$self -> log(info => $dot_input);
+	$self -> log(info => $separator);
 
 	# Return 0 for success and 1 for failure.
 
