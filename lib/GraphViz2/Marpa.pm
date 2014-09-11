@@ -1251,15 +1251,16 @@ sub run
 	}
 	elsif ($self -> input_file)
 	{
-		$self -> graph_text
-					(
-						scalar
-						read_file
-						(
-							$self -> input_file,
-							binmode => ':encoding(UTF-8)',
-						)
-					);
+		# Quick removal of whole-line C++ and hash comments.
+
+		my @graph_text = grep{! m!^\s*(?:#|//)!}
+							read_file
+								(
+									$self -> input_file,
+									binmode => ':encoding(UTF-8)',
+								);
+
+		$self -> graph_text(join('', @graph_text) );
 	}
 	else
 	{
