@@ -94,26 +94,41 @@ sub format_node
 
 	if ($name eq 'literal')
 	{
-		if ($value =~ /(?:digraph|graph|strict|=)/)
+		if ($value =~ /^(?:digraph|graph|strict|=)$/)
 		{
 			$dot_input .= "$value ";
 		}
-		elsif ($value =~ /(?:\{|\[)/)
+		elsif ($value =~ /(?:\{|\[|--|->)/)
 		{
 			$offset    = ($previous_name =~ /(?:class|node_id|string)/) ? 3 : 2;
+			$offset    = 2 if ( ($value ne '[') && ($depth > 2) ); # Not the 1st '{'.
+			$offset    = 2 if ($value =~ /(?:--|->)/);
 			$indent    = "\t" x ($depth - $offset);
-			$dot_input .= "\n$indent$value\n";
+			$dot_input .= "\n$indent$value";
+			$dot_input .= "\n" if ($depth == 2); # The very first '{'.
+			$dot_input .= ' ' if ($value =~ /(?:--|->)/);
 		}
 		elsif ($value =~ /(?:}|])/)
 		{
-			$offset    = ($previous_name =~ /(?:class|node_id|string)/) ? 3 : 2;
+			$offset    = 3; # ($previous_name =~ /(?:class|node_id|string)/) ? 3 : 2;
+			$offset    = 2 if ( ($value ne ']') && ($depth > 2) ); # Not the 1st '}'.
 			$indent    = "\t" x ($depth - $offset);
-			$dot_input .= "\n$indent$value\n";
+			$dot_input .= "\n$indent$value\n\n";
+		}
+		elsif ($value eq 'subgraph')
+		{
+			$offset                    = 2;
+			$indent                    = "\t" x ($depth - $offset);
+			$dot_input                 .= "\n$indent$value ";
+			${$$opts{previous_name} }  = $value;
 		}
 	}
 	elsif ($name =~ /(?:node_id|string)/)
 	{
-		$indent                    = ($previous_value eq '=') ? ' ' : "\t" x ($depth - 2);
+		$indent                    = ($previous_value eq '=') ? '' : "\t" x ($depth - 2);
+		$indent                    = '' if ($previous_name eq 'subgraph');
+		$value                     = '' if ($value eq '""');
+		$value                     = qq("$value") if ($name eq 'string');
 		$dot_input                 .= "$indent$value";
 		$dot_input                 .= ($previous_value eq '=') ? "\n" : ' ';
 		${$$opts{previous_name} }  = $name;
@@ -154,8 +169,6 @@ sub run
 	my($previous_name)  = '';
 	my($previous_value) = '';
 
-	$self -> log(info => 'Rendering.....');
-
 	$self -> tree -> walk_down
 	({
 		callback => sub
@@ -176,11 +189,14 @@ sub run
 		previous_value => \$previous_value,
 	});
 
-	my($separator) = '-' x 50;
+	my($output_file) = $self -> output_file;
 
-	$self -> log(info => $separator);
-	$self -> log(info => $dot_input);
-	$self -> log(info => $separator);
+	if ($output_file)
+	{
+		open(my $fh, '> :raw', $output_file) || die "Can't open(> $output_file): $!";
+		print $fh $dot_input;
+		close $fh;
+	}
 
 	# Return 0 for success and 1 for failure.
 
@@ -196,7 +212,7 @@ sub run
 
 =head1 NAME
 
-L<GraphViz2::Marpa::Renderer::GraphViz2> - A renderer for Graphviz dot files
+L<GraphViz2::Marpa::Renderer::GraphViz2> - A renderer for GraphViz2::Marpa-style dot files
 
 =head1 Synopsis
 
@@ -207,13 +223,13 @@ See L<GraphViz2::Marpa/Synopsis>.
 L<GraphViz2::Marpa::Renderer> provides a renderer for L<Graphviz|http://www.graphviz.org/> (dot) graph definitions
 parsed by L<GraphViz2::Marpa>.
 
-It outputs a string to the output file, which (ideally) exactly matches the graph definition input to the paser, although there might be small differences in the line-by-line
-formatting.
+It outputs a string to the output file, which (ideally) exactly matches the graph definition input to the paser,
+although there might be small differences in the line-by-line formatting.
 
 This module is the default rendering engine for L<GraphViz2::Marpa>.
 
-The Marpa grammar as an image: L<http://savage.net.au/Ron/html/graphviz2.marpa/Marpa.Grammar.svg>. This image was created
-with L<Graphviz|http://www.graphviz.org/> via L<GraphViz2>.
+The Marpa grammar as an image: L<http://savage.net.au/Ron/html/graphviz2.marpa/Marpa.Grammar.svg>. This image was
+created with L<Graphviz|http://www.graphviz.org/> via L<GraphViz2>.
 
 =head1 Installation
 
@@ -296,6 +312,16 @@ Default: [].
 
 =head1 Methods
 
+=head2 format_node($node, $opts)
+
+$node is an object of type L<Tree::DAG_Node>.
+
+$opts is the same hashref of options as passed in to the call to C<walk_down()> in C<run()>.
+
+C<format_node()> is called to generate a string representation of $node, using $opts.
+
+Examine the default implementation of C<format_node()>, above, for more details.
+
 =head2 log($level, $s)
 
 Calls $self -> logger -> $level($s) if ($self -> logger).
@@ -348,9 +374,7 @@ Renders the tree of parsed tokens as a string and, optionally, writes that strin
 
 Returns 0 for success and 1 for failure.
 
-=head2 tokens()
-
-Here, the [] indicate an optional parameter.
+=head2 tree()
 
 Gets or sets the tree of tokens to be rendered.
 
@@ -358,14 +382,14 @@ Gets or sets the tree of tokens to be rendered.
 
 =head1 FAQ
 
-=head2 If I input x.gv and output x.rend, should these 2 files be identical?
+=head2 If I input x.gv and output x.new.gv, should these 2 files be identical?
 
 Yes - at least in the sense that running dot with them as input will produce the same output files.
 This is using the default renderer, of course.
 
-Since comments in *.gv files are discarded, they can never be in the output files (*.rend).
+Since comments in *.gv files are discarded, they can never be in the output file.
 
-So, if x.gv is formatted as I do, then x.rend will be formatted identically.
+So, if x.gv is formatted as I do, then x.new.gv will be formatted more-or-less identically.
 
 =head1 Machine-Readable Change Log
 

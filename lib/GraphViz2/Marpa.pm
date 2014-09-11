@@ -949,7 +949,7 @@ sub _post_process
 	# Now look for attributes hanging off the edge's head node/subgraph,
 	# and move them back to belong to the edge itself.
 
-	$self -> _adjust_edge_attributes(\%mothers);
+	#$self -> _adjust_edge_attributes(\%mothers);
 
 } # End of _post_process.
 
@@ -1061,7 +1061,7 @@ sub _process
 		elsif ($event_name eq 'string')
 		{
 			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = '"' . substr($string, $start, $pos - $start) . '"';
+			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "string => '$literal'");
 			$self -> _process_token($event_name, $literal);
