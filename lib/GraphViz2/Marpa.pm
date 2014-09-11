@@ -1100,19 +1100,17 @@ sub _process_attributes
 	while (length($attribute_list) > 0)
 	{
 		($name, $attribute_list)  = $self -> _attribute_field('name', $attribute_list);
-		$name_length              = length $name_length;
+		$name_length              = length $name;
 		($value, $attribute_list) = $self -> _attribute_field('value', $attribute_list);
 		$value                    = qq("$value") if ($name eq 'label');
-		$value_length             = length $value_length;
+		$value_length             = length $value;
 
-		if ( ($name_length == 0) || ($value_length == 0) )
+		# Check for 'node_name [ ]'.
+
+		if ( ($name_length > 0) && ($value_length > 0) )
 		{
-			die "Syntax error. Attribute name or value is missing\n";
+			$self -> _add_daughter('attribute', {type => $name, value => $value});
 		}
-
-		# Check for node_name [ ].
-
-		$self -> _add_daughter('attribute', {type => $name, value => $value});
 
 		# Discard attribute teminators.
 
