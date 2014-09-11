@@ -1,0 +1,21 @@
+graph utf8_02
+{
+	rankdir = TB
+
+	Reichwaldstraße -- Böhme [color = blue penwidth = 2]
+
+	Three [ label = "ʎ ʏ ʐ ʑ ʒ ʓ ʙ ʚ"]
+
+	Four  [ label = "Πηληϊάδεω Ἀχιλῆος"]
+
+	ΔΔΔΔΔΔΔΔΔΔΔΔΔ
+
+	Six   [ label = "Label has a ☃"]
+
+	Seven [ label = "Label has a ✔"]
+
+	Three -- Four [color = green penwidth = 4]
+
+	ΔΔΔΔΔΔΔΔΔΔΔΔΔ -- Six -- Seven [color = red  penwidth = 2]
+	Seven -- Six -- ΔΔΔΔΔΔΔΔΔΔΔΔΔ [color = gold penwidth = 2]
+}

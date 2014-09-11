@@ -1,4 +1,4 @@
-graph utf8_1
+digraph utf8_01
 {
 	rankdir = TB
 
@@ -10,7 +10,7 @@ graph utf8_1
 
 	Four  [ label = "Πηληϊάδεω Ἀχιλῆος"]
 
-	ΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔ
+	ΔΔΔΔΔΔΔΔΔΔΔΔΔ
 
 	Six   [ label = "Label has a ☃"]
 
