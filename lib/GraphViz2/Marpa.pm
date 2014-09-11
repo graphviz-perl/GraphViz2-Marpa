@@ -1459,14 +1459,6 @@ These are in the scripts/ directory.
 
 =over 4
 
-=item o copy.config.pl
-
-Author use only: Copy the config file, as determined by L<File::HomeDir>'s my_dist_config().
-
-=item o find.config.pl
-
-Print the path to the config file, as determined by L<File::ShareDir>'s dist_file().
-
 =item o g2m.pl
 
 Run the lexer, and then run the parser on the output of the lexer. Try running with -h.
@@ -1563,16 +1555,6 @@ Default: ''.
 
 See the distro for data/*.gv.
 
-=item o lexed_file => $aLexedOutputFileName
-
-Specify the name of a CSV file of lexed tokens for the lexer to write. This file can be input to the parser.
-
-Default: ''.
-
-The default means the file is not written.
-
-See the distro for data/*.lex.
-
 =item o logger => $aLoggerObject
 
 Specify a logger compatible with L<Log::Handler>, for the lexer and parser to use.
@@ -1601,80 +1583,19 @@ No lower levels are used.
 
 =item o output_file => aRenderedOutputFileName
 
-Specify the name of a file for the renderer to write.
+Specify the name of a file for the renderer to write the DOT file to.
+
+When this file and the input file are both run thru 'dot', they should produce identical *.svg files.
 
 Default: ''.
 
 The default means the renderer is not called.
-
-=item o parsed_file => aParsedOutputFileName
-
-Specify the name of a CSV file of parsed tokens for the parser to write. This file can be input to the renderer.
-
-Default: ''.
-
-The default means the file is not written.
 
 =item o renderer => $aRendererObject
 
 Specify a renderer for the parser to use.
 
 Default: undef.
-
-=item o report_forest => $Boolean
-
-Log the forest of paths recognised by the parser.
-
-Default: 0.
-
-=item o report_items => $Boolean
-
-Log the items recognised by the lexer.
-
-Default: 0.
-
-=item o report_stt => $Boolean
-
-Log the State Transition Table.
-
-Calls L<Set::FA::Element/report()>. Set min and max log levels to 'info' for this.
-
-Default: 0.
-
-=item o stt_file => $sttFileName
-
-Specify which file contains the State Transition Table.
-
-Default: ''.
-
-The default value means the STT is read from the source code of L<GraphViz2::Marpa::Lexer>.
-
-Candidate files are '' and 'data/stt.csv'.
-
-The type of this file must be specified by the 'type' option.
-
-If the file name matches /csv$/, the value of the 'type' option is set to 'csv'.
-
-=item o timeout => $seconds
-
-Run the DFA for at most this many seconds.
-
-Default: 10.
-
-=item o type => $type
-
-Specify the type of the stt_file: '' for internal STT and 'csv' for CSV.
-
-Default: ''.
-
-The default value means the STT is read from the source code of L<GraphViz2::Marpa::Lexer>.
-
-This option must be used with the 'stt_file' option.
-
-Warning: The 'ods' option is disabled, because I can find no way in LibreOffice to make it operate in ASCII. What happens is that when you type "
-(i.e. the double-quote character on the keyboard), LibreOffice inserts a different double-quote character, which, when exported as CSV in Unicode
-format, produces these 3 bytes: 0xe2, 0x80, 0x9c. This means that if you edit the STT, you absolutely must export to a CSV file in ASCII format.
-It also means that dot identifiers in (normal) double-quotes will never match the double-quotes in the *.ods file.
 
 =back
 
@@ -1703,14 +1624,6 @@ The value supplied by the 'description' option takes precedence over the value r
 See also the L</description()> method.
 
 'input_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
-=head2 lexed_file([$lex_file_name])
-
-Here, the [] indicate an optional parameter.
-
-Get or set the name of the CSV file of lexed tokens for the lexer to write. This file can be input to the parser.
-
-'lexed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
 =head2 logger([$logger_object])
 
@@ -1758,47 +1671,13 @@ Get or set the name of the file for the renderer to write.
 
 'output_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
-=head2 parsed_file([$file_name])
-
-Here, the [] indicate an optional parameter.
-
-Get or set the name of the file of parsed tokens for the parser to write. This file can be input to the renderer.
-
-'parsed_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 =head2 renderer([$renderer_object])
 
 Here, the [] indicate an optional parameter.
 
 Get or set the renderer object.
 
-This renderer is passed to L<GraphViz2::Marpa::Parser>.
-
-'renderer' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
-=head2 report_forest([$Boolean])
-
-The [] indicate an optional parameter.
-
-Get or set the value which determines whether or not to log the forest of paths recognised by the parser.
-
-'report_forest' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
-=head2 report_items([$Boolean])
-
-The [] indicate an optional parameter.
-
-Get or set the value which determines whether or not to log the items recognised by the lexer and parser.
-
-'report_items' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
-=head2 report_stt([$Boolean])
-
-The [] indicate an optional parameter.
-
-Get or set the value which determines whether or not to log the parsed state transition table (STT).
-
-'report_stt' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+This renderer is called if C<output_file()> is given a value.
 
 =head2 run()
 
@@ -1806,41 +1685,11 @@ This is the only method the caller needs to call. All parameters are supplied to
 
 Returns 0 for success and 1 for failure.
 
-=head2 stt_file([$stt_file_name])
-
-The [] indicate an optional parameter.
-
-Get or set the name of the file containing the State Transition Table.
-
-This option is used in conjunction with the 'type' option to L</new()>.
-
-If the file name matches /csv$/, the value of the 'type' option is set to 'csv'.
-
-'stt_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
-=head2 timeout($seconds)
-
-The [] indicate an optional parameter.
-
-Get or set the timeout for how long to run the DFA and the Parser.
-
-'timeout' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
-=head2 type([$type])
-
-The [] indicate an optional parameter.
-
-Get or set the value which determines what type of 'stt_file' is read.
-
-'type' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
-
 =head1 FAQ
-
-The lexer and the parser each has an FAQ: L<Lexer|GraphViz2::Marpa::Lexer/FAQ>, and L<Parser|GraphViz2::Marpa::Parser/FAQ>.
 
 =head2 What is the homepage of Marpa?
 
-L<http://jeffreykegler.github.com/Marpa-web-site/>.
+L<http://savage.net.au/Marpa.html>.
 
 =head2 Why do I get error messages like the following?
 

@@ -111,7 +111,9 @@ No lower levels are used.
 
 =item -output_file aRenderedOutputFileName
 
-Specify the name of a file for the renderer to write.
+Specify the name of a file for the renderer to write the DOT file too.
+
+When this file and the input file are both run thru 'dot', they should produce identical *.svg files.
 
 Default: ''.
 

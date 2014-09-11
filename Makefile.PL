@@ -64,6 +64,7 @@ all_from 'lib/GraphViz2/Marpa.pm';
 install_share;
 
 requires 'Algorithm::Diff'             => 1.1902;
+requires 'Capture::Tiny'               => 0.25;
 requires 'Config'                      => undef;
 requires 'Config::Tiny'                => 2.14;
 requires 'Data::Section::Simple'       => 0.02;

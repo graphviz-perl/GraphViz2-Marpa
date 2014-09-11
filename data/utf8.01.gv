@@ -1,0 +1,18 @@
+graph utf8_1
+{
+	rankdir = TB
+
+	Reichwaldstraße
+
+	Böhme
+
+	Three [ label = "ʎ ʏ ʐ ʑ ʒ ʓ ʙ ʚ"]
+
+	Four  [ label = "Πηληϊάδεω Ἀχιλῆος"]
+
+	ΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔΔ
+
+	Six   [ label = "Label has a ☃"]
+
+	Seven [ label = "Label has a ✔"]
+}
