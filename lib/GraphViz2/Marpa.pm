@@ -1093,14 +1093,24 @@ sub _process_attributes
 {
 	my($self, $attribute_list) = @_;
 
+	my($name_length, $value_length);
 	my($name);
 	my($value);
 
 	while (length($attribute_list) > 0)
 	{
 		($name, $attribute_list)  = $self -> _attribute_field('name', $attribute_list);
+		$name_length              = length $name_length;
 		($value, $attribute_list) = $self -> _attribute_field('value', $attribute_list);
 		$value                    = qq("$value") if ($name eq 'label');
+		$value_length             = length $value_length;
+
+		if ( ($name_length == 0) || ($value_length == 0) )
+		{
+			die "Syntax error. Attribute name or value is missing\n";
+		}
+
+		# Check for node_name [ ].
 
 		$self -> _add_daughter('attribute', {type => $name, value => $value});
 
