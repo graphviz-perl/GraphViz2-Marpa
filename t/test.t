@@ -33,9 +33,10 @@ my(@new_content);
 
 # Ignore known failures.
 
-for my $file_name (grep{! /^(?:01|02|03|04|05|06|07)/} GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, $in_suffix) )
+for my $file_name (GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, $in_suffix) )
 {
 	`dot -Tsvg $data_dir_name/$file_name.gv > html/$file_name.svg`;
+
 =pod
 
 	$count++;

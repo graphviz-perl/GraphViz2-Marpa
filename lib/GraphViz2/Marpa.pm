@@ -1442,36 +1442,16 @@ Auxiliary code.
 
 These are L<Graphviz|http://www.graphviz.org/> (dot) graph definition files.
 
-Note 1: Some data/*.gv files contain I<serious> deliberate mistakes (from the point of view of L<Graphviz|http://www.graphviz.org/>), but they helped with writing the code.
-
-Specifically, they are data/(01, 02, 03, 04, 05, 06, 08).gv. Natually, they do not produce output files data/*.lex, data/*.parse, data/*.rend or html/*.svg.
+Note 1: fail/*.gv files contain I<serious> deliberate mistakes (from the point of view of L<Graphviz|http://www.graphviz.org/>), but they helped with writing the code.
 
 Note 2: Some data/*.gv files contain I<slight> deliberate mistakes, which do not stop production of output files. They do, however, cause various warning messages to be printed
 when certain scripts are run.
 
-=item o Output files: data/*.lex, data/*.parse, data/*.rend and html/*.svg
+=item o Output files: html/*.svg
 
-The data/*.lex and data/*.parse are CSV files.
+The html/*.svg are L<Graphviz|http://www.graphviz.org/> (dot) graph definition files output by the default renderer.
 
-The data/*.rend are L<Graphviz|http://www.graphviz.org/> (dot) graph definition files output by the default renderer.
-
-The round trip shows that the lex/parse process does not lose information along the way, but comments are discarded. See L<GraphViz2::Marpa::Lexer/How does the lexer handle comments?>.
-
-The html/*.svg files are output by 'dot'.
-
-=item o Data for the State Transition Table
-
-See data/stt.csv (CSV file) and html/stt.html.
-
-Also, data/stt.csv has been incorporated into the source code of L<GraphViz2::Marpa::Lexer>.
-
-The CSV file was converted to HTML with scripts/stt2html.pl.
-
-=item o Documentation for the command line options and object attributes
-
-See data/code.attributes.csv (CSV file) and data/code.attributes.html.
-
-The CSV file was converted to HTML with scripts/code.attributes2html.pl.
+The round trip shows that the lex/parse process does not lose information along the way, but comments are discarded..
 
 =back
 
@@ -1481,17 +1461,9 @@ These are in the scripts/ directory.
 
 =over 4
 
-=item o code.attributes2html.pl
+=item o copy.config.pl
 
-Generate both data/code.attributes.csv and data/code.attributes.html.
-
-=item o dot2lex.pl
-
-Convert all data/*.gv files to data/*.lex using lex.pl.
-
-=item o dot2rend.pl
-
-Convert all data/*.gv files to data/*.lex and data/*.parse and data/*.rend using lex.pl and parse.pl.
+Author use only: Copy the config file, as determined by L<File::HomeDir>'s my_dist_config().
 
 =item o find.config.pl
 
@@ -1507,9 +1479,7 @@ Simplifies running g2m.pl.
 
 =item o generate.demo.sh
 
-Runs dot2rend.pl, rend2svg.pl and generate.index.pl.
-
-Then runs code.attributes2html.pl and stt2html.pl.
+Runs XXXX and generate.index.pl.
 
 Then it copies html/*.html and html/*.svg to my web server's doc root, $DR/Perl-modules/html/graphviz2.marpa/.
 
@@ -1517,69 +1487,13 @@ Then it copies html/*.html and html/*.svg to my web server's doc root, $DR/Perl-
 
 Generates html/index.html from data/*.gv and html/*.svg.
 
-=item o lex.1.sh
-
-Simplifies running lex.sh.
-
-=item o lex.parse.sh
-
-Simplifies running g2m.sh, and ensures the *.svg version of the tested data file is up-to-date.
-
-=item o lex.pl
-
-Run the lexer. Try running with -h.
-
-=item o lex.sh
-
-Simplifies running lex.pl.
-
-=item o lex2parse.pl
-
-Convert all data/*.lex to data/*.parse using parse.pl.
-
-=item o lex2rend.pl
-
-Convert all data/*.lex to data/*.parse and data/*.rend using parse.pl.
-
-=item o parse.1.sh
-
-Simplifies running parse.sh.
-
-=item o parse.pl
-
-Run the parser. Try running with -h.
-
-=item o parse.sh
-
-Simplifies running parse.pl.
-
-=item o parse2rend.pl
-
-Convert all data/*.parse to data/*.rend using rend.pl.
-
 =item o pod2html.sh
 
 Converts all *.pm files to *.html, and copies them in my web server's dir structure.
 
-=item o rend.1.sh
+=item o render.demo.pl
 
-Simplifies running read.sh.
-
-=item o rend.pl Try running with -h.
-
-Run the default renderer.
-
-=item o rend.sh
-
-Simplifies running rend.pl.
-
-=item o rend2svg.pl
-
-Convert all data/*.rend to html/*.svg using dot.
-
-=item o stt2html.pl
-
-Convert data/stt.csv to html/stt.html.
+=item o test.sh
 
 =back
 
