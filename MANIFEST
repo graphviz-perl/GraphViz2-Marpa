@@ -57,6 +57,9 @@ data/43.gv
 data/44.gv
 data/45.gv
 data/46.gv
+data/47.01.gv
+data/47.02.gv
+data/47.03.gv
 data/47.gv
 data/48.gv
 data/49.gv
@@ -69,6 +72,7 @@ data/55.gv
 data/56.gv
 data/57.gv
 data/58.gv
+data/test.cases.ods
 htdocs/assets/css/graphviz2/marpa/default.css
 htdocs/assets/css/graphviz2/marpa/fancy.table.css
 htdocs/assets/css/graphviz2/marpa/web.page.css
@@ -169,6 +173,7 @@ scripts/g2m.sh
 scripts/generate.demo.pl
 scripts/generate.demo.sh
 scripts/pod2html.sh
+scripts/test.sh
 share/.htgraphviz2.marpa.conf
 t/dot2lex.t
 t/lex2parse.t
