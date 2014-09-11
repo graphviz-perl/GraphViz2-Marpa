@@ -2,44 +2,51 @@ package GraphViz2::Marpa::Config;
 
 use strict;
 use warnings;
+use warnings  qw(FATAL utf8); # Fatalize encoding glitches.
 
 use Config::Tiny;
 
-use File::ShareDir;
+use File::HomeDir;
+use File::Spec;
 
-use Hash::FieldHash ':all';
+use Moo;
 
-use Path::Tiny; # For path().
+has config =>
+(
+	default  => sub{return {} },
+	is       => 'rw',
+#	isa      => 'HashRef',
+	required => 0,
+);
 
-fieldhash my %config           => 'config';
-fieldhash my %config_file_path => 'config_file_path';
-fieldhash my %section          => 'section';
+has config_file_path =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+#	isa      => 'Str',
+	required => 0,
+);
+
+has section =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+#	isa      => 'Str',
+	required => 0,
+);
 
 our $VERSION = '2.00';
 
 # -----------------------------------------------
 
-sub _init
+sub BUILD
 {
-	my($self, $arg) = @_;
+	my($self) = @_;
+	my($path) = File::Spec -> catfile(File::HomeDir -> my_dist_config('GraphViz2-Marpa'), '.htgraphviz2.marpa.conf');
 
-	return from_hash($self, $arg);
+	$self -> read($path);
 
-} # End of _init.
-
-# -----------------------------------------------
-
-sub new
-{
-	my($class, %arg) = @_;
-    my($self)        = bless {}, $class;
-
-	$self -> _init(\%arg);
-	$self -> read(path(File::ShareDir::dist_dir('GraphViz2-Marpa'), '.htgraphviz2.marpa.conf') );
-
-    return $self;
-
-} # End of new.
+} # End of BUILD.
 
 # -----------------------------------------------
 

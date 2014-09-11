@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in data/08.gv data/09.gv data/1*.gv data/2*.gv data/3*.gv data/4*.gv data/5*.gv data/9*.gv ;
+for i in data/08.gv data/09.gv data/1*.gv data/2*.gv data/3*.gv data/4*.gv data/5*.gv ;
 do
 	X=`basename $i .gv`
 

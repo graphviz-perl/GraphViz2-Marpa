@@ -21,9 +21,6 @@ use File::Slurp; # For read_dir() and read_file().
 
 use GraphViz2::Marpa;
 use GraphViz2::Marpa::Config;
-use GraphViz2::Marpa::Lexer;
-use GraphViz2::Marpa::Lexer::DFA;
-use GraphViz2::Marpa::Parser;
 
 use Hash::FieldHash ':all';
 
