@@ -14,25 +14,26 @@ use Date::Simple;
 use File::Spec;
 use File::Slurp; # For read_dir() and read_file().
 
-# Apart from GraphViz2::Marpa::Config, the next 4 modules are 'use'd
-# in order to get them into @INC, where Module::Path finds them.
-# This means for the search for mutators to work, they need to be
-# both up-to-date and installed.
-
 use GraphViz2::Marpa;
 use GraphViz2::Marpa::Config;
 
-use Hash::FieldHash ':all';
-
 use HTML::Entities::Interpolate;
 
-use Module::Path 'module_path';
+use Moo;
 
 use Text::CSV;
 use Text::CSV::Slurp;
 use Text::Xslate 'mark_raw';
 
-fieldhash my %config => 'config';
+use Types::Standard qw/HashRef/;
+
+has config =>
+(
+	default  => sub{return GraphViz2::Marpa::Config -> new -> config},
+	is       => 'rw',
+	isa      => HashRef,
+	required => 0,
+);
 
 our $VERSION = '2.00';
 
@@ -112,9 +113,9 @@ sub generate_demo_index
 	);
 	my($file_name) = File::Spec -> catfile($html_dir_name, 'index.html');
 
-	open(OUT, '>', $file_name);
-	print OUT $index;
-	close OUT;
+	open(my $fh, '>', $file_name);
+	print $fh $index;
+	close $fh;
 
 	print "Wrote: $file_name\n";
 
@@ -153,18 +154,6 @@ sub get_files
 	return (sort map{s/\.$type//; $_} grep{/\.$type$/} read_dir $dir_name);
 
 } # End of get_files.
-
-# -----------------------------------------------
-
-sub _init
-{
-	my($self, $arg) = @_;
-	$$arg{config}   = GraphViz2::Marpa::Config -> new -> config;
-	$self           = from_hash($self, $arg);
-
-	return $self;
-
-} # End of _init.
 
 # --------------------------------------------------
 
