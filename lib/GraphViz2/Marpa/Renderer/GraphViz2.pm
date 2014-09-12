@@ -1,7 +1,11 @@
 package GraphViz2::Marpa::Renderer::GraphViz2;
 
 use strict;
+use utf8;
 use warnings;
+use warnings  qw(FATAL utf8);    # Fatalize encoding glitches.
+use open      qw(:std :utf8);    # Undeclared streams in UTF-8.
+use charnames qw(:full :short);  # Unneeded in v5.16.
 
 use Log::Handler;
 
@@ -136,6 +140,7 @@ sub format_node
 	elsif ($name eq 'attribute')
 	{
 		$indent    = "\t" x ($depth - 2);
+		$value     = qq("$value") if ($type eq 'label');
 		$dot_input .= "\n$indent$type = $value";
 	}
 	elsif ($name eq 'class')

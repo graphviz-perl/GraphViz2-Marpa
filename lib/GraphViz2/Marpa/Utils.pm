@@ -1,10 +1,12 @@
 package GraphViz2::Marpa::Utils;
 
 use feature qw/say unicode_strings/;
-use open qw(:std :utf8);
 use strict;
+use utf8;
 use warnings;
-use warnings qw(FATAL utf8);
+use warnings  qw(FATAL utf8);    # Fatalize encoding glitches.
+use open      qw(:std :utf8);    # Undeclared streams in UTF-8.
+use charnames qw(:full :short);  # Unneeded in v5.16.
 
 use Config;
 
@@ -21,8 +23,6 @@ use HTML::Entities::Interpolate;
 
 use Moo;
 
-use Text::CSV;
-use Text::CSV::Slurp;
 use Text::Xslate 'mark_raw';
 
 use Types::Standard qw/HashRef/;
@@ -186,15 +186,15 @@ sub new
 
 =head1 NAME
 
-L<GraphViz2::Marpa::Utils> - A Perl lexer and parser for Graphviz dot files
+L<GraphViz2::Marpa::Utils> - A Marpa-based parser for Graphviz dot files
 
 =head1 Synopsis
 
-See scripts/generate.index.pl, and scripts/dot2lex.pl etc.
+See L<GraphViz2::Marpa/Synopsis>.
 
 =head1 Description
 
-Some utils to simplify reading CSV files, and testing.
+Some utils to simplify generating the demo page and its images.
 
 =head1 Distributions
 

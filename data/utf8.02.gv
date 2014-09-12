@@ -8,14 +8,14 @@ graph utf8_02
 
 	Four  [ label = "Πηληϊάδεω Ἀχιλῆος"]
 
-	ΔΔΔΔΔΔΔΔΔΔΔΔΔ
+	"ΔΔΔΔΔΔΔΔΔΔΔΔΔ"
 
-	Six   [ label = "Label has a ☃"]
+	Snowman   [ label = "Label has a ☃"]
 
-	Seven [ label = "Label has a ✔"]
+	Tick [ label = "Label has a ✔"]
 
 	Three -- Four [color = green penwidth = 4]
 
-	ΔΔΔΔΔΔΔΔΔΔΔΔΔ -- Six -- Seven [color = red  penwidth = 2]
-	Seven -- Six -- ΔΔΔΔΔΔΔΔΔΔΔΔΔ [color = gold penwidth = 2]
+	"ΔΔΔΔΔΔΔΔΔΔΔΔΔ" -- Snowman -- Tick [color = red  penwidth = 2]
+	Tick -- Snowman -- "ΔΔΔΔΔΔΔΔΔΔΔΔΔ" [color = gold penwidth = 2]
 }

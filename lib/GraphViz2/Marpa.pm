@@ -165,7 +165,7 @@ source					=> \(<<'END_OF_GRAMMAR'),
 
 :default				::= action => [values]
 
-lexeme default			= latm => 1    # Active the Longest Acceptable Token Match option.
+lexeme default			= latm => 1		# Longest Acceptable Token Match.
 
 :start 					::= graph_definition
 
@@ -1102,7 +1102,6 @@ sub _process_attributes
 		($name, $attribute_list)  = $self -> _attribute_field('name', $attribute_list);
 		$name_length              = length $name;
 		($value, $attribute_list) = $self -> _attribute_field('value', $attribute_list);
-		$value                    = qq("$value") if ($name eq 'label');
 		$value_length             = length $value;
 
 		# Check for 'node_name [ ]'.
@@ -1331,7 +1330,7 @@ sub run
 					output_file => $self -> output_file,
 					tree        => $self -> tree,
 				)
-			);
+			) if (! $self -> renderer);
 
 			$self -> renderer -> run;
 		}
@@ -1717,34 +1716,26 @@ for details.
 
 =head2 Does this package support Unicode in the input dot file?
 
-No. Sorry. Not yet.
+Yes.
+
+See data/utf8.*.gv.
 
 =head2 How can I switch from Marpa::XS to Marpa::PP?
 
-Install Marpa::PP manually. It is not mentioned in Build.PL or Makefile.PL.
+Don't. Use L<Marpa::R2>.
 
-Patch GraphViz2::Marpa::Parser (line 15) from Marpa::XS to Marpa:PP.
-
-Then, run the tests which ship with this module. I've tried this, and the tests all worked. You don't need to install the code to test it. Just use:
-
-	shell> cd GraphViz2-Marpa-1.00/
-	shell> prove -Ilib -v t
-
-=head2 If I input x.gv and output x.rend, should these 2 files be identical?
+=head2 If I input x.old.gv and output x.new.gv, should these 2 files be identical?
 
 Yes - at least in the sense that running dot with them as input will produce the same output files. This is using the default renderer, of course.
 
-Since comments in *.gv files are discarded, they can never be in the output files (*.lex, *.parse and *.rend).
-
-So, if x.gv is formatted as I do, then x.rend will be formatted identically.
-
-=head2 Why does the report_items option output 2 copies of the tokens?
-
-Because the 1st copy is printed by the lexer and the 2nd by the parser.
+Since comments in input files are discarded, they can never be in the output file.
 
 =head2 How are custom graph attributes handled?
 
-They are not handled at all. Sorry. The lexer only supports attributes defined by Graphviz itself.
+They are treated like any other attribute. That is, syntax checking is not performed at that level,
+but only at the grammatical level. If the construct matches the grammar, this code accepts it.
+
+See data/32.gv.
 
 =head2 How are the demo files generated?
 
@@ -1752,15 +1743,24 @@ I run:
 
 	shell> scripts/generate.demo.sh
 
-Which runs these:
+Which runs these, for all files data/*.gv:
 
-	shell> perl scripts/dot2rend.pl
-	shell> perl scripts/rend2svg.pl
+	shell> X=`basename $i .gv`
+
+	shell> perl -Ilib scripts/g2m.pl -in $i -out html/$X.svg
+
+And then runs:
+
 	shell> perl scripts/generate.index.pl
 
-And copies the demo files to my dev machine's doc root:
+Lastly, it copies the demo files to my dev machine's doc root:
 
 	shell> cp html/*.html html/*.svg $DR/Perl-modules/html/graphviz2.marpa/
+
+=head2 What files are in fail/?
+
+They are Graphviz files with deliberate syntax errors. Errors here means from the point of view of
+Graphviz itself. They help me test the code.
 
 =head1 Machine-Readable Change Log
 
