@@ -1,11 +1,14 @@
+use strict;
+use warnings;
+
 use Config;
 
 use ExtUtils::MakeMaker;
 
-use inc::Module::Install;
-
 use File::Spec;
 use File::Temp;
+
+require 5.014002; # For the utf8 stuff.
 
 # -----------------------------------------------
 
@@ -40,41 +43,74 @@ sub is_dot_installed
 
 is_dot_installed();
 
-name 'GraphViz2-Marpa';
+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
+# the contents of the Makefile that is written.
 
-license 'artistic_2';
+my(%params) =
+(
+	($] ge '5.005') ?
+	(
+		AUTHOR   => 'Ron Savage (ron@savage.net.au)',
+		ABSTRACT => 'A Marpa-based parser for Graphviz dot files',
+	) : (),
+	clean =>
+	{
+		FILES => 'blib/* Makefile MANIFEST GraphViz2-Marpa-*'
+	},
+	dist =>
+	{
+		COMPRESS => 'gzip',
+		SUFFIX   => 'gz'
+	},
+	DISTNAME  => 'GraphViz2-Marpa',
+	NAME      => 'GraphViz2::Marpa',
+	PL_FILES  => {},
+	PREREQ_PM =>
+	{
+		'Algorithm::Diff'             => 1.1902,
+		'Capture::Tiny'               => 0.25,
+		'Config'                      => undef,
+		'Config::Tiny'                => 2.14,
+		'Date::Format'                => 2.24,
+		'Date::Simple'                => 3.03,
+		'File::HomeDir'               => 1.00,
+		'File::Spec'                  => 3.40,
+		'File::Slurp'                 => 9999.19,
+		'File::Temp'                  => 0.2301,
+		'Getopt::Long'                => 2.38,
+		'HTML::Entities::Interpolate' => 1.04,
+		'Log::Handler'                => 0.71,
+		'Marpa::R2'                   => 2.022000,
+		'Moo'                         => 1.006000,
+		'perl'                        => 5.014002,
+		'Pod::Usage'                  => 1.36,
+		'strict'                      => 0,
+		'Test::More'                  => 1.1902,
+#		'Test::Pod'                   => 1.45, # Make it optional. See xt/author/pod.t
+		'Text::Xslate'                => 1.4001,
+		'Tree::DAG_Node'              => 1.07,
+		'Try::Tiny'                   => 0.09,
+		'Types::Standard'             => 1.000004,
+		'warnings'                    => 0,
+	},
+	VERSION_FROM => 'lib/GraphViz2/Marpa.pm',
+);
 
-perl_version '5.014000';
+if ( ($ExtUtils::MakeMaker::VERSION =~ /^\d\.\d\d$/) && ($ExtUtils::MakeMaker::VERSION > 6.30) )
+{
+	$params{LICENSE} = 'artistic_2';
+}
 
-all_from 'lib/GraphViz2/Marpa.pm';
+if ($ExtUtils::MakeMaker::VERSION ge '6.46')
+{
+	$params{META_MERGE} =
+	{
+		resources =>
+		{
+			bugtracker => 'https://rt.cpan.org/Public/Dist/Display.html?Name=GraphViz2-Marpa',
+			license    => 'http://opensource.org/licenses/Artistic-2.0',
+		},
+	};
+}
 
-install_share;
-
-requires 'Algorithm::Diff'             => 1.1902;
-requires 'Capture::Tiny'               => 0.25;
-requires 'Config'                      => undef;
-requires 'Config::Tiny'                => 2.14;
-requires 'Date::Format'                => 2.24;
-requires 'Date::Simple'                => 3.03;
-requires 'File::HomeDir'               => 1.00;
-requires 'File::Spec'                  => 3.40;
-requires 'File::Slurp'                 => 9999.19;
-requires 'File::Temp'                  => 0.2301;
-requires 'Getopt::Long'                => 2.38;
-requires 'HTML::Entities::Interpolate' => 1.04;
-requires 'Log::Handler'                => 0.71;
-requires 'Marpa::R2'                   => 2.022000;
-requires 'Moo'                         => 1.006000,
-requires 'Pod::Usage'                  => 1.36;
-requires 'strict'                      => 0;
-requires 'Text::Xslate'                => 1.4001;
-requires 'Tree::DAG_Node'              => 1.07;
-requires 'Try::Tiny'                   => 0.09;
-requires 'Types::Standard'             => 1.000004;
-requires 'warnings'                    => 0;
-
-test_requires 'Test::More'     => 0.98;
-#test_requires 'Test::Version' => 1.002003;
-#test_requires 'Test::Pod'     => 1.45; # Make it optional. See t/pod.t
-
-WriteAll;
+WriteMakefile(%params);
