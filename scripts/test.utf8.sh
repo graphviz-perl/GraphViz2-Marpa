@@ -8,27 +8,27 @@ do
 
 	if [ "$?" -eq "0" ]
 	then
-		echo OK. Parsed $i.
+		echo OK. Parsed gv: $i.
 
-		echo Render. In: $i. Out: /tmp/$X.gv
+		#echo Render. In: $i. Out: /tmp/$X.gv
 
-		scripts/render.sh $i > /tmp/$X.gv
+		scripts/render.sh $i /tmp/$X.gv
 
-#		dot -Tsvg $i > /tmp/$X.old.svg
+		dot -Tsvg $i > /tmp/$X.old.svg
 
-		echo Dot in: $i. Out: /tmp/$X.old.svg
+		#echo Dot in: $i. Out: /tmp/$X.old.svg
 
-#		dot -Tsvg /tmp/$X.gv > /tmp/$X.new.svg
+		dot -Tsvg /tmp/$X.gv > /tmp/$X.new.svg
 
-		echo Dot out: /tmp/$X.gv. Out: /tmp/$X.new.svg
+		#echo Dot out: /tmp/$X.gv. Out: /tmp/$X.new.svg
 
-#		diff /tmp/$X.old.svg /tmp/$X.new.svg
+		diff /tmp/$X.old.svg /tmp/$X.new.svg
 
 		if [ "$?" -eq "0" ]
 		then
-			echo OK. Rendered $i.
+			echo OK. Rendered and diffed svgs: $i.
 		else
-			echo Fail. Rendered $i.
+			echo Fail. Rendered and diffed svgs: $i.
 		fi
 	else
 		echo Fail. Parsed $i.

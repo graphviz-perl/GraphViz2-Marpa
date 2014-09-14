@@ -1,11 +1,8 @@
 package GraphViz2::Marpa::Renderer::GraphViz2;
 
 use strict;
-use utf8;
 use warnings;
-use warnings  qw(FATAL utf8);    # Fatalize encoding glitches.
-use open      qw(:std :utf8);    # Undeclared streams in UTF-8.
-use charnames qw(:full :short);  # Unneeded in v5.16.
+use warnings  qw(FATAL utf8); # Fatalize encoding glitches.
 
 use Log::Handler;
 
@@ -198,7 +195,7 @@ sub run
 
 	if ($output_file)
 	{
-		open(my $fh, '> :raw', $output_file) || die "Can't open(> $output_file): $!";
+		open(my $fh, '> :encoding(utf-8)', $output_file) || die "Can't open(> $output_file): $!";
 		print $fh $dot_input;
 		close $fh;
 	}
