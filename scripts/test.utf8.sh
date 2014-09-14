@@ -18,11 +18,11 @@ do
 
 		#echo Dot in: $i. Out: /tmp/$X.old.svg
 
-		dot -Tsvg /tmp/$X.gv > /tmp/$X.new.svg
+		dot -Tsvg /tmp/$X.gv > html/$X.svg
 
 		#echo Dot out: /tmp/$X.gv. Out: /tmp/$X.new.svg
 
-		diff /tmp/$X.old.svg /tmp/$X.new.svg
+		diff /tmp/$X.old.svg html/$X.svg
 
 		if [ "$?" -eq "0" ]
 		then
