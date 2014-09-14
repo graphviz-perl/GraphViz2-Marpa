@@ -1438,8 +1438,8 @@ These are L<Graphviz|http://www.graphviz.org/> (dot) graph definition files.
 
 Note 1: fail/*.gv files contain I<serious> deliberate mistakes (from the point of view of L<Graphviz|http://www.graphviz.org/>), but they helped with writing the code.
 
-Note 2: Some data/*.gv files contain I<slight> deliberate mistakes, which do not stop production of output files. They do, however, cause various warning messages to be printed
-when certain scripts are run.
+Note 2: Some data/*.gv files may contain I<slight> deliberate mistakes, which do not stop production of output files. They do, however, cause various warning messages to be printed
+by dot when certain scripts are run.
 
 =item o Output files: html/*.svg
 
