@@ -44,11 +44,11 @@ __END__
 
 =head1 NAME
 
-gem.pl - Run GraphViz2::Marpa and the default rendering engine.
+render.pl - Run GraphViz2::Marpa and the default rendering engine.
 
 =head1 SYNOPSIS
 
-gem.pl [options]
+render.pl [options]
 
 	Options:
 	-description graphDescription
@@ -56,7 +56,7 @@ gem.pl [options]
 	-input_file aDotInputFileName
 	-maxlevel logOption1
 	-minlevel logOption2
-	-output_file aRenderedOutputFileName
+	-output_file aRenderedDotInputFileName
 
 Exit value: 0 for success, 1 for failure. Die upon error.
 
@@ -110,9 +110,11 @@ Default: 'error'.
 
 No lower levels are used.
 
-=item -output_file aRenderedOutputFileName
+=item -output_file aRenderedDotInputFileName
 
 Specify the name of a file for the renderer to write.
+
+That is, write the DOT-style graph definition to a file.
 
 Default: ''.
 

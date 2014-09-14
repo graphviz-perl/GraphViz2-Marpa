@@ -1,5 +1,6 @@
 Changelog.ini
 Changes
+config/.htgraphviz2.marpa.conf
 data/01.gv
 data/02.gv
 data/03.gv
@@ -72,7 +73,6 @@ data/55.gv
 data/56.gv
 data/57.gv
 data/58.gv
-data/test.cases.ods
 htdocs/assets/css/graphviz2/marpa/default.css
 htdocs/assets/css/graphviz2/marpa/fancy.table.css
 htdocs/assets/css/graphviz2/marpa/web.page.css
@@ -145,6 +145,8 @@ html/55.svg
 html/56.svg
 html/57.svg
 html/58.svg
+html/utf8.01.svg
+html/utf8.02.svg
 html/index.html
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
@@ -167,15 +169,13 @@ MANIFEST			This list of files
 META.json
 META.yml
 README
-scripts/find.config.pl
 scripts/g2m.pl
 scripts/g2m.sh
 scripts/generate.demo.pl
 scripts/generate.demo.sh
 scripts/pod2html.sh
+scripts/render.pl
 scripts/test.sh
-share/.htgraphviz2.marpa.conf
-t/dot2lex.t
-t/lex2parse.t
-t/parse2rend.t
+scripts/test.utf8.sh
+t/test.t
 xt/author/pod.t
