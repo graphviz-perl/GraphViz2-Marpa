@@ -1706,9 +1706,15 @@ Returns 0 for success and 1 for failure.
 
 =head2 How is the parsed data held in RAM?
 
-In a tree managed by L<Tree::DAG_Node>.
+Its held in a tree managed by L<Tree::DAG_Node>.
 
-In the section the word 'node' refers to nodes in this tree, not Graphviz-style nodes.
+Note: In this section the word 'node' refers to nodes in this tree, not Graphviz-style nodes.
+
+Run:
+
+	perl scripts/g2m.pl -input_file data/16.gv -max info
+
+to more easily follow along with this discussion.
 
 The root node has 2 daughters:
 
@@ -1722,23 +1728,23 @@ It has 1 or 2 daughters. The possibilities are:
 
 =over 4
 
-=item o Input 'digraph'
+=item o Input 'digraph ...'
 
-The 1 daughter is named 'literal', and its attributes are C<< {uid => 3, value => 'digraph'}.
+The 1 daughter is named 'literal', and its attributes are C<< {uid => 3, value => 'digraph'} >>.
 
-=item o Input 'graph'
+=item o Input 'graph ...'
 
-The 1 daughter is named 'literal', and its attributes are C<< {uid => 3, value => 'graph'}.
+The 1 daughter is named 'literal', and its attributes are C<< {uid => 3, value => 'graph'} >>.
 
-=item o Input 'strict digraph'
-
-The 2 daughters are named 'literal', and their attributes are, respectively,
-C<< {uid => 3, value => 'strict'} and C<< {uid => 4, value => 'digraph'}.
-
-=item o Input 'strict graph'
+=item o Input 'strict digraph ...'
 
 The 2 daughters are named 'literal', and their attributes are, respectively,
-C<< {uid => 3, value => 'strict'} and C<< {uid => 4, value => 'graph'}.
+C<< {uid => 3, value => 'strict'} >> and C<< {uid => 4, value => 'digraph'} >>.
+
+=item o Input 'strict graph ...'
+
+The 2 daughters are named 'literal', and their attributes are, respectively,
+C<< {uid => 3, value => 'strict'} >> and C<< {uid => 4, value => 'graph'} >>.
 
 =back
 
@@ -1746,7 +1752,65 @@ C<< {uid => 3, value => 'strict'} and C<< {uid => 4, value => 'graph'}.
 
 This node is called 'Graph', and its hashref of attributes is C<< {uid => 2} >>.
 
+The 'Graph' node has as many daughters, with their own daughters, as is necessary to hold the
+output of parsing the remainder of the input.
+
+In particular, if the input graph has an ID, i.e. is of the form 'digraph my_id ...', then
+the 1st daughter will be called 'node_id', and its attributes will be
+C<< {uid => "5", value => "my_id"} >>.
+
+Futher, the 2nd daughter will be called 'literal', and its attributes will be
+C<< m{uid => "6", value => "{"} >>. A subsequent daughter (for a syntax-free input file, of
+course), will also be called 'lteral', and its attributes will be
+C<< {uid => "#", value => "}"} >>.
+
+Of course, if the input lacks the 'my_id' token, then the uids will differ slightly.
+
+Lastly, this pattern, of optional (sub)graph id followed by a matching pair of '{', '}' nodes,
+is used for all graphs and subgraphs.
+
+In the case the input contains an explicit 'subgraph', then just before the node representing
+'my_id' or '{', there will be another node representing the 'subgraph' token.
+
+It's name will be 'literal', and its attributes will be
+C<< {uid => "#", value => "subgraph"} >>.
+
+E.g., the output from:
+
+	shell> perl scripts/g2m.pl -input_file data/16.gv -max info | grep sub
+
+contains:
+
+	literal. Attributes: {uid => "47", value => "subgraph"}
+
+followed by
+
+	node_id. Attributes: {uid => "48", value => "subgraph_16_1"}
+
 =back
+
+=head2 How are nodes, ports and compass points represented in the (above) tree?
+
+Run these:
+
+	perl scripts/g2m.pl -input_file data/16.gv -max info | grep 11
+	perl scripts/g2m.pl -input_file data/16.gv -max info | grep 22
+
+and the output is:
+
+	literal. Attributes: {uid => "11", value => "="}
+	|   |---attribute. Attributes: {type => "label", uid => "24", value => "<p11> left|<p12> middle|<p13> right"}
+	node_id. Attributes: {uid => "32", value => "node_16_1:p11"}
+
+and
+
+	node_id. Attributes: {uid => "22", value => "node_16_1"}
+	   |---attribute. Attributes: {type => "label", uid => "30", value => "<p21> one|<p22> two"}
+	node_id. Attributes: {uid => "36", value => "node_16_2:p22:s"}
+
+Close examination shows 2 nodes' values of "node_16_1:p11" and "node_16_2:p22:s".
+
+Thus the ports and compass points have been incorporated into the value attribute.
 
 =head2 What is the homepage of Marpa?
 
@@ -1792,7 +1856,7 @@ Don't. Use L<Marpa::R2>.
 =head2 If I input x.old.gv and output x.new.gv, should these 2 files be identical?
 
 Yes - at least in the sense that running dot with them as input will produce the same output files.
-This is using the default renderer, of course.
+This is assuming the default renderer is used.
 
 Since comments in input files are discarded, they can never be in the output file.
 
@@ -1844,7 +1908,7 @@ Australian copyright (c) 2012, Ron Savage.
 
 	All Programs of mine are 'OSI Certified Open Source Software';
 	you can redistribute them and/or modify them under the terms of
-	The Artistic License, a copy of which is available at:
-	http://www.opensource.org/licenses/index.html
+	The Artistic License 2.0, a copy of which is available at:
+	http://opensource.org/licenses/alphabetical.
 
 =cut
