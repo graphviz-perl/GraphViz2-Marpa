@@ -1453,6 +1453,19 @@ These are in the scripts/ directory.
 
 =over 4
 
+=item o copy.config.pl
+
+For use by the author. Output:
+
+	Copied config/.htgraphviz2.marpa.conf to /home/ron/.config/Perl/GraphViz2-Marpa
+
+=item o find.config.pl
+
+For use by the author. Output:
+
+	Using: File::HomeDir -> my_dist_config('GraphViz2-Marpa', '.htgraphviz2.marpa.conf'):
+	Found: /home/ron/.config/Perl/GraphViz2-Marpa/.htgraphviz2.marpa.conf
+
 =item o g2m.pl
 
 Runs the parser. Try running with -h.

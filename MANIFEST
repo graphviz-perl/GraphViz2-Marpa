@@ -153,6 +153,8 @@ MANIFEST			This list of files
 META.json
 META.yml
 README
+scripts/copy.config.pl
+scripts/find.config.pl
 scripts/g2m.pl
 scripts/g2m.sh
 scripts/generate.demo.pl
