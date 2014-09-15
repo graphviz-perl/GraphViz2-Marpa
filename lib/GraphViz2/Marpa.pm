@@ -1396,7 +1396,7 @@ The current module, which documents the set of modules.
 
 It can, optionally, use the default renderer L<GraphViz2::Marpa::Renderer::GraphViz2>.
 
-Accepts a L<Graphviz|http://www.graphviz.org/> (dot) graph definition and builds a similar
+Accepts a L<Graphviz|http://www.graphviz.org/> (dot) graph definition and builds a corresponding
 data structure representing the parsed graph. It can pass that data to the default renderer,
 L<GraphViz2::Marpa::Renderer::GraphViz2>, which can then render it to a text file.
 
@@ -1431,7 +1431,7 @@ certain scripts are run.
 =item o Output files: html/*.svg
 
 The html/*.svg are L<Graphviz|http://www.graphviz.org/> (dot) graph definition files output
-by the default renderer.
+by scripts/generate.demo.sh.
 
 The round trip shows that the lex/parse process does not lose information along the way, but
 comments are discarded..
@@ -1713,25 +1713,9 @@ Its held in a tree managed by L<Tree::DAG_Node>.
 
 Note: In this section the word 'node' refers to nodes in this tree, not Graphviz-style nodes.
 
-We can examine a sample graph without the module having to be installed.
+Frstly, we examine a sample graph, assuming the module is installed.
 
-But we do need to install the pre-reqs:
-
-	perl Build.PL
-	./Build
-	(And, optionally)
-	./Build test
-	./Build install
-
-or
-
-	perl Makefile.PL
-	make
-	(And, optionally)
-	make test
-	make install
-
-Now run:
+Run:
 
 	perl -Ilib scripts/g2m.pl -input_file data/10.gv -max info
 
@@ -1766,7 +1750,7 @@ The root node has 2 daughters:
 
 =over 4
 
-=item o Prolog
+=item o The 'prolog' sub-tree
 
 This daughter is the root of a sub-tree holding everything before the graph's ID, if any.
 
@@ -1798,7 +1782,7 @@ C<< {uid => 3, value => 'strict'} >> and C<< {uid => 4, value => 'graph'} >>.
 
 And yes, the graph ID, if any, is under the 'Graph' node.
 
-=item o Graph
+=item o The 'graph' sub-tree
 
 This daughter is the root of a sub-tree holding everything about the graph, including the graph's ID, if any.
 
