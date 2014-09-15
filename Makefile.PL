@@ -82,6 +82,7 @@ my(%params) =
 		'Log::Handler'                => 0.71,
 		'Marpa::R2'                   => 2.022000,
 		'Moo'                         => 1.006000,
+		'open'                        => 0, # For writing utf8 node etc names.
 		'perl'                        => 5.014002,
 		'Pod::Usage'                  => 1.36,
 		'strict'                      => 0,
@@ -91,6 +92,7 @@ my(%params) =
 		'Tree::DAG_Node'              => 1.07,
 		'Try::Tiny'                   => 0.09,
 		'Types::Standard'             => 1.000004,
+		'utf8'                        => 0,
 		'warnings'                    => 0,
 	},
 	VERSION_FROM => 'lib/GraphViz2/Marpa.pm',
