@@ -1712,6 +1712,8 @@ Get or set the renderer object.
 
 This renderer is called if C<output_file()> is given a value.
 
+'renderer' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
 =head2 run()
 
 This is the only method the caller needs to call. All parameters are supplied to L</new()>
