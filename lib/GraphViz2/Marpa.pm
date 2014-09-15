@@ -424,17 +424,17 @@ END_OF_GRAMMAR
 
 	$self -> stack([$self -> tree -> root]);
 
-	for my $name (qw/Prolog Graph/)
+	for my $name (qw/prolog graph/)
 	{
 		$self -> _add_daughter($name, {});
 	}
 
-	# The 'Prolog' daughter is the parent of all items in the prolog,
+	# The 'prolog' daughter is the parent of all items in the prolog,
 	# so it gets pushed onto the stack.
 	# Later, when 'digraph' or 'graph' is encountered, the 'Graph' daughter replaces it.
 
 	my(@daughters) = $self -> tree -> daughters;
-	my($index)     = 0; # 0 => Prolog, 1 => Graph.
+	my($index)     = 0; # 0 => prolog, 1 => graph.
 	my($stack)     = $self -> stack;
 
 	push @$stack, $daughters[$index];
@@ -1020,7 +1020,7 @@ sub _process
 			$generic_id = substr($string, $start, $pos - $start);
 			$type       = 'node_id';
 
-			if ($generic_id =~ /^(?:graph|node|edge)$/i)
+			if ($generic_id =~ /^(?:edge|graph|node)$/i)
 			{
 				$type = 'class';
 			}
@@ -1061,7 +1061,7 @@ sub _process
 			$literal = substr($string, $start, $pos - $start);
 
 			$self -> log(debug => "string => '$literal'");
-			$self -> _process_token($event_name, $literal);
+			$self -> _process_token('node_id', $literal);
 		}
 		# From here on are the low-frequency events.
 		elsif ($event_name =~ $prolog_token)
@@ -1125,7 +1125,7 @@ sub _process_brace
 	my($self, $name) = @_;
 
 	# When the 1st '{' is encountered, the 'Graph' daughter of the root
-	# becomes the parent of all other tree nodes, replacing the 'Prolog' daughter.
+	# becomes the parent of all other tree nodes, replacing the prolog' daughter.
 
 	if ($self -> brace_count == 0)
 	{
@@ -1134,7 +1134,7 @@ sub _process_brace
 		pop @$stack;
 
 		my(@daughters) = $self -> tree -> daughters;
-		my($index)     = 1; # 0 => Prolog, 1 => Graph.
+		my($index)     = 1; # 0 => prolog, 1 => graph.
 
 		push @$stack, $daughters[$index];
 
@@ -1183,7 +1183,7 @@ sub _process_bracket
 
 		push @$stack, $daughters[$#daughters];
 
-	$self -> _process_token('literal', $name);
+		$self -> _process_token('literal', $name);
 	}
 	else
 	{
@@ -1205,14 +1205,14 @@ sub _process_digraph_graph
 	$self -> _add_daughter('literal', {value => $value});
 
 	# When 'digraph' or 'graph' is encountered, the 'Graph' daughter of the root
-	# becomes the parent of all other tree nodes, replacing the 'Prolog' daughter.
+	# becomes the parent of all other tree nodes, replacing the 'prolog' daughter.
 
 	my($stack) = $self -> stack;
 
 	pop @$stack;
 
 	my(@daughters) = $self -> tree -> daughters;
-	my($index)     = 1; # 0 => Prolog, 1 => Graph.
+	my($index)     = 1; # 0 => prolog, 1 => graph.
 
 	push @$stack, $daughters[$index];
 
@@ -1362,16 +1362,16 @@ GraphViz2::Marpa - A Marpa-based parser for Graphviz dot files
 	perl scripts/g2m.pl -input_file data/16.gv
 	perl scripts/g2m.pl -input_file data/16.gv -max info
 
-You are strongly advised to run that last line if you wish to understand the way the parsed data
-is stored in RAM.
+The L</FAQ> discusses the way the parsed data is stored in RAM.
 
 =item o Run the parser and the default renderer
 
 	perl scripts/g2m.pl -input_file data/16.gv -output_file ./16.gv
 
-	./16.gv will be the rendered Graphviz dot file.
+./16.gv will be the rendered Graphviz dot file.
 
-See scripts/test.utf8.sh for comparing the output of running dot on both data/16.gv and ./16.gv.
+See scripts/test.utf8.sh for comparing the output of running the parser, and 'dot', on all
+data/utf8.*.gv files.
 
 =back
 
@@ -1713,9 +1713,52 @@ Its held in a tree managed by L<Tree::DAG_Node>.
 
 Note: In this section the word 'node' refers to nodes in this tree, not Graphviz-style nodes.
 
-Run:
+We can examine a sample graph without the module having to be installed.
 
-	perl scripts/g2m.pl -input_file data/16.gv -max info
+But we do need to install the pre-reqs:
+
+	perl Build.PL
+	./Build
+	(And, optionally)
+	./Build test
+	./Build install
+
+or
+
+	perl Makefile.PL
+	make
+	(And, optionally)
+	make test
+	make install
+
+Now run:
+
+	perl -Ilib scripts/g2m.pl -input_file data/10.gv -max info
+
+This is the input:
+
+	digraph graph_10
+	{
+		edge ["color" = "green",]
+	}
+
+And this is the output:
+
+	Root. Attributes: {uid => "0"}
+	   |---prolog. Attributes: {uid => "1"}
+	   |   |---literal. Attributes: {uid => "3", value => "digraph"}
+	   |---graph. Attributes: {uid => "2"}
+	       |---node_id. Attributes: {uid => "4", value => "graph_10"}
+	       |---literal. Attributes: {uid => "5", value => "{"}
+	       |   |---class. Attributes: {uid => "6", value => "edge"}
+	       |       |---literal. Attributes: {uid => "7", value => "["}
+	       |       |---attribute. Attributes: {type => "color", uid => "8", value => "green"}
+	       |       |---literal. Attributes: {uid => "9", value => "]"}
+	       |---literal. Attributes: {uid => "10", value => "}"}
+
+For a more interesting case, run:
+
+	perl -Ilib scripts/g2m.pl -input_file data/16.gv -max info
 
 to more easily follow along with this discussion.
 
@@ -1725,7 +1768,9 @@ The root node has 2 daughters:
 
 =item o Prolog
 
-This node is called 'Prolog', and its hashref of attributes is C<< {uid => 1} >>.
+This daughter is the root of a sub-tree holding everything before the graph's ID, if any.
+
+The node is called 'prolog', and its hashref of attributes is C<< {uid => 1} >>.
 
 It has 1 or 2 daughters. The possibilities are:
 
@@ -1751,20 +1796,24 @@ C<< {uid => 3, value => 'strict'} >> and C<< {uid => 4, value => 'graph'} >>.
 
 =back
 
+And yes, the graph ID, if any, is under the 'Graph' node.
+
 =item o Graph
 
-This node is called 'Graph', and its hashref of attributes is C<< {uid => 2} >>.
+This daughter is the root of a sub-tree holding everything about the graph, including the graph's ID, if any.
+
+The node is called 'graph', and its hashref of attributes is C<< {uid => 2} >>.
 
 The 'Graph' node has as many daughters, with their own daughters, as is necessary to hold the
 output of parsing the remainder of the input.
 
-In particular, if the input graph has an ID, i.e. is of the form 'digraph my_id ...', then
-the 1st daughter will be called 'node_id', and its attributes will be
-C<< {uid => "5", value => "my_id"} >>.
+In particular, if the input graph has an ID, i.e. the input is of the form 'digraph my_id ...'
+(or various versions thereof) then the 1st daughter will be called 'node_id', and its attributes
+will be C<< {uid => "5", value => "my_id"} >>.
 
 Futher, the 2nd daughter will be called 'literal', and its attributes will be
 C<< m{uid => "6", value => "{"} >>. A subsequent daughter (for a syntax-free input file, of
-course), will also be called 'lteral', and its attributes will be
+course), will also be called 'literal', and its attributes will be
 C<< {uid => "#", value => "}"} >>.
 
 Of course, if the input lacks the 'my_id' token, then the uids will differ slightly.
@@ -1789,6 +1838,68 @@ contains:
 followed by
 
 	node_id. Attributes: {uid => "48", value => "subgraph_16_1"}
+
+=back
+
+=head2 How many different names can these nodes have?
+
+The list of possible node names follows. In many cases, you have to examine the 'value' key of
+the node's attributes to determine the exact nature of the node.
+
+=over 4
+
+=item o attribute
+
+This indicates an attribute for a class, an edge, or a node.
+
+=item o class
+
+This is used when any of 'edge', 'graph', or 'node' appear at the start of the (sub)graph, and
+is the mother of the attributes attached to the class. The value of the attribute will be 'edge',
+'graph, or 'node'.
+
+The 1st and last daughters will be literals whose attribute values are '[' and ']' respectively.
+
+Between these 2 nodes will be 1 node for each attribute, as seen above with
+C<< edge ["color" = "green",] >>.
+
+=item o float
+
+=item o integer
+
+=item o literal
+
+'literal' is the name of some nodes, with the 'value' key in the attributes having one of these	 values:
+
+=over 4
+
+=item o {
+
+=item o }
+
+=item o [
+
+=item o ]
+
+=item o --
+
+=item o ->
+
+=item o digraph
+
+=item o graph
+
+=item o strict
+
+=item o subgraph
+
+=back
+
+=item o node_id
+
+The 'value' of the attributes is just the (graph) node's name.
+
+See the next point for details about ports and compass points.
 
 =back
 
@@ -1818,6 +1929,8 @@ Thus the ports and compass points have been incorporated into the value attribut
 =head2 What is the homepage of Marpa?
 
 L<http://savage.net.au/Marpa.html>.
+
+That page has a long list of links.
 
 =head2 Why do I get error messages like the following?
 
