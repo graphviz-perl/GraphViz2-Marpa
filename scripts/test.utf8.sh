@@ -4,7 +4,7 @@ for i in data/u*.gv ;
 do
 	X=`basename $i .gv`
 
-	scripts/g2m.pl -input_file $i
+	perl -Ilib scripts/g2m.pl -input_file $i
 
 	if [ "$?" -eq "0" ]
 	then
@@ -12,7 +12,7 @@ do
 
 		#echo Render. In: $i. Out: /tmp/$X.gv
 
-		scripts/g2m.pl -input_file $i -output_file /tmp/$X.gv
+		perl -Ilib scripts/g2m.pl -input_file $i -output_file /tmp/$X.gv
 
 		dot -Tsvg $i > /tmp/$X.old.svg
 
