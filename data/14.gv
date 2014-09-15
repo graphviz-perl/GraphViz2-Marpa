@@ -1,5 +1,7 @@
 digraph graph_14
 {
+	rankdir = TB
+
 	node_14_1
 	[
 		color      = red
