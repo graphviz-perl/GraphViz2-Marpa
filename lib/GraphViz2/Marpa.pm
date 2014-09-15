@@ -1704,6 +1704,50 @@ Returns 0 for success and 1 for failure.
 
 =head1 FAQ
 
+=head2 How is the parsed data held in RAM?
+
+In a tree managed by L<Tree::DAG_Node>.
+
+In the section the word 'node' refers to nodes in this tree, not Graphviz-style nodes.
+
+The root node has 2 daughters:
+
+=over 4
+
+=item o Prolog
+
+This node is called 'Prolog', and its hashref of attributes is C<< {uid => 1} >>.
+
+It has 1 or 2 daughters. The possibilities are:
+
+=over 4
+
+=item o Input 'digraph'
+
+The 1 daughter is named 'literal', and its attributes are C<< {uid => 3, value => 'digraph'}.
+
+=item o Input 'graph'
+
+The 1 daughter is named 'literal', and its attributes are C<< {uid => 3, value => 'graph'}.
+
+=item o Input 'strict digraph'
+
+The 2 daughters are named 'literal', and their attributes are, respectively,
+C<< {uid => 3, value => 'strict'} and C<< {uid => 4, value => 'digraph'}.
+
+=item o Input 'strict graph'
+
+The 2 daughters are named 'literal', and their attributes are, respectively,
+C<< {uid => 3, value => 'strict'} and C<< {uid => 4, value => 'graph'}.
+
+=back
+
+=item o Graph
+
+This node is called 'Graph', and its hashref of attributes is C<< {uid => 2} >>.
+
+=back
+
 =head2 What is the homepage of Marpa?
 
 L<http://savage.net.au/Marpa.html>.
