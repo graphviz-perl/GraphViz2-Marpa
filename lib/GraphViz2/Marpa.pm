@@ -1349,7 +1349,7 @@ sub run
 
 =head1 NAME
 
-GraphViz2::Marpa - A Marpa-based parser for Graphviz dot files
+GraphViz2::Marpa - A Marpa-based parser for Graphviz C<dot> files
 
 =head1 Synopsis
 
@@ -1370,9 +1370,9 @@ The L</FAQ> discusses the way the parsed data is stored in RAM.
 
 	perl scripts/g2m.pl -input_file data/16.gv -output_file ./16.gv
 
-./16.gv will be the rendered Graphviz dot file.
+./16.gv will be the rendered Graphviz C<dot> file.
 
-See scripts/test.utf8.sh for comparing the output of running the parser, and 'dot', on all
+See scripts/test.utf8.sh for comparing the output of running the parser, and C<dot>, on all
 data/utf8.*.gv files.
 
 =back
@@ -1382,7 +1382,7 @@ See also L</Scripts>.
 =head1 Description
 
 L<GraphViz2::Marpa> provides a L<Marpa::R2>-based parser for L<Graphviz|http://www.graphviz.org/>
-(dot) graph definitions.
+graph definitions.
 
 Demo output: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/index.html>.
 
@@ -1398,7 +1398,7 @@ The current module, which documents the set of modules.
 
 It can, optionally, use the default renderer L<GraphViz2::Marpa::Renderer::GraphViz2>.
 
-Accepts a L<Graphviz|http://www.graphviz.org/> (dot) graph definition and builds a corresponding
+Accepts a L<Graphviz|http://www.graphviz.org/> graph definition and builds a corresponding
 data structure representing the parsed graph. It can pass that data to the default renderer,
 L<GraphViz2::Marpa::Renderer::GraphViz2>, which can then render it to a text file.
 
@@ -1424,15 +1424,15 @@ Auxiliary code, used to help generate the demo page.
 
 =item o Input files: data/*.gv
 
-These are valid L<Graphviz|http://www.graphviz.org/> (dot) graph definition files.
+These are valid L<Graphviz|http://www.graphviz.org/> graph definition files.
 
 Some data/*.gv files may contain I<slight> deliberate mistakes, which do not stop production
-of output files. They do, however, cause various warning messages to be printed by dot when
+of output files. They do, however, cause various warning messages to be printed by C<dot> when
 certain scripts are run.
 
 =item o Output files: html/*.svg
 
-The html/*.svg are L<Graphviz|http://www.graphviz.org/> (dot) graph definition files output
+The html/*.svg are L<Graphviz|http://www.graphviz.org/> graph definition files output
 by scripts/generate.demo.sh.
 
 The round trip shows that the lex/parse process does not lose information along the way, but
@@ -1440,7 +1440,7 @@ comments are discarded..
 
 =item o Input files: fail/*.gv
 
-These are faulty L<Graphviz|http://www.graphviz.org/> (dot) graph definition files.
+These are faulty L<Graphviz|http://www.graphviz.org/> graph definition files.
 
 That is, they contain syntax errors (I<serious> deliberate mistakes from the point of view of
 L<Graphviz|http://www.graphviz.org/>), but they helped with writing the code.
@@ -1491,7 +1491,8 @@ Generates html/index.html from data/*.gv and html/*.svg.
 
 =item o pod2html.sh
 
-Converts all *.pm files to *.html, and copies them in my web server's dir structure.
+Converts all *.pm files to *.html, and copies them in my web server's dir structure (in Debian's
+RAM disk).
 
 =item o test.sh
 
@@ -1549,7 +1550,7 @@ Key-value pairs accepted in the parameter list (see corresponding methods for de
 
 =item o description => $graphDescription
 
-Read the L<Graphviz|http://www.graphviz.org/> (dot) graph definition from the command line.
+Read the L<Graphviz|http://www.graphviz.org/> graph definition from the command line.
 
 You are strongly encouraged to surround this string with '...' to protect it from your shell.
 
@@ -1561,7 +1562,7 @@ Default: ''.
 
 =item o input_file => $aDotInputFileName
 
-Read the L<Graphviz|http://www.graphviz.org/> (dot) graph definition from a file.
+Read the L<Graphviz|http://www.graphviz.org/> graph definition from a file.
 
 See also the 'description' option to read the graph definition from the command line.
 
@@ -1603,7 +1604,7 @@ Specify the name of a file for the renderer to write.
 
 That is, write the DOT-style graph definition to a file.
 
-When this file and the input file are both run thru 'dot', they should produce identical *.svg files.
+When this file and the input file are both run thru C<dot>, they should produce identical *.svg files.
 
 If an output file name is specified, an object of type L<GraphViz2::Marpa::Renderer::GraphViz2> is
 created and called after the input file has been successfully parsed.
@@ -1631,7 +1632,7 @@ is created and its C<run()> method is called.
 
 The [] indicate an optional parameter.
 
-Get or set the L<Graphviz|http://www.graphviz.org/> (dot) graph definition string.
+Get or set the L<Graphviz|http://www.graphviz.org/> graph definition string.
 
 The value supplied by the 'description' option takes precedence over the value read from the
 'input_file'.
@@ -1644,7 +1645,7 @@ See also L</input_file()>.
 
 Here, the [] indicate an optional parameter.
 
-Get or set the name of the file to read the L<Graphviz|http://www.graphviz.org/> (dot) graph
+Get or set the name of the file to read the L<Graphviz|http://www.graphviz.org/> graph
 definition from.
 
 The value supplied by the 'description' option takes precedence over the value read from the
@@ -1958,7 +1959,7 @@ The keywords are: node, edge, graph, digraph, subgraph and strict. Compass point
 See L<keywords|http://www.graphviz.org/content/dot-language> in the discussion of the syntax of DOT
 for details.
 
-=head2 Does this package support Unicode in the input dot file?
+=head2 Does this package support Unicode in the input C<dot> file?
 
 Yes.
 
@@ -1970,7 +1971,7 @@ Don't. Use L<Marpa::R2>.
 
 =head2 If I input x.old.gv and output x.new.gv, should these 2 files be identical?
 
-Yes - at least in the sense that running dot with them as input will produce the same output files.
+Yes - at least in the sense that running C<dot> with them as input will produce the same output files.
 This is assuming the default renderer is used.
 
 Since comments in input files are discarded, they can never be in the output file.
