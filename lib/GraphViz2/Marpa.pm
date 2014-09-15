@@ -422,7 +422,7 @@ END_OF_GRAMMAR
 	# Since $self -> tree has not been initialized yet,
 	# we can't call our _add_daughter() until after this statement.
 
-	$self -> tree(Tree::DAG_Node -> new({name => 'Root', attributes => {uid => 0} }));
+	$self -> tree(Tree::DAG_Node -> new({name => 'root', attributes => {uid => 0} }));
 
 	$self -> stack([$self -> tree -> root]);
 
@@ -1304,7 +1304,7 @@ sub run
 
 	if ($result == 0)
 	{
-		# Clean up the stack by popping the Root.
+		# Clean up the stack by popping the root node.
 
 		my($stack) = $self -> stack;
 
@@ -1717,7 +1717,7 @@ This renderer is called if C<output_file()> is given a value.
 =head2 run()
 
 This is the only method the caller needs to call. All parameters are supplied to L</new()>
-(or other methods).
+(or via other methods before C<run()> is called).
 
 See scripts/g2m.pl.
 
@@ -1727,11 +1727,11 @@ Returns 0 for success and 1 for failure.
 
 =head2 How is the parsed data held in RAM?
 
-Its held in a tree managed by L<Tree::DAG_Node>.
+It's held in a tree managed by L<Tree::DAG_Node>.
 
 Note: In this section the word 'node' refers to nodes in this tree, not Graphviz-style nodes.
 
-Frstly, we examine a sample graph, assuming the module is installed.
+Frstly, we examine a sample graph, assuming the module's pre-reqs are installed.
 
 Run:
 
@@ -1746,7 +1746,7 @@ This is the input:
 
 And this is the output:
 
-	Root. Attributes: {uid => "0"}
+	root. Attributes: {uid => "0"}
 	   |---prolog. Attributes: {uid => "1"}
 	   |   |---literal. Attributes: {uid => "3", value => "digraph"}
 	   |---graph. Attributes: {uid => "2"}
@@ -1758,11 +1758,9 @@ And this is the output:
 	       |       |---literal. Attributes: {uid => "9", value => "]"}
 	       |---literal. Attributes: {uid => "10", value => "}"}
 
-For a more interesting case, run:
+To follow along with this discussion, run:
 
 	perl -Ilib scripts/g2m.pl -input_file data/16.gv -max info
-
-to more easily follow along with this discussion.
 
 The root node has 2 daughters:
 
@@ -1814,7 +1812,7 @@ In particular, if the input graph has an ID, i.e. the input is of the form 'digr
 will be C<< {uid => "5", value => "my_id"} >>.
 
 Futher, the 2nd daughter will be called 'literal', and its attributes will be
-C<< m{uid => "6", value => "{"} >>. A subsequent daughter (for a syntax-free input file, of
+C<< {uid => "6", value => "{"} >>. A subsequent daughter (for a syntax-free input file, of
 course), will also be called 'literal', and its attributes will be
 C<< {uid => "#", value => "}"} >>.
 
@@ -1857,7 +1855,7 @@ This indicates an attribute for a class, an edge, or a node.
 =item o class
 
 This is used when any of 'edge', 'graph', or 'node' appear at the start of the (sub)graph, and
-is the mother of the attributes attached to the class. The value of the attribute will be 'edge',
+is the mother of the attributes attached to the class. The 'value' of the attribute will be 'edge',
 'graph, or 'node'.
 
 The 1st and last daughters will be literals whose attribute values are '[' and ']' respectively.
@@ -1926,7 +1924,13 @@ and
 
 Close examination shows 2 nodes' values of "node_16_1:p11" and "node_16_2:p22:s".
 
-Thus the ports and compass points have been incorporated into the value attribute.
+Thus the ports and compass points have been incorporated into the 'value' attribute.
+
+=head2 How are comments stored in the tree?
+
+They aren't stored, they are discarded. And this in turn means rendered C<dot> files can't ever contain
+them.
+
 
 =head2 What is the homepage of Marpa?
 
@@ -1973,7 +1977,7 @@ Don't. Use L<Marpa::R2>.
 
 =head2 If I input x.old.gv and output x.new.gv, should these 2 files be identical?
 
-Yes - at least in the sense that running C<dot> with them as input will produce the same output files.
+Yes - at least in the sense that running C<dot> on them will produce the same output files.
 This is assuming the default renderer is used.
 
 Since comments in input files are discarded, they can never be in the output file.
