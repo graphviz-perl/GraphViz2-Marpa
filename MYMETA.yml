@@ -3,11 +3,11 @@ abstract: 'A Perl lexer and parser for Graphviz dot files'
 author:
   - 'Ron Savage <ron@savage.net.au>'
 build_requires:
-  ExtUtils::MakeMaker: '0'
+  Test::More: '1.001006'
 configure_requires:
-  Module::Build: '0.38'
+  Module::Build: '0.421'
 dynamic_config: 0
-generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921, CPAN::Meta::Converter version 2.142060'
+generated_by: 'Module::Build version 0.421, CPAN::Meta::Converter version 2.142060'
 license: artistic_2
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -52,13 +52,14 @@ requires:
   Marpa::R2: '2.022'
   Moo: '1.006'
   Pod::Usage: '1.36'
-  Test::More: '1.001006'
   Text::Xslate: '1.4001'
   Tree::DAG_Node: '1.07'
   Try::Tiny: '0.09'
   Types::Standard: '1.000004'
+  open: '0'
   perl: '5.014002'
   strict: '0'
+  utf8: '0'
   warnings: '0'
 resources:
   license: http://www.perlfoundation.org/artistic_license_2_0

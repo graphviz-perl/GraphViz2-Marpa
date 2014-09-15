@@ -1,10 +1,10 @@
 {
-   "abstract" : "A Perl lexer and parser for Graphviz dot files",
+   "abstract" : "A Marpa-based parser for Graphviz dot files",
    "author" : [
       "Ron Savage <ron@savage.net.au>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921",
+   "generated_by" : "Module::Build version 0.421",
    "license" : [
       "artistic_2"
    ],
@@ -16,45 +16,40 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "Test::More" : "0.98"
+            "Test::More" : "1.001006"
          }
       },
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.38"
+            "Module::Build" : "0.421"
          }
       },
       "runtime" : {
          "requires" : {
             "Algorithm::Diff" : "1.1902",
+            "Capture::Tiny" : "0.25",
+            "Config" : "0",
             "Config::Tiny" : "2.14",
-            "Data::Section::Simple" : "0.02",
             "Date::Format" : "2.24",
             "Date::Simple" : "3.03",
-            "File::Copy" : "2.21",
-            "File::HomeDir" : "0.99",
+            "File::HomeDir" : "1",
             "File::Slurp" : "9999.19",
+            "File::Spec" : "3.4",
+            "File::Temp" : "0.2301",
             "Getopt::Long" : "2.38",
-            "GraphViz2" : "1.09",
-            "GraphViz2::Parse::Marpa" : "1.12",
             "HTML::Entities::Interpolate" : "1.04",
-            "Hash::FieldHash" : "0.1",
-            "List::Compare" : "0.37",
             "Log::Handler" : "0.71",
             "Marpa::R2" : "2.022",
-            "Module::Path" : "0.08",
-            "Path::Class" : "0.24",
-            "Perl6::Slurp" : "0.03",
+            "Moo" : "1.006",
             "Pod::Usage" : "1.36",
-            "Set::Array" : "0.23",
-            "Set::FA::Element" : "1.08",
-            "Text::CSV" : "1.21",
-            "Text::CSV::Slurp" : "1",
             "Text::Xslate" : "1.4001",
             "Tree::DAG_Node" : "1.07",
             "Try::Tiny" : "0.09",
-            "feature" : "0",
+            "Types::Standard" : "1.000004",
+            "open" : "0",
+            "perl" : "5.014002",
             "strict" : "0",
+            "utf8" : "0",
             "warnings" : "0"
          }
       }
@@ -62,38 +57,26 @@
    "provides" : {
       "GraphViz2::Marpa" : {
          "file" : "lib/GraphViz2/Marpa.pm",
-         "version" : "1.11"
+         "version" : "2.00"
       },
       "GraphViz2::Marpa::Config" : {
          "file" : "lib/GraphViz2/Marpa/Config.pm",
-         "version" : "1.11"
-      },
-      "GraphViz2::Marpa::Lexer" : {
-         "file" : "lib/GraphViz2/Marpa/Lexer.pm",
-         "version" : "1.11"
-      },
-      "GraphViz2::Marpa::Lexer::DFA" : {
-         "file" : "lib/GraphViz2/Marpa/Lexer/DFA.pm",
-         "version" : "1.11"
-      },
-      "GraphViz2::Marpa::Parser" : {
-         "file" : "lib/GraphViz2/Marpa/Parser.pm",
-         "version" : "1.11"
+         "version" : "2.00"
       },
       "GraphViz2::Marpa::Renderer::GraphViz2" : {
          "file" : "lib/GraphViz2/Marpa/Renderer/GraphViz2.pm",
-         "version" : "1.11"
+         "version" : "2.00"
       },
       "GraphViz2::Marpa::Utils" : {
          "file" : "lib/GraphViz2/Marpa/Utils.pm",
-         "version" : "1.11"
+         "version" : "2.00"
       }
    },
    "release_status" : "stable",
    "resources" : {
       "license" : [
-         "http://www.perlfoundation.org/artistic_license_2_0"
+         "http://opensource.org/licenses/artistic-license-2.0.php"
       ]
    },
-   "version" : "1.11"
+   "version" : "2.00"
 }
