@@ -51,7 +51,7 @@ sub generate_demo_index
 	{
 		$dot_file               = File::Spec -> catfile($data_dir_name, "$file_name.gv");
 		$image_file             = File::Spec -> catfile($html_dir_name, "$file_name.$format");
-		@content                = map{$Entitize{$_} } read_file($dot_file);
+		@content                = map{$Entitize{$_} } read_file($dot_file, binmode => ':encoding(utf-8)');
 		$image_file{$file_name} =
 		{
 			image_file   => -e $image_file ? $image_file : '',
