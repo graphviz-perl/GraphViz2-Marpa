@@ -2,7 +2,7 @@ digraph utf8_01
 {
 	rankdir = TB
 
-	Reichwaldstraße [shape = octagon]
+	"Reichwaldstraße" [shape = octagon]
 
 	"Böhme"
 
