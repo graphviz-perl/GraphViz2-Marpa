@@ -4,9 +4,9 @@ use strict;
 use warnings;
 use warnings  qw(FATAL utf8);    # Fatalize encoding glitches.
 
-use GraphViz2::Marpa;
-
 use Getopt::Long;
+
+use GraphViz2::Marpa;
 
 use Pod::Usage;
 
@@ -44,11 +44,11 @@ __END__
 
 =head1 NAME
 
-gem.pl - Run GraphViz2::Marpa.
+g2m.pl - Run GraphViz2::Marpa.
 
 =head1 SYNOPSIS
 
-gem.pl [options]
+g2m.pl [options]
 
 	Options:
 	-description graphDescription
@@ -56,7 +56,7 @@ gem.pl [options]
 	-input_file aDotInputFileName
 	-maxlevel logOption1
 	-minlevel logOption2
-	-output_file aRenderedOutputFileName
+	-output_file aRenderedDotInputFileName
 
 Exit value: 0 for success, 1 for failure. Die upon error.
 
@@ -110,11 +110,16 @@ Default: 'error'.
 
 No lower levels are used.
 
-=item -output_file aRenderedOutputFileName
+=item -output_file aRenderedDotInputFileName
 
-Specify the name of a file for the renderer to write the DOT file too.
+Specify the name of a file for the renderer to write.
+
+That is, write the DOT-style graph definition to a file.
 
 When this file and the input file are both run thru 'dot', they should produce identical *.svg files.
+
+If an output file name is specified, an object of type L<GraphViz2::Marpa::Renderer::GraphViz2> is
+created and called after the input file has been successfully parsed.
 
 Default: ''.
 
