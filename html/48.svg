@@ -31,7 +31,7 @@
 </g>
 <!-- code&#45;&#45;course -->
 <g id="edge2" class="edge"><title>code&#45;&#45;course</title>
-<path fill="none" stroke="black" d="M36.777,-72.937C42.9223,-61.8755 50.9202,-47.4794 57.1869,-36.1992"/>
+<path fill="none" stroke="black" d="M36.5749,-72.7646C42.8524,-61.7791 51.1308,-47.2919 57.5125,-36.1239"/>
 </g>
 <!-- grade -->
 <g id="node5" class="node"><title>grade</title>
@@ -50,7 +50,7 @@
 </g>
 <!-- name0&#45;&#45;course -->
 <g id="edge1" class="edge"><title>name0&#45;&#45;course</title>
-<path fill="none" stroke="black" d="M97.6147,-72.5708C91.4644,-61.5003 83.5217,-47.2034 77.309,-36.0206"/>
+<path fill="none" stroke="black" d="M97.8181,-72.411C91.6266,-61.5758 83.5546,-47.4498 77.2672,-36.4468"/>
 </g>
 </g>
 </svg>

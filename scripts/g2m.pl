@@ -25,6 +25,7 @@ if ($option_parser -> getoptions
 	'maxlevel=s',
 	'minlevel=s',
 	'output_file=s',
+	'renderer=s',
 ) )
 {
 	pod2usage(1) if ($option{'help'});
@@ -57,6 +58,7 @@ g2m.pl [options]
 	-maxlevel logOption1
 	-minlevel logOption2
 	-output_file aRenderedDotInputFileName
+	-renderer aGraphViz2::Marpa::Renderer::GraphViz2-compatible object
 
 Exit value: 0 for success, 1 for failure. Die upon error.
 
@@ -124,6 +126,17 @@ created and called after the input file has been successfully parsed.
 Default: ''.
 
 The default means the file is not written.
+
+=item o -renderer => aGraphViz2::Marpa::Renderer::GraphViz2-compatible object
+
+Specify a renderer for the parser to use.
+
+See also C<output_file> just above.
+
+Default: ''.
+
+If an output file is specified, then an object of type L<GraphViz2::Marpa::Renderer::GraphViz2>
+is created and its C<run()> method is called.
 
 =back
 

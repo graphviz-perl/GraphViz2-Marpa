@@ -1597,13 +1597,16 @@ Default: ''.
 
 The default means the renderer is not called.
 
-=item o renderer => $aRendererObject
+=item o renderer => aGraphViz2::Marpa::Renderer::GraphViz2-compatible object
 
 Specify a renderer for the parser to use.
 
 See C<output_file> just above.
 
 Default: undef.
+
+If an output file is specified, then an object of type L<GraphViz2::Marpa::Renderer::GraphViz2>
+is created and its C<run()> method is called.
 
 =back
 

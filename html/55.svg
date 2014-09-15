@@ -93,8 +93,8 @@
 </g>
 <!-- H&#45;&gt;I -->
 <g id="edge6" class="edge"><title>H&#45;&gt;I</title>
-<path fill="none" stroke="purple" d="M513,-192.327C513,-176.434 513,-154.43 513,-135.815"/>
-<polygon fill="purple" stroke="purple" points="516.5,-135.601 513,-125.601 509.5,-135.601 516.5,-135.601"/>
+<path fill="none" stroke="purple" d="M513,-192.23C513,-176.454 513,-154.332 513,-135.745"/>
+<polygon fill="purple" stroke="purple" points="516.5,-135.566 513,-125.566 509.5,-135.566 516.5,-135.566"/>
 </g>
 <!-- J -->
 <g id="node10" class="node"><title>J</title>
@@ -108,8 +108,8 @@
 </g>
 <!-- J&#45;&gt;K -->
 <g id="edge7" class="edge"><title>J&#45;&gt;K</title>
-<path fill="none" stroke="blue" d="M607,-195.214C607,-185.903 607,-174.043 607,-161.863"/>
-<polygon fill="blue" stroke="blue" points="610.5,-161.605 607,-151.605 603.5,-161.605 610.5,-161.605"/>
+<path fill="none" stroke="blue" d="M607,-195.287C607,-186.11 607,-174.273 607,-162.089"/>
+<polygon fill="blue" stroke="blue" points="610.5,-161.823 607,-151.823 603.5,-161.823 610.5,-161.823"/>
 </g>
 </g>
 </svg>
