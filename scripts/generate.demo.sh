@@ -20,6 +20,7 @@ perl -Ilib scripts/generate.demo.pl
 
 PM=Perl-modules/html/graphviz2.marpa
 
-cp html/*.html html/*.svg $DR/$PM
+cp html/* $DR/$PM
+cp html/* ~/savage.net.au/$PM
 
 echo Check the version number in the demo index
