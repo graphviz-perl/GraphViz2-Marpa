@@ -46,12 +46,10 @@ sub generate_demo_index
 	my(@content);
 	my($dot_file);
 	my($image_file, %image_file);
-	my($lex_file);
 
 	for my $file_name (@dot_file)
 	{
 		$dot_file               = File::Spec -> catfile($data_dir_name, "$file_name.gv");
-		$lex_file               = File::Spec -> catfile($data_dir_name, "$file_name.lex");
 		$image_file             = File::Spec -> catfile($html_dir_name, "$file_name.$format");
 		@content                = map{$Entitize{$_} } read_file($dot_file);
 		$image_file{$file_name} =
@@ -61,7 +59,6 @@ sub generate_demo_index
 			input        => $dot_file,
 			input_bytes  => 'byte' . (-s $dot_file == 1 ? '' : 's'),
 			input_size   => -s $dot_file,
-			lex_result   => -e $lex_file ? 'OK' : 'Error',
 			object_file  => "./$file_name.$format",
 			output       => -e $image_file && -s $image_file ? $image_file : '',
 			output_bytes => 'byte' . (-e $image_file && -s $image_file == 1 ? '' : 's'),
@@ -92,7 +89,6 @@ sub generate_demo_index
 					input        => mark_raw($image_file{$_}{input}),
 					input_bytes  => $image_file{$_}{input_bytes},
 					input_size   => mark_raw($image_file{$_}{input_size}),
-					lex_result   => $image_file{$_}{lex_result},
 					object_file  => $image_file{$_}{object_file},
 					output       => mark_raw($image_file{$_}{output}),
 					output_bytes => $image_file{$_}{output_bytes},
@@ -109,7 +105,7 @@ sub generate_demo_index
 	);
 	my($file_name) = File::Spec -> catfile($html_dir_name, 'index.html');
 
-	open(my $fh, '>', $file_name);
+	open(my $fh, '>:encoding(utf-8)', $file_name);
 	print $fh $index;
 	close $fh;
 

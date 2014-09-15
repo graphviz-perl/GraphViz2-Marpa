@@ -26,7 +26,7 @@
 :for $data -> $row {
 <tr>
   <td>
-	Input file <: $row.count :>: <: $row.input :> (<: $row.input_size :> <: $row.input_bytes :>). Lex result: <: $row.lex_result :>:<br /><: $row.raw :>
+	Input file <: $row.count :>: <: $row.input :> (<: $row.input_size :> <: $row.input_bytes :>):<br /><: $row.raw :>
   </td>
   <td>
 : if ($row.image_size > 0) {
