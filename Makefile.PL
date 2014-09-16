@@ -107,10 +107,20 @@ if ($ExtUtils::MakeMaker::VERSION ge '6.46')
 {
 	$params{META_MERGE} =
 	{
-		resources =>
+		'meta-spec' =>
+		{
+			version => 2,
+		},
+		resources   =>
 		{
 			bugtracker => 'https://rt.cpan.org/Public/Dist/Display.html?Name=GraphViz2-Marpa',
 			license    => 'http://opensource.org/licenses/Artistic-2.0',
+			repository =>
+			{
+				type => 'git',
+				url  => 'https://github.com/ronsavage/GraphViz2-Marpa.git',
+				web  => 'https://github.com/ronsavage/GraphViz2-Marpa',
+         },
 		},
 	};
 }

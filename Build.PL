@@ -77,6 +77,13 @@ $class -> new
 	{
 		'Module::Build' => 0.4210,
 	},
+	meta_merge =>
+	{
+		resources =>
+		{
+			repository => 'https://github.com/dwimperl/GraphViz2-Marpa',
+		},
+	},
 	requires =>
 	{
 		'Algorithm::Diff'             => 1.1902,
