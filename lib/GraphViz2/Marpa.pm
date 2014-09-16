@@ -464,7 +464,6 @@ sub _adjust_edge_attributes
 {
 	my($self, $mothers) = @_;
 
-	my($attributes);
 	my(@daughters);
 	my($mother);
 	my($offset);
@@ -481,15 +480,11 @@ sub _adjust_edge_attributes
 
 			$name = $daughters[$i] -> name;
 
-			next if ($name ne 'literal');
-
-			$attributes = $daughters[$i] -> attributes;
-
-			next if (! $$attributes{value} || ($$attributes{value} !~ /-(?:-|>)/) );
+			next if ($name ne 'edge');
 
 			# This test is redundant if we know the input file is syntactally valid,
 			# since then there must necessarily be a next daughter after an edge.
-			# And is the file known to be valid at this point?
+			# But is the file known to be valid at this point?
 			# Yes, since we're in the post-processing phase, and Marpa has validated it.
 			# Unless, of course, there's a defect in our BNF for DOT.
 
@@ -521,7 +516,7 @@ sub _adjust_head_attributes
 
 	my($name) = $$daughters[$i + 1] -> name;
 
-	if ($name =~ /(?:node_(?:|port_|compass_)id)/)
+	if ($name =~ /node_id/)
 	{
 		# It's a node.
 
@@ -915,7 +910,9 @@ sub _post_process
 	# The Tree::DAG_Node docs warn against modifying the tree during a walk,
 	# so we use a hash to track all the mothers found, and post-process them.
 
+	my($attributes);
 	my(%mothers);
+	my($uid);
 
 	$self -> tree -> walk_down
 	({
@@ -924,16 +921,11 @@ sub _post_process
 			my($node) = @_;
 			my($name) = $node -> name;
 
-			if ($name eq 'literal')
+			if ($name eq 'edge')
 			{
-				my($attributes) = $node -> attributes;
-
-				if ($$attributes{value} && ($$attributes{value} =~ /-(?:-|>)/) )
-				{
-					$attributes    = $node -> mother -> attributes;
-					my($uid)       = $$attributes{uid};
-					$mothers{$uid} = $node -> mother if (! $mothers{$uid});
-				}
+				$attributes    = $node -> mother -> attributes;
+				$uid           = $$attributes{uid};
+				$mothers{$uid} = $node -> mother if (! $mothers{$uid});
 			}
 
 			# Keep recursing.
@@ -948,7 +940,7 @@ sub _post_process
 	# Now look for attributes hanging off the edge's head node/subgraph,
 	# and move them back to belong to the edge itself.
 
-	#$self -> _adjust_edge_attributes(\%mothers);
+	$self -> _adjust_edge_attributes(\%mothers);
 
 } # End of _post_process.
 
@@ -971,6 +963,7 @@ sub _process
 	my(@event, $event_name);
 	my($generic_id);
 	my($lexeme_name, $lexeme, $literal);
+	my($node_name);
 	my($span, $start, $s);
 	my($type);
 
@@ -998,7 +991,8 @@ sub _process
 		}
 		elsif ($event_name =~ $literal_token)
 		{
-			$pos = $self -> _process_lexeme(\$string, $start, $event_name, 'literal', $lexeme_name);
+			$node_name = ($event_name eq 'edge_literal') ? 'edge' : 'literal';
+			$pos       = $self -> _process_lexeme(\$string, $start, $event_name, $node_name, $lexeme_name);
 		}
 		elsif ($event_name eq 'close_brace')
 		{
@@ -1866,13 +1860,17 @@ The 1st and last daughters will be literals whose attribute values are '[' and '
 Between these 2 nodes will be 1 node for each attribute, as seen above with
 C<< edge ["color" = "green",] >>.
 
+=item o edge
+
+The 'value' of the attribute will be either '--' or '->'.
+
 =item o float
 
 =item o integer
 
 =item o literal
 
-'literal' is the name of some nodes, with the 'value' key in the attributes having one of these	 values:
+'literal' is the name of some nodes, with the 'value' key in the attributes having one of these	values:
 
 =over 4
 
@@ -1882,11 +1880,16 @@ C<< edge ["color" = "green",] >>.
 
 =item o [
 
+This indicate the start of a set of attributes for a specific class, edge or node.
+
+The 1st and last daughters will be literals whose attribute 'value' keys are '[' and ']' respectively.
+
+Between these 2 nodes will be 1 node for each attribute, as seen above with
+C<< edge ["color" = "green",] >>.
+
 =item o ]
 
-=item o --
-
-=item o ->
+See the previous point.
 
 =item o digraph
 
