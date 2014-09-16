@@ -76,7 +76,10 @@
    "resources" : {
       "license" : [
          "http://opensource.org/licenses/artistic-license-2.0.php"
-      ]
+      ],
+      "repository" : {
+         "url" : "https://github.com/dwimperl/GraphViz2-Marpa"
+      }
    },
    "version" : "2.00"
 }
