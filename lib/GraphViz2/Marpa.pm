@@ -1969,7 +1969,10 @@ for details.
 
 Yes.
 
-See data/utf8.*.gv and scripts/test.utf8.sh.
+But node names with utf8 glyphs should always be enclosed in double-quotes, even though this is
+not always necessary.
+
+See data/utf8.*.gv and scripts/test.utf8.sh. In particular, see data/utf8.01.gv.
 
 =head2 How can I switch from Marpa::XS to Marpa::PP?
 
