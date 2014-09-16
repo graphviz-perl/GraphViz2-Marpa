@@ -1,3 +1,4 @@
+.gitignore
 Build.PL
 Changelog.ini
 Changes
@@ -148,6 +149,7 @@ lib/GraphViz2/Marpa.pm
 lib/GraphViz2/Marpa/Config.pm
 lib/GraphViz2/Marpa/Renderer/GraphViz2.pm
 lib/GraphViz2/Marpa/Utils.pm
+LICENSE
 Makefile.PL
 MANIFEST			This list of files
 META.json
