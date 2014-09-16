@@ -54,4 +54,5 @@ requires:
   warnings: '0'
 resources:
   license: http://opensource.org/licenses/artistic-license-2.0.php
+  repository: https://github.com/dwimperl/GraphViz2-Marpa
 version: '2.00'
