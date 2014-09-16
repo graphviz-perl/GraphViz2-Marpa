@@ -1388,6 +1388,9 @@ Demo output: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/index.html
 
 L<Marpa's homepage|http://savage.net.au/Marpa.html>.
 
+L<An article on this module|http://savage.net.au/Ron/html/A.New.Marpa-based.Parser.for.GraphViz.html>.
+This article contains the ToDo list.
+
 =head1 Modules
 
 =over 4
