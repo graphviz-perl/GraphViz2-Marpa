@@ -8,7 +8,7 @@ use open      qw(:std :utf8);    # Undeclared streams in UTF-8.
 
 use File::Slurp; # For read_file().
 
-use GraphViz2::Marpa::Renderer::GraphViz2;
+use GraphViz2::Marpa::Renderer::Graphviz;
 
 use Log::Handler;
 
@@ -1321,7 +1321,7 @@ sub run
 			$self -> log(debug => "Rendering to $output_file");
 			$self -> renderer
 			(
-				GraphViz2::Marpa::Renderer::GraphViz2 -> new
+				GraphViz2::Marpa::Renderer::Graphviz -> new
 				(
 					logger      => $self -> logger,
 					maxlevel    => $self -> maxlevel,
@@ -1349,7 +1349,7 @@ sub run
 
 =head1 NAME
 
-GraphViz2::Marpa - A Marpa-based parser for Graphviz C<dot> files
+C<GraphViz2::Marpa> - A Marpa-based parser for Graphviz C<dot> files
 
 =head1 Synopsis
 
@@ -1396,15 +1396,15 @@ L<Marpa's homepage|http://savage.net.au/Marpa.html>.
 
 The current module, which documents the set of modules.
 
-It can, optionally, use the default renderer L<GraphViz2::Marpa::Renderer::GraphViz2>.
+It can, optionally, use the default renderer L<GraphViz2::Marpa::Renderer::Graphviz>.
 
 Accepts a L<Graphviz|http://www.graphviz.org/> graph definition and builds a corresponding
 data structure representing the parsed graph. It can pass that data to the default renderer,
-L<GraphViz2::Marpa::Renderer::GraphViz2>, which can then render it to a text file.
+L<GraphViz2::Marpa::Renderer::Graphviz>, which can then render it to a text file.
 
 See scripts/g2m.pl and scripts/test.utf8.sh.
 
-=item o L<GraphViz2::Marpa::Renderer::GraphViz2>
+=item o L<GraphViz2::Marpa::Renderer::Graphviz>
 
 The default renderer. Optionally called by the parser.
 
@@ -1606,14 +1606,14 @@ That is, write the DOT-style graph definition to a file.
 
 When this file and the input file are both run thru C<dot>, they should produce identical *.svg files.
 
-If an output file name is specified, an object of type L<GraphViz2::Marpa::Renderer::GraphViz2> is
+If an output file name is specified, an object of type L<GraphViz2::Marpa::Renderer::Graphviz> is
 created and called after the input file has been successfully parsed.
 
 Default: ''.
 
 The default means the renderer is not called.
 
-=item o renderer => aGraphViz2::Marpa::Renderer::GraphViz2-compatible object
+=item o renderer => aGraphViz2::Marpa::Renderer::Graphviz-compatible object
 
 Specify a renderer for the parser to use.
 
@@ -1621,7 +1621,7 @@ See C<output_file> just above.
 
 Default: undef.
 
-If an output file is specified, then an object of type L<GraphViz2::Marpa::Renderer::GraphViz2>
+If an output file is specified, then an object of type L<GraphViz2::Marpa::Renderer::Graphviz>
 is created and its C<run()> method is called.
 
 =back
@@ -1699,7 +1699,7 @@ Here, the [] indicate an optional parameter.
 
 Get or set the name of the file for the renderer to write.
 
-If an output file name is specified, an object of type L<GraphViz2::Marpa::Renderer::GraphViz2> is
+If an output file name is specified, an object of type L<GraphViz2::Marpa::Renderer::Graphviz> is
 created and called after the input file has been successfully parsed.
 
 'output_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.

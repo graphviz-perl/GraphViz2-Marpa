@@ -97,7 +97,7 @@ sub read
 
 =head1 NAME
 
-GraphViz2::Marpa::Config - A Perl lexer and parser for Graphviz dot files
+C<GraphViz2::Marpa::Config> - A config file helper for C<GraphViz2::Marpa>
 
 =head1 Synopsis
 
@@ -105,33 +105,51 @@ See L<GraphViz2::Marpa>.
 
 =head1 Description
 
-L<GraphViz2::Marpa> provides a Perl lexer and parser for Graphviz dot files.
+L<GraphViz2::Marpa> provides a Marpa-based parser for Graphviz C<dot> files,
+and this module helps finding and loading the config file, which in turn
+helps generate the demo page.
+
+This module is really only of interest to the author.
+
+=head1 Constructor and Initialization
+
+=head2 Calling new()
+
+C<new()> is called as C<< my($obj) = GraphViz2::Marpa::Config -> new(k1 => v1, k2 => v2, ...) >>.
+
+It returns a new object of type C<GraphViz2::Marpa::Config>.
+
+Key-value pairs accepted in the parameter list:
+
+=over 4
+
+=item o (none)
+
+=back
 
 =head1 Methods
 
-=head2 _init()
+=head2 read($path)
 
-For use by subclasses.
-
-Sets default values for object attributes.
-
-=head2 new()
-
-For use by subclasses.
-
-=head2 read()
-
-read() is called by new(). It does the actual reading of the config file.
+Uses $path to find and read the config file into a hashref. By default it assumes
+scripts/copy.config.pl has been run, and loads (effectively from config/),
+.htgraphviz2.marpa.conf.
 
 If the file can't be read, die is called.
 
-The path to the config file is determined by:
+See also scripts/copy.config.pl and scripts/find.config.pl.
 
-	Path::Tiny's path(File::ShareDir -> dist_dir('GraphViz2-Marpa'), '.htgraphviz2.marpa.conf')
+=head1 Machine-Readable Change Log
 
-During installation, Makefile.PL will have installed '.htgraphviz2.marpa.conf' in a shared directory.
+The file Changes was converted into Changelog.ini by L<Module::Metadata::Changes>.
 
-You can find it (perhaps for editing) by running scripts/find.config.pl.
+=head1 Version Numbers
+
+Version numbers < 1.00 represent development versions. From 1.00 up, they are production versions.
+
+=head1 Repository
+
+L<https://github.com/ronsavage/GraphViz2-Marpa>
 
 =head1 Support
 

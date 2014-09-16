@@ -147,7 +147,7 @@ html/utf8.02.svg
 html/utf8.03.svg
 lib/GraphViz2/Marpa.pm
 lib/GraphViz2/Marpa/Config.pm
-lib/GraphViz2/Marpa/Renderer/GraphViz2.pm
+lib/GraphViz2/Marpa/Renderer/Graphviz.pm
 lib/GraphViz2/Marpa/Utils.pm
 LICENSE
 Makefile.PL

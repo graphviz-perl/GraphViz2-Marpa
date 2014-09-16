@@ -1,4 +1,4 @@
-package GraphViz2::Marpa::Renderer::GraphViz2;
+package GraphViz2::Marpa::Renderer::Graphviz;
 
 use strict;
 use utf8;
@@ -216,7 +216,7 @@ sub run
 
 =head1 NAME
 
-L<GraphViz2::Marpa::Renderer::GraphViz2> - A renderer for GraphViz2::Marpa-style dot files
+C<GraphViz2::Marpa::Renderer::Graphviz> - A renderer for L<GraphViz2::Marpa>-style C<dot> files
 
 =head1 Synopsis
 
@@ -224,16 +224,13 @@ See L<GraphViz2::Marpa/Synopsis>.
 
 =head1 Description
 
-L<GraphViz2::Marpa::Renderer> provides a renderer for L<Graphviz|http://www.graphviz.org/> (dot) graph definitions
+L<GraphViz2::Marpa::Renderer::Graphviz> provides a renderer for L<Graphviz|http://www.graphviz.org/> (dot) graph definitions
 parsed by L<GraphViz2::Marpa>.
 
 It outputs a string to the output file, which (ideally) exactly matches the graph definition input to the paser,
 although there might be small differences in the line-by-line formatting.
 
 This module is the default rendering engine for L<GraphViz2::Marpa>.
-
-The Marpa grammar as an image: L<http://savage.net.au/Ron/html/graphviz2.marpa/Marpa.Grammar.svg>. This image was
-created with L<Graphviz|http://www.graphviz.org/> via L<GraphViz2>.
 
 =head1 Installation
 
@@ -263,9 +260,9 @@ or:
 
 =head1 Constructor and Initialization
 
-C<new()> is called as C<< my($renderer) = GraphViz2::Marpa::Renderer::GraphViz2 -> new(k1 => v1, k2 => v2, ...) >>.
+C<new()> is called as C<< my($renderer) = GraphViz2::Marpa::Renderer::Graphviz -> new(k1 => v1, k2 => v2, ...) >>.
 
-It returns a new object of type C<GraphViz2::Marpa::Renderer::GraphViz2>.
+It returns a new object of type C<GraphViz2::Marpa::Renderer::Graphviz>.
 
 Key-value pairs accepted in the parameter list (see corresponding methods for details
 [e.g. maxlevel()]):
@@ -279,8 +276,6 @@ Specify a logger object.
 To disable logging, just set logger to the empty string.
 
 Default: An object of type L<Log::Handler>.
-
-To disable logging, just set 'logger' to the empty string (not undef).
 
 =item o maxlevel => $level
 
@@ -308,7 +303,9 @@ The default means the output file is not written. Use the L</output_string()> me
 
 Specify the tree tokens output by the parser.
 
-This tree is output from L<GraphViz2::Marpa>.
+This option is mandatory.
+
+The tree is output from L<GraphViz2::Marpa>.
 
 Default: [].
 
@@ -386,22 +383,19 @@ Gets or sets the tree of tokens to be rendered.
 
 =head1 FAQ
 
-=head2 If I input x.gv and output x.new.gv, should these 2 files be identical?
-
-Yes - at least in the sense that running dot with them as input will produce the same output files.
-This is using the default renderer, of course.
-
-Since comments in *.gv files are discarded, they can never be in the output file.
-
-So, if x.gv is formatted as I do, then x.new.gv will be formatted more-or-less identically.
+See L<GraphViz2::Marpa/FAQ>.
 
 =head1 Machine-Readable Change Log
 
-The file CHANGES was converted into Changelog.ini by L<Module::Metadata::Changes>.
+The file Changes was converted into Changelog.ini by L<Module::Metadata::Changes>.
 
 =head1 Version Numbers
 
 Version numbers < 1.00 represent development versions. From 1.00 up, they are production versions.
+
+=head1 Repository
+
+L<https://github.com/ronsavage/GraphViz2-Marpa>
 
 =head1 Support
 

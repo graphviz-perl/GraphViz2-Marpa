@@ -35,6 +35,26 @@ has config =>
 
 our $VERSION = '2.00';
 
+# ------------------------------------------------
+
+sub generate_demo_environment
+{
+	my($self) = @_;
+
+	my(@environment);
+
+	# mark_raw() is needed because of the HTML tag <a>.
+
+	push @environment,
+	{left => 'Author', right => mark_raw(qq|<a href="http://savage.net.au/">Ron Savage</a>|)},
+	{left => 'Date',   right => Date::Simple -> today},
+	{left => 'OS',     right => 'Debian V 7'},
+	{left => 'Perl',   right => $Config{version} };
+
+	return \@environment;
+
+} # End of generate_demo_environment.
+
 # -----------------------------------------------
 
 sub generate_demo_index
@@ -121,26 +141,6 @@ sub generate_demo_index
 
 # ------------------------------------------------
 
-sub generate_demo_environment
-{
-	my($self) = @_;
-
-	my(@environment);
-
-	# mark_raw() is needed because of the HTML tag <a>.
-
-	push @environment,
-	{left => 'Author', right => mark_raw(qq|<a href="http://savage.net.au/">Ron Savage</a>|)},
-	{left => 'Date',   right => Date::Simple -> today},
-	{left => 'OS',     right => 'Debian V 7'},
-	{left => 'Perl',   right => $Config{version} };
-
-	return \@environment;
-
-} # End of generate_demo_environment.
-
-# ------------------------------------------------
-
 sub get_files
 {
 	my($self, $dir_name, $type) = @_;
@@ -180,7 +180,7 @@ sub new
 
 =head1 NAME
 
-L<GraphViz2::Marpa::Utils> - A Marpa-based parser for Graphviz dot files
+C<GraphViz2::Marpa::Utils> - A demo page generator for C<GraphViz2::Marpa>
 
 =head1 Synopsis
 
@@ -188,7 +188,10 @@ See L<GraphViz2::Marpa/Synopsis>.
 
 =head1 Description
 
-Some utils to simplify generating the demo page and its images.
+L<GraphViz2::Marpa> provides a Marpa-based parser for Graphviz C<dot> files,
+and this module helps generate the demo page.
+
+This module is really only of interest to the author.
 
 =head1 Distributions
 
@@ -241,12 +244,6 @@ Key-value pairs accepted in the parameter list:
 
 =head1 Methods
 
-=head2 generate_demo_index()
-
-Generates html/index.html.
-
-Does not run any programs to generate other files, e.g. html/*.svg. See scripts/generate.demo.sh for that.
-
 =head2 generate_demo_environment()
 
 Called by generate_demo_index().
@@ -254,6 +251,12 @@ Called by generate_demo_index().
 Generates a table to be inserted into html/index.html.
 
 See scripts/generate.demo.pl.
+
+=head2 generate_demo_index()
+
+Generates html/index.html.
+
+Does not run any programs to generate other files, e.g. html/*.svg. See scripts/generate.demo.sh for that.
 
 =head2 get_files($dir_name, $type)
 
@@ -267,13 +270,17 @@ Right justify the $string in a field of 20 spaces.
 
 See L</Constructor and Initialization> for details on the parameters accepted by L</new()>.
 
+=head1 Machine-Readable Change Log
+
+The file CHANGES was converted into Changelog.ini by L<Module::Metadata::Changes>.
+
 =head1 Version Numbers
 
 Version numbers < 1.00 represent development versions. From 1.00 up, they are production versions.
 
-=head1 Machine-Readable Change Log
+=head1 Repository
 
-The file CHANGES was converted into Changelog.ini by L<Module::Metadata::Changes>.
+L<https://github.com/ronsavage/GraphViz2-Marpa>
 
 =head1 Support
 
