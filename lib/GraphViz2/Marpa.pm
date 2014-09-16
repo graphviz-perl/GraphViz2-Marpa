@@ -2015,6 +2015,10 @@ Many thanks are due to the people who worked on L<Graphviz|http://www.graphviz.o
 
 Jeffrey Kegler wrote L<Marpa::XS>, and has a blog on it at L<http://blogs.perl.org/users/jeffrey_kegler/>.
 
+=head1 Repository
+
+L<https://github.com/ronsavage/GraphViz2-Marpa>
+
 =head1 Support
 
 Email the author, or log a bug on RT:
