@@ -1,18 +1,14 @@
-digraph utf8_01
+digraph utf8_03
 {
 	rankdir = TB
 
-	"Reichwaldstraße" [shape = octagon]
+	"Reichwaldstraße"
 
 	"Böhme"
 
-	Three [ label = "ʎ ʏ ʐ ʑ ʒ ʓ ʙ ʚ"]
-
-	Four  [ label = "Πηληϊάδεω Ἀχιλῆος"]
-
 	"ΔΔΔΔΔΔΔΔΔΔΔΔΔ"
 
-	Snowman [ label = "Label has a ☃"]
+	"☃"
 
-	Tick    [ label = "Label has a ✔"]
+	"✔"
 }
