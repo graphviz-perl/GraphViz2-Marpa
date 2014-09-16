@@ -20,8 +20,8 @@ provides:
   GraphViz2::Marpa::Config:
     file: lib/GraphViz2/Marpa/Config.pm
     version: '2.00'
-  GraphViz2::Marpa::Renderer::GraphViz2:
-    file: lib/GraphViz2/Marpa/Renderer/GraphViz2.pm
+  GraphViz2::Marpa::Renderer::Graphviz:
+    file: lib/GraphViz2/Marpa/Renderer/Graphviz.pm
     version: '2.00'
   GraphViz2::Marpa::Utils:
     file: lib/GraphViz2/Marpa/Utils.pm
