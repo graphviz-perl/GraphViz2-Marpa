@@ -120,7 +120,7 @@ if ($ExtUtils::MakeMaker::VERSION ge '6.46')
 				type => 'git',
 				url  => 'https://github.com/ronsavage/GraphViz2-Marpa.git',
 				web  => 'https://github.com/ronsavage/GraphViz2-Marpa',
-         },
+			},
 		},
 	};
 }

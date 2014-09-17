@@ -201,6 +201,7 @@ graph_statement_tokens	::= open_brace statement_list close_brace
 statement_list			::= statement_token*
 
 statement_token			::= statement statement_terminator
+							| comments statement_token
 
 statement_terminator	::= semicolon_literal
 statement_terminator	::=
@@ -457,6 +458,45 @@ sub _add_daughter
 	$$stack[$#$stack] -> add_daughter($node);
 
 } # End of _add_daughter.
+
+# --------------------------------------------------
+
+sub _adjust_attributes
+{
+	my($self, $mother) = @_;
+	my(@daughters)     = $mother -> daughters;
+
+	my(@attributes);
+	my(@name);
+
+	for (my $i = 0; $i < ($#daughters - 1); $i++)
+	{
+		# Have we found a triplet of the form ['node_id', 'equals', 'float|integer|node_id']?
+
+		if ($daughters[$i] -> name eq 'node_id')
+		{
+			$name[0] = $daughters[$i + 1] -> name;
+			$name[1] = $daughters[$i + 2] -> name;
+
+			if ("$name[0]$name[1]" =~ /^equals(?:float|integer|node_id)/)
+			{
+				$attributes[0] = $daughters[$i] -> attributes;
+				$attributes[1] = $daughters[$i + 2]-> attributes;
+				$attributes[2] = {type => $attributes[1]{type} || 'string', uid => $attributes[0]{uid}, value => $attributes[1]{value} };
+
+				$daughters[$i] -> name($attributes[0]{value});
+				$daughters[$i] -> attributes($attributes[2]);
+
+				# Really, we want to do ...
+
+				#splice(@daughters, ($i + 1), 2);
+
+				# ... but Tree::DAG_Node warns against changing the tree during a walk_down.
+			}
+		}
+	}
+
+} # End of _adjust_attributes.
 
 # --------------------------------------------------
 
@@ -921,11 +961,25 @@ sub _post_process
 			my($node) = @_;
 			my($name) = $node -> name;
 
+			# Stash mother uids, for later processing.
+
 			if ($name eq 'edge')
 			{
 				$attributes    = $node -> mother -> attributes;
 				$uid           = $$attributes{uid};
 				$mothers{$uid} = $node -> mother if (! $mothers{$uid});
+			}
+
+			# Phase 1: Replace tree node triplets ('node_id', 'equals', 'float|integer|node_id')
+			# with the 3 daughters ('$attribute_name', 'equals', 'float|integer|node_id').
+
+			$node = $node -> mother;
+
+			# Ignore the root's mother, and nodes whose mother is 'root'.
+
+			if ($node && ($node -> name ne 'root') )
+			{
+				$self -> _adjust_attributes($node);
 			}
 
 			# Keep recursing.
@@ -942,6 +996,27 @@ sub _post_process
 
 	$self -> _adjust_edge_attributes(\%mothers);
 
+	# Phase 2: Replace tree node triplets ('node_id', 'equals', 'float|integer|node_id')
+	# with the 1 daughter ('$attribute_name'.
+
+	my(@daughters);
+	my($i);
+
+	for my $uid (keys %mothers)
+	{
+		@daughters = $mothers{$uid} -> daughters;
+
+		for ($i = 0; $i < ($#daughters - 2); $i++)
+		{
+			if ($daughters[$i + 1] -> name eq 'equals')
+			{
+				splice(@daughters, ($i + 1), 2);
+
+				$mothers{$uid} -> set_daughters(@daughters);
+			}
+		}
+	}
+
 } # End of _post_process.
 
 # --------------------------------------------------
@@ -953,7 +1028,7 @@ sub _process
 	my($length)        = length $string;
 	my($literal_token) = qr/(?:colon|edge_literal|equals_literal|strict_literal|subgraph_literal)/;
 	my($prolog_token)  = qr/(?:digraph_literal|graph_literal)/;
-	my($simple_token)  = qr/(?:float|integer|node_id)/;
+	my($simple_token)  = qr/(?:float|integer)/;
 
 	$self -> log(debug => "Input:\n$string");
 
@@ -987,7 +1062,7 @@ sub _process
 
 		if ($event_name =~ $simple_token)
 		{
-			$pos = $self -> _process_lexeme(\$string, $start, $event_name, $event_name, $lexeme_name);
+			$pos = $self -> _process_lexeme(\$string, $start, $event_name, $event_name, $lexeme_name, $event_name);
 		}
 		elsif ($event_name =~ $literal_token)
 		{
@@ -996,7 +1071,7 @@ sub _process
 							: ($event_name eq 'equals_literal')
 							? 'equals'
 							: 'literal';
-			$pos       = $self -> _process_lexeme(\$string, $start, $event_name, $node_name, $lexeme_name);
+			$pos       = $self -> _process_lexeme(\$string, $start, $event_name, $node_name, $lexeme_name, undef);
 		}
 		elsif ($event_name eq 'close_brace')
 		{
@@ -1228,12 +1303,15 @@ sub _process_digraph_graph
 
 sub _process_lexeme
 {
-	my($self, $string, $start, $event_name, $name, $lexeme_name) = @_;
+	my($self, $string, $start, $event_name, $name, $lexeme_name, $type) = @_;
 	my($pos)   = $self -> recce -> lexeme_read($lexeme_name);
 	my($value) = lc substr($$string, $start, $pos - $start);
 
 	$self -> log(debug => "$event_name => '$value'");
-	$self -> _process_token($name, $value);
+
+	$value = $type ? {type => $type, value => $value} : {value => $value};
+
+	$self -> _add_daughter($name, $value);
 
 	return $pos;
 
@@ -1855,20 +1933,39 @@ the node's attributes to determine the exact nature of the node.
 
 =item o $attribute_name
 
-This indicates an attribute for a class (see next point), an edge, or a node.
+This indicates an attribute for a class (see next point), an edge, a node or a (sub)graph.
 
 Here's part of the log from processing data/16.gv:
 
-	|   |---class. Attributes: {uid => "13", value => "node"}
-	|   |   |---literal. Attributes: {uid => "14", value => "["}
-	|   |   |---shape. Attributes: {uid => "15", value => "record"}
-	|   |   |---literal. Attributes: {uid => "16", value => "]"}
+	|   |---fontsize. Attributes: {type => "float", uid => "7", value => "16.0"}
+	|   |---label. Attributes: {type => "string", uid => "10", value => "\"Standard\"\rSyntax\lTest"}
+	|   |---size. Attributes: {type => "string", uid => "13", value => "5,6"}
 	...
-	|   |---node_id. Attributes: {uid => "22", value => "node_16_1"}
-	|   |   |---literal. Attributes: {uid => "23", value => "["}
-	|   |   |---label. Attributes: {uid => "24", value => "<p11> left|<p12> middle|<p13> right"}
-	|   |   |---pencolor. Attributes: {uid => "25", value => "blue"}
-	|   |   |---literal. Attributes: {uid => "26", value => "]"}
+	|   |---class. Attributes: {uid => "20", value => "edge"}
+	|   |   |---literal. Attributes: {uid => "21", value => "["}
+	|   |   |---color. Attributes: {uid => "22", value => "red"}
+	|   |   |---penwidth. Attributes: {uid => "23", value => "3"}
+	|   |   |---literal. Attributes: {uid => "24", value => "]"}
+	|   |---node_id. Attributes: {uid => "25", value => "node_16_1"}
+	|   |   |---literal. Attributes: {uid => "26", value => "["}
+	|   |   |---label. Attributes: {uid => "27", value => "<p11> left|<p12> middle|<p13> right"}
+	|   |   |---pencolor. Attributes: {uid => "28", value => "blue"}
+	|   |   |---literal. Attributes: {uid => "29", value => "]"}
+	...
+	|   |---node_id. Attributes: {uid => "35", value => "node_16_1:p11"}
+	|   |---edge. Attributes: {uid => "38", value => "->"}
+	|   |   |---literal. Attributes: {uid => "44", value => "["}
+	|   |   |---arrowhead. Attributes: {uid => "45", value => "odiamond"}
+	|   |   |---arrowtail. Attributes: {uid => "46", value => "odot"}
+	|   |   |---color. Attributes: {uid => "47", value => "red"}
+	|   |   |---dir. Attributes: {uid => "48", value => "both"}
+	|   |   |---literal. Attributes: {uid => "49", value => "]"}
+	|   |---node_id. Attributes: {uid => "39", value => "node_16_2:p22:s"}
+
+Futher, in some cases, the code can identify the type of the 'value' as one of 'integer', 'float' or 'string.
+
+Lastly notice that for classes, edges and node, the attributes are surrounded by 2 nodes called 'literal',
+with 'value's of '[' and ']'. However, for attributes specified as 'fontsize = 16.0', this is not the case.
 
 =item o class
 
@@ -1944,22 +2041,6 @@ And theoutput log contains:
 	|   |---node_id. Attributes: {uid => "7", value => "label"}
 	|   |---equals. Attributes: {uid => "8", value => "="}
 	|   |---node_id. Attributes: {uid => "9", value => "\"Standard\"\rSyntax\lTest"}
-
-=item o float
-
-Input contains this fragment of data/16.gv:
-
-	fontsize = 16.0
-
-And the output log contains:
-
-	|   |---node_id. Attributes: {uid => "7", value => "fontsize"}
-	|   |---equals. Attributes: {uid => "8", value => "="}
-	|   |---float. Attributes: {uid => "9", value => "16.0"}
-
-=item o integer
-
-As for C<float> just above.
 
 =item o literal
 
