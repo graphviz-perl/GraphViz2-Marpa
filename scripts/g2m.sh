@@ -1,7 +1,5 @@
 #!/bin/bash
 #
-# Name: g2m.sh.
-#
 # Parameters:
 # 1: The name of input file.
 #	E.g. data/19.gv.

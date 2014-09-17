@@ -1,10 +1,10 @@
-digraph utf8_03
+digraph utf8_01
 {
 	rankdir = TB
 
-	Reichwaldstraße
+	"Reichwaldstraße"
 
-	"Böhme"
+	Böhme
 
 	"ΔΔΔΔΔΔΔΔΔΔΔΔΔ"
 
