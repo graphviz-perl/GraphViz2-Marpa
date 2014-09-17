@@ -58,6 +58,11 @@ data/55.gv
 data/56.gv
 data/57.gv
 data/58.gv
+data/59.01.gv
+data/59.02.gv
+data/59.03.gv
+data/59.04.gv
+data/59.05.gv
 data/60.gv
 data/utf8.01.gv
 data/utf8.02.gv
@@ -142,6 +147,12 @@ html/55.svg
 html/56.svg
 html/57.svg
 html/58.svg
+html/59.01.svg
+html/59.02.svg
+html/59.03.svg
+html/59.04.svg
+html/59.05.svg
+html/60.svg
 html/index.html
 html/utf8.01.svg
 html/utf8.02.svg
@@ -162,6 +173,7 @@ scripts/g2m.pl
 scripts/g2m.sh
 scripts/generate.demo.pl
 scripts/generate.demo.sh
+scripts/gv2svg.sh
 scripts/pod2html.sh
 scripts/test.sh
 scripts/test.utf8.sh
