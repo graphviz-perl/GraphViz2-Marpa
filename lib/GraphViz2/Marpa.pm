@@ -1105,6 +1105,10 @@ sub _process_attributes
 
 		if ( ($name_length > 0) && ($value_length > 0) )
 		{
+			# Remove trailing whitespace from HTML labels.
+
+			$value =~ s/\s+$//;
+
 			$self -> _add_daughter($name, {value => $value});
 		}
 
