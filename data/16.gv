@@ -6,8 +6,9 @@
 
 STRICT digraph graph_16
 {
-	label = "\"Standard\"\rSyntax\lTest"
-	size  = "5,6"
+	fontsize = 16.0
+	label    = "\"Standard\"\rSyntax\lTest"
+	size     = "5,6"
 
 	node
 	[

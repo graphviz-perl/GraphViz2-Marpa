@@ -991,7 +991,11 @@ sub _process
 		}
 		elsif ($event_name =~ $literal_token)
 		{
-			$node_name = ($event_name eq 'edge_literal') ? 'edge' : 'literal';
+			$node_name = ($event_name eq 'edge_literal')
+							? 'edge'
+							: ($event_name eq 'equals_literal')
+							? 'equals'
+							: 'literal';
 			$pos       = $self -> _process_lexeme(\$string, $start, $event_name, $node_name, $lexeme_name);
 		}
 		elsif ($event_name eq 'close_brace')
@@ -1101,7 +1105,7 @@ sub _process_attributes
 
 		if ( ($name_length > 0) && ($value_length > 0) )
 		{
-			$self -> _add_daughter('attribute', {type => $name, value => $value});
+			$self -> _add_daughter($name, {value => $value});
 		}
 
 		# Discard attribute teminators.
@@ -1845,9 +1849,22 @@ the node's attributes to determine the exact nature of the node.
 
 =over 4
 
-=item o attribute
+=item o $attribute_name
 
-This indicates an attribute for a class, an edge, or a node.
+This indicates an attribute for a class (see next point), an edge, or a node.
+
+Here's part of the log from processing data/16.gv:
+
+	|   |---class. Attributes: {uid => "13", value => "node"}
+	|   |   |---literal. Attributes: {uid => "14", value => "["}
+	|   |   |---shape. Attributes: {uid => "15", value => "record"}
+	|   |   |---literal. Attributes: {uid => "16", value => "]"}
+	...
+	|   |---node_id. Attributes: {uid => "22", value => "node_16_1"}
+	|   |   |---literal. Attributes: {uid => "23", value => "["}
+	|   |   |---label. Attributes: {uid => "24", value => "<p11> left|<p12> middle|<p13> right"}
+	|   |   |---pencolor. Attributes: {uid => "25", value => "blue"}
+	|   |   |---literal. Attributes: {uid => "26", value => "]"}
 
 =item o class
 
@@ -1857,16 +1874,63 @@ is the mother of the attributes attached to the class. The 'value' of the attrib
 
 The 1st and last daughters will be literals whose attribute values are '[' and ']' respectively.
 
-Between these 2 nodes will be 1 node for each attribute, as seen above with
-C<< edge ["color" = "green",] >>.
+Input contains this fragment of data/16.gv:
+
+	node
+	[
+		shape = "record",
+	];
+
+And output log contains:
+
+	|   |---class. Attributes: {uid => "13", value => "node"}
+	|   |   |---literal. Attributes: {uid => "14", value => "["}
+	|   |   |---shape. Attributes: {uid => "15", value => "record"}
+	|   |   |---literal. Attributes: {uid => "16", value => "]"}
 
 =item o edge
 
 The 'value' of the attribute will be either '--' or '->'.
 
+Thus the 'tail' will be the previous daughter (node or subgraph), and the 'head' will be the next.
+
+Samples are:
+
+	n1 -> n2
+	n1 -> {n2}
+	{n1} -> n2
+
+=item o equals
+
+The 'value' of the attribute will be '='.
+
+Thus the 'attribute name' will be the previous daughter and the 'attribute value' will be the next.
+
+Input contains this fragment of data/16.gv:
+
+	label = "\"Standard\"\rSyntax\lTest"
+
+And output log contains:
+
+	|   |---node_id. Attributes: {uid => "7", value => "label"}
+	|   |---equals. Attributes: {uid => "8", value => "="}
+	|   |---node_id. Attributes: {uid => "9", value => "\"Standard\"\rSyntax\lTest"}
+
 =item o float
 
+Input contains this fragment of data/16.gv:
+
+	fontsize = 16.0
+
+And output log contains:
+
+	|   |---node_id. Attributes: {uid => "7", value => "fontsize"}
+	|   |---equals. Attributes: {uid => "8", value => "="}
+	|   |---float. Attributes: {uid => "9", value => "16.0"}
+
 =item o integer
+
+As for C<float> just above.
 
 =item o literal
 
@@ -1911,32 +1975,34 @@ See the next point for details about ports and compass points.
 
 =head2 How are nodes, ports and compass points represented in the (above) tree?
 
-Run these:
+Input contains this fragment of data/16.gv:
 
-	perl scripts/g2m.pl -input_file data/16.gv -max info | grep 11
-	perl scripts/g2m.pl -input_file data/16.gv -max info | grep 22
+	node_16_1:p11 -> node_16_2:p22:s
+	[
+		arrowhead = "odiamond";
+		arrowtail = "odot",
+		color     = red
+		dir       = both;
+	];
 
-and the output is:
+And output log contains:
 
-	literal. Attributes: {uid => "11", value => "="}
-	|   |---attribute. Attributes: {type => "label", uid => "24", value => "<p11> left|<p12> middle|<p13> right"}
-	node_id. Attributes: {uid => "32", value => "node_16_1:p11"}
+	|   |---node_id. Attributes: {uid => "32", value => "node_16_1:p11"}
+	|   |---edge. Attributes: {uid => "35", value => "->"}
+	|   |   |---literal. Attributes: {uid => "41", value => "["}
+	|   |   |---arrowhead. Attributes: {uid => "42", value => "odiamond"}
+	|   |   |---arrowtail. Attributes: {uid => "43", value => "odot"}
+	|   |   |---color. Attributes: {uid => "44", value => "red"}
+	|   |   |---dir. Attributes: {uid => "45", value => "both"}
+	|   |   |---literal. Attributes: {uid => "46", value => "]"}
+	|   |---node_id. Attributes: {uid => "36", value => "node_16_2:p22:s"}
 
-and
-
-	node_id. Attributes: {uid => "22", value => "node_16_1"}
-	   |---attribute. Attributes: {type => "label", uid => "30", value => "<p21> one|<p22> two"}
-	node_id. Attributes: {uid => "36", value => "node_16_2:p22:s"}
-
-Close examination shows 2 nodes' values of "node_16_1:p11" and "node_16_2:p22:s".
-
-Thus the ports and compass points have been incorporated into the 'value' attribute.
+You can see the ports and compass points have been incorporated into the 'value' attribute.
 
 =head2 How are comments stored in the tree?
 
 They aren't stored, they are discarded. And this in turn means rendered C<dot> files can't ever contain
 them.
-
 
 =head2 What is the homepage of Marpa?
 
