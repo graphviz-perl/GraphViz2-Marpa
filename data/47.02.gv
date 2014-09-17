@@ -5,5 +5,7 @@ digraph graph_47_02
 		smaller
 		smallest
 	}
-	-> big
+	->
+	big
+	[pencolor = green]
 }

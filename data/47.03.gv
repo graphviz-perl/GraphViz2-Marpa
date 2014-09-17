@@ -11,4 +11,5 @@ digraph graph_47_02
 		bigger
 		biggest
 	}
+	[pencolor = green]
 }
