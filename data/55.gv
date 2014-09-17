@@ -41,7 +41,7 @@ strict digraph graph_55
 			node [fillcolor = magenta fontsize = 26 shape = triangle]
 			edge [color = blue]
 			J [color = yellow shape = square]
-			J -> K
+			J -> K [penwidth = 4]
 		}
 	}
 	graph [rankdir = TB]

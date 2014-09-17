@@ -1881,7 +1881,7 @@ Input contains this fragment of data/16.gv:
 		shape = "record",
 	];
 
-And output log contains:
+And the output log contains:
 
 	|   |---class. Attributes: {uid => "13", value => "node"}
 	|   |   |---literal. Attributes: {uid => "14", value => "["}
@@ -1900,6 +1900,31 @@ Samples are:
 	n1 -> {n2}
 	{n1} -> n2
 
+Note: Post-processing of the tree moves edge attributes off the head daughter (node or subgraph), and
+attaches them to the closest proceeding edge.
+
+Thus:
+
+	n1 -> n2 [penwidth = 5]
+
+Is stored as though the input was:
+
+	n1 -> [penwidth = 5] n2
+
+This means that at the time of encountering the edge, its attributes are immediately available.
+
+However:
+
+	n1 -> n2 -> n3 [penwidth = 5]
+
+Is stored as:
+
+	n1 -> n2 -> [penwidth = 5] n3
+
+Ideally, post-processing will be extended to make that read:
+
+	n1 -> [penwidth = 5] n2 -> [penwidth = 5] n3
+
 =item o equals
 
 The 'value' of the attribute will be '='.
@@ -1910,7 +1935,7 @@ Input contains this fragment of data/16.gv:
 
 	label = "\"Standard\"\rSyntax\lTest"
 
-And output log contains:
+And theoutput log contains:
 
 	|   |---node_id. Attributes: {uid => "7", value => "label"}
 	|   |---equals. Attributes: {uid => "8", value => "="}
@@ -1922,7 +1947,7 @@ Input contains this fragment of data/16.gv:
 
 	fontsize = 16.0
 
-And output log contains:
+And the output log contains:
 
 	|   |---node_id. Attributes: {uid => "7", value => "fontsize"}
 	|   |---equals. Attributes: {uid => "8", value => "="}
@@ -1971,6 +1996,22 @@ The 'value' of the attributes is just the (graph) node's name.
 
 See the next point for details about ports and compass points.
 
+Note: A node name can appear more than once in succession, either as a declaration of the node's
+existance and then as the tail of an edge, or, as in this fragment of data/56.gv:
+
+	node [shape=rpromoter colorscheme=rdbu5 color=1 style=filled fontcolor=3]; Hef1a; TRE; UAS; Hef1aLacOid;
+	Hef1aLacOid [label="Hef1a-LacOid"];
+
+And the output log contains:
+
+	|   |---node_id. Attributes: {uid => "20", value => "Hef1aLacOid"}
+	|   |---node_id. Attributes: {uid => "21", value => "Hef1aLacOid"}
+	|   |   |---literal. Attributes: {uid => "22", value => "["}
+	|   |   |---label. Attributes: {uid => "23", value => "Hef1a-LacOid"}
+	|   |   |---literal. Attributes: {uid => "24", value => "]"}
+
+This is a case where tree compression could be done, but isn't (yet).
+
 =back
 
 =head2 How are nodes, ports and compass points represented in the (above) tree?
@@ -1985,7 +2026,7 @@ Input contains this fragment of data/16.gv:
 		dir       = both;
 	];
 
-And output log contains:
+And the output log contains:
 
 	|   |---node_id. Attributes: {uid => "32", value => "node_16_1:p11"}
 	|   |---edge. Attributes: {uid => "35", value => "->"}
