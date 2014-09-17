@@ -108,8 +108,8 @@
 </g>
 <!-- J&#45;&gt;K -->
 <g id="edge7" class="edge"><title>J&#45;&gt;K</title>
-<path fill="none" stroke="blue" d="M607,-195.287C607,-186.11 607,-174.273 607,-162.089"/>
-<polygon fill="blue" stroke="blue" points="610.5,-161.823 607,-151.823 603.5,-161.823 610.5,-161.823"/>
+<path fill="none" stroke="blue" stroke-width="4" d="M607,-195.287C607,-186.11 607,-174.273 607,-162.089"/>
+<polygon fill="blue" stroke="blue" stroke-width="4" points="610.5,-161.823 607,-151.823 603.5,-161.823 610.5,-161.823"/>
 </g>
 </g>
 </svg>

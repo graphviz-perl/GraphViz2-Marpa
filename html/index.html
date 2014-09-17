@@ -164,7 +164,7 @@ Output file 8: html/15.svg (3416 bytes)
 </tr>
 <tr>
   <td>
-	Input file 9: data/16.gv (850 bytes):<br />/* C comment. */
+	Input file 9: data/16.gv (873 bytes):<br />/* C comment. */
 <br />
 <br />// C++ comment.
 <br />
@@ -172,8 +172,9 @@ Output file 8: html/15.svg (3416 bytes)
 <br />
 <br />STRICT digraph graph_16
 <br />{
-<br />	label = &quot;\&quot;Standard\&quot;\rSyntax\lTest&quot;
-<br />	size  = &quot;5,6&quot;
+<br />	fontsize = 16.0
+<br />	label    = &quot;\&quot;Standard\&quot;\rSyntax\lTest&quot;
+<br />	size     = &quot;5,6&quot;
 <br />
 <br />	node
 <br />	[
@@ -949,61 +950,47 @@ Output file 41: html/46.svg (2113 bytes)
 </tr>
 <tr>
   <td>
-	Input file 42: data/47.gv (64 bytes):<br />digraph graph_47
+	Input file 42: data/47.01.gv (88 bytes):<br />digraph graph_47_01
 <br />{
-<br />	big -&gt;
+<br />	big
+<br />	-&gt;
 <br />	{
 <br />		small
 <br />		smaller
 <br />		smallest
 <br />	}
-<br />}
-
-  </td>
-  <td>
-<object data = "./47.svg"></object><br />
-Output file 42: html/47.svg (2585 bytes)
-  </td>
-</tr>
-<tr>
-  <td>
-	Input file 43: data/47.01.gv (67 bytes):<br />digraph graph_47_01
-<br />{
-<br />	big -&gt;
-<br />	{
-<br />		small
-<br />		smaller
-<br />		smallest
-<br />	}
+<br />	[pencolor = green]
 <br />}
 
   </td>
   <td>
 <object data = "./47.01.svg"></object><br />
-Output file 43: html/47.01.svg (2591 bytes)
+Output file 42: html/47.01.svg (2591 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 44: data/47.02.gv (67 bytes):<br />digraph graph_47_02
+	Input file 43: data/47.02.gv (88 bytes):<br />digraph graph_47_02
 <br />{
 <br />	{
 <br />		small
 <br />		smaller
 <br />		smallest
 <br />	}
-<br />	-&gt; big
+<br />	-&gt;
+<br />	big
+<br />	[pencolor = green]
 <br />}
 
   </td>
   <td>
 <object data = "./47.02.svg"></object><br />
-Output file 44: html/47.02.svg (2581 bytes)
+Output file 43: html/47.02.svg (2581 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 45: data/47.03.gv (94 bytes):<br />digraph graph_47_02
+	Input file 44: data/47.03.gv (114 bytes):<br />digraph graph_47_02
 <br />{
 <br />	{
 <br />		small
@@ -1016,17 +1003,18 @@ Output file 44: html/47.02.svg (2581 bytes)
 <br />		bigger
 <br />		biggest
 <br />	}
+<br />	[pencolor = green]
 <br />}
 
   </td>
   <td>
 <object data = "./47.03.svg"></object><br />
-Output file 45: html/47.03.svg (5136 bytes)
+Output file 44: html/47.03.svg (5136 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 46: data/48.gv (187 bytes):<br />graph graph_49
+	Input file 45: data/48.gv (187 bytes):<br />graph graph_49
 <br />{
 <br />	node
 <br />	[
@@ -1052,12 +1040,12 @@ Output file 45: html/47.03.svg (5136 bytes)
   </td>
   <td>
 <object data = "./48.svg"></object><br />
-Output file 46: html/48.svg (2904 bytes)
+Output file 45: html/48.svg (2904 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 47: data/49.gv (247 bytes):<br />graph graph_49
+	Input file 46: data/49.gv (247 bytes):<br />graph graph_49
 <br />{
 <br />	node
 <br />	[
@@ -1090,12 +1078,12 @@ Output file 46: html/48.svg (2904 bytes)
   </td>
   <td>
 <object data = "./49.svg"></object><br />
-Output file 47: html/49.svg (3413 bytes)
+Output file 46: html/49.svg (3413 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 48: data/50.gv (63 bytes):<br />digraph graph_50
+	Input file 47: data/50.gv (63 bytes):<br />digraph graph_50
 <br />{
 <br /># A node whose name is 0. Can we cope?
 <br />	0
@@ -1104,12 +1092,12 @@ Output file 47: html/49.svg (3413 bytes)
   </td>
   <td>
 <object data = "./50.svg"></object><br />
-Output file 48: html/50.svg (815 bytes)
+Output file 47: html/50.svg (815 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 49: data/51.gv (177 bytes):<br />digraph graph_51
+	Input file 48: data/51.gv (177 bytes):<br />digraph graph_51
 <br />{
 <br />	edge [color = blue]
 <br />
@@ -1129,12 +1117,12 @@ Output file 48: html/50.svg (815 bytes)
   </td>
   <td>
 <object data = "./51.svg"></object><br />
-Output file 49: html/51.svg (2268 bytes)
+Output file 48: html/51.svg (2268 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 50: data/52.gv (183 bytes):<br /># In V 1.04 this would output a node called &#39;node_52_2node_52_3&#39;.
+	Input file 49: data/52.gv (183 bytes):<br /># In V 1.04 this would output a node called &#39;node_52_2node_52_3&#39;.
 <br /># This bug is fixed in V 1.05. See notes in the CHANGES file.
 <br />
 <br />digraph graph_52
@@ -1146,12 +1134,12 @@ Output file 49: html/51.svg (2268 bytes)
   </td>
   <td>
 <object data = "./52.svg"></object><br />
-Output file 50: html/52.svg (1741 bytes)
+Output file 49: html/52.svg (1741 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 51: data/53.gv (690 bytes):<br /># Hash comment
+	Input file 50: data/53.gv (690 bytes):<br /># Hash comment
 <br />
 <br />strict digraph graph_53
 <br />{
@@ -1204,12 +1192,12 @@ Output file 50: html/52.svg (1741 bytes)
   </td>
   <td>
 <object data = "./53.svg"></object><br />
-Output file 51: html/53.svg (6628 bytes)
+Output file 50: html/53.svg (6628 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 52: data/54.gv (115 bytes):<br /># V 1.05 would mis-parse &#39;A [] B&#39; as &#39;A&#39;.
+	Input file 51: data/54.gv (115 bytes):<br /># V 1.05 would mis-parse &#39;A [] B&#39; as &#39;A&#39;.
 <br /># Node B would be lost because [] is empty.
 <br />
 <br />digraph graph_54
@@ -1220,12 +1208,12 @@ Output file 51: html/53.svg (6628 bytes)
   </td>
   <td>
 <object data = "./54.svg"></object><br />
-Output file 52: html/54.svg (1047 bytes)
+Output file 51: html/54.svg (1047 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 53: data/55.gv (1009 bytes):<br />strict digraph graph_55
+	Input file 52: data/55.gv (1024 bytes):<br />strict digraph graph_55
 <br />{
 <br />	label = &quot;Complex Syntax Test&quot;
 <br />
@@ -1268,7 +1256,7 @@ Output file 52: html/54.svg (1047 bytes)
 <br />			node [fillcolor = magenta fontsize = 26 shape = triangle]
 <br />			edge [color = blue]
 <br />			J [color = yellow shape = square]
-<br />			J -&gt; K
+<br />			J -&gt; K [penwidth = 4]
 <br />		}
 <br />	}
 <br />	graph [rankdir = TB]
@@ -1277,12 +1265,12 @@ Output file 52: html/54.svg (1047 bytes)
   </td>
   <td>
 <object data = "./55.svg"></object><br />
-Output file 53: html/55.svg (6883 bytes)
+Output file 52: html/55.svg (6917 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 54: data/56.gv (1353 bytes):<br />digraph g {
+	Input file 53: data/56.gv (1353 bytes):<br />digraph g {
 <br />	rankdir=LR;
 <br />
 <br />	node [shape=rpromoter colorscheme=rdbu5 color=1 style=filled fontcolor=3]; Hef1a; TRE; UAS; Hef1aLacOid;
@@ -1330,12 +1318,12 @@ Output file 53: html/55.svg (6883 bytes)
   </td>
   <td>
 <object data = "./56.svg"></object><br />
-Output file 54: html/56.svg (10989 bytes)
+Output file 53: html/56.svg (10989 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 55: data/57.gv (4389 bytes):<br />digraph G {
+	Input file 54: data/57.gv (4389 bytes):<br />digraph G {
 <br />	graph [rankdir=LR nodesep=0]
 <br />	node [shape=point label=&quot;&quot;]
 <br />	edge [fontsize=10]
@@ -1422,12 +1410,12 @@ Output file 54: html/56.svg (10989 bytes)
   </td>
   <td>
 <object data = "./57.svg"></object><br />
-Output file 55: html/57.svg (58546 bytes)
+Output file 54: html/57.svg (58546 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 56: data/58.gv (410 bytes):<br /># Test of href as a clickable label attribute.
+	Input file 55: data/58.gv (410 bytes):<br /># Test of href as a clickable label attribute.
 <br /># Note the use of single quotes in the label.
 <br /># Double quotes are used for output *.csv files.
 <br />
@@ -1451,16 +1439,116 @@ Output file 55: html/57.svg (58546 bytes)
   </td>
   <td>
 <object data = "./58.svg"></object><br />
-Output file 56: html/58.svg (1663 bytes)
+Output file 55: html/58.svg (1663 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 57: data/utf8.01.gv (111 bytes):<br />digraph utf8_03
+	Input file 56: data/59.01.gv (32 bytes):<br />digraph graph_59_01
+<br />{
+<br />	A -&gt; B
+<br />}
+
+  </td>
+  <td>
+<object data = "./59.01.svg"></object><br />
+Output file 56: html/59.01.svg (1333 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 57: data/59.02.gv (57 bytes):<br /># Comment before graph.
+<br />
+<br />digraph graph_59_02
+<br />{
+<br />	A -&gt; B
+<br />}
+
+  </td>
+  <td>
+<object data = "./59.02.svg"></object><br />
+Output file 57: html/59.02.svg (1333 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 58: data/59.03.gv (56 bytes):<br />digraph graph_59_03
+<br />{
+<br />	A -&gt; B
+<br />}
+<br />
+<br /># Comment after graph.
+
+  </td>
+  <td>
+<object data = "./59.03.svg"></object><br />
+Output file 58: html/59.03.svg (1333 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 59: data/59.04.gv (81 bytes):<br /># Comment before graph.
+<br />
+<br />digraph graph_59_04
+<br />{
+<br />	A -&gt; B
+<br />}
+<br />
+<br /># Comment after graph.
+
+  </td>
+  <td>
+<object data = "./59.04.svg"></object><br />
+Output file 59: html/59.04.svg (1333 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 60: data/59.05.gv (225 bytes):<br />digraph graph_59_05
+<br />{
+<br />	edge [penwidth = 3]
+<br />
+<br />	node [shape = square]
+<br />
+<br />	# Comment within graph.
+<br />
+<br />	A -&gt; B [arrowhead = odot]
+<br />
+<br />	# Comment within graph.
+<br />
+<br />	C -&gt; D
+<br />
+<br />	# Comment within graph.
+<br />
+<br />	label = &quot;Test BNF re comment handling&quot;
+<br />}
+
+  </td>
+  <td>
+<object data = "./59.05.svg"></object><br />
+Output file 60: html/59.05.svg (2353 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 61: data/60.gv (49 bytes):<br />digraph graph_60
+<br />{
+<br />	node_60 [label = &lt;.    .&gt;]
+<br />}
+
+  </td>
+  <td>
+<object data = "./60.svg"></object><br />
+Output file 61: html/60.svg (848 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 62: data/utf8.01.gv (113 bytes):<br />digraph utf8_01
 <br />{
 <br />	rankdir = TB
 <br />
-<br />	Reichwaldstra&szlig;e
+<br />	&quot;Reichwaldstra&szlig;e&quot;
 <br />
 <br />	&quot;B&ouml;hme&quot;
 <br />
@@ -1474,12 +1562,12 @@ Output file 56: html/58.svg (1663 bytes)
   </td>
   <td>
 <object data = "./utf8.01.svg"></object><br />
-Output file 57: html/utf8.01.svg (1949 bytes)
+Output file 62: html/utf8.01.svg (1949 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 58: data/utf8.02.gv (295 bytes):<br />digraph utf8_01
+	Input file 63: data/utf8.02.gv (295 bytes):<br />digraph utf8_02
 <br />{
 <br />	rankdir = TB
 <br />
@@ -1501,12 +1589,12 @@ Output file 57: html/utf8.01.svg (1949 bytes)
   </td>
   <td>
 <object data = "./utf8.02.svg"></object><br />
-Output file 58: html/utf8.02.svg (2656 bytes)
+Output file 63: html/utf8.02.svg (2656 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 59: data/utf8.03.gv (503 bytes):<br />graph utf8_02
+	Input file 64: data/utf8.03.gv (503 bytes):<br />graph utf8_03
 <br />{
 <br />	rankdir = TB
 <br />
@@ -1531,7 +1619,7 @@ Output file 58: html/utf8.02.svg (2656 bytes)
   </td>
   <td>
 <object data = "./utf8.03.svg"></object><br />
-Output file 59: html/utf8.03.svg (4002 bytes)
+Output file 64: html/utf8.03.svg (4002 bytes)
   </td>
 </tr>
 </table>
@@ -1569,7 +1657,7 @@ Date
 <!-- Right -->
 <td>
 <div class="odd_right">
-2014-09-16
+2014-09-18
 </div>
 </td>
 </tr>
