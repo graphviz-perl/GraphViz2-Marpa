@@ -179,7 +179,7 @@ comments				::= comment+
 
 comment					::= <C style comment>
 							| <Cplusplus style comment>
-							| <hash comment>
+							| <hash style comment>
 
 graph_body				::= prolog_tokens graph_statement_tokens
 
@@ -388,7 +388,7 @@ zero					~ '0'
 
 # Hash comment handling copied from Marpa::R2's metag.bnf.
 
-<hash comment>						~ <terminated hash comment>
+<hash style comment>				~ <terminated hash comment>
 										| <unterminated final hash comment>
 
 <terminated hash comment>			~ '#' <hash comment body> <vertical space char>
