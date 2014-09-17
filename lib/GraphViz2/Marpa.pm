@@ -2008,7 +2008,7 @@ Thus:
 
 	n1 -> n2 [penwidth = 5]
 
-Is stored as though the input was:
+is stored as though the input were:
 
 	n1 -> [penwidth = 5] n2
 
@@ -2018,7 +2018,7 @@ However:
 
 	n1 -> n2 -> n3 [penwidth = 5]
 
-Is stored as:
+is stored as:
 
 	n1 -> n2 -> [penwidth = 5] n3
 
