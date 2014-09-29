@@ -246,7 +246,7 @@ node_port_id			::= generic_id_token<colon>generic_id_token
 node_port_compass_id	::= node_port_id<colon>generic_id_token
 
 # Attribute stuff.
-# These have no body between the '[]' because they is parsed manually in order to
+# These have no body between the '[]' because they are parsed manually in order to
 # preserve whitespace in double-quoted strings, which is otherwise discarded by this grammar.
 # See _process_attributes(). See also the same method for the handling of attribute terminators: [;,].
 
@@ -315,6 +315,9 @@ empty_string			~ '""'
 equals_literal			~ '='
 
 escaped_char			~ '\' string_char
+
+# Comment with ' just for the UltraEdit syntax hiliter.
+
 escaped_quote			~ '\"'
 
 :lexeme					~ float				pause => before		event => float
@@ -362,7 +365,7 @@ string					~ string_char+
 
 string_char				~ escaped_char | escaped_quote | [^"]
 
-# Comment with " matching 2nd last \", for the UltraEdit syntax highlighter.
+# Comment with " just for the UltraEdit syntax hiliter.
 
 :lexeme					~ subgraph_literal	pause => before		event => subgraph_literal
 
@@ -618,10 +621,11 @@ sub _adjust_head_attributes
 } # End of _adjust_head_attributes.
 
 # ------------------------------------------------
+# $separator is '='.
 
 sub _attribute_field
 {
-	my($self, $type, $input) = @_;
+	my($self, $type, $input, $separator) = @_;
 	my(@char)          = split(//, $input);
 	my($char_count)    = 0;
 	my($quote_count)   = 0;
@@ -643,7 +647,7 @@ sub _attribute_field
 
 		if ($char eq '"')
 		{
-			# Gobble up and escaped quotes.
+			# Gobble up any escaped quotes.
 
 			if ($previous_char eq '\\')
 			{
@@ -705,7 +709,7 @@ sub _attribute_field
 			{
 				# Discard some chars outside quotes, and possibly finish.
 
-				if ($char =~ /[=\s;,]/)
+				if ($char =~ /[$separator\s;,]/)
 				{
 					next if (length($field) == 0);
 
@@ -851,11 +855,13 @@ sub _compress_nodes
 } # End of _compress_nodes;
 
 # -----------------------------------------------
+# $target is ']'.
 # The special case is <<...>>, as used in attributes.
+# The same code is used in MarpaX::Demo::StringParser.
 
 sub _find_terminator
 {
-	my($self, $stringref, $start) = @_;
+	my($self, $stringref, $start, $target) = @_;
 	my(@char)   = split(//, substr($$stringref, $start) );
 	my($offset) = 0;
 	my($quote)  = '';
@@ -871,7 +877,7 @@ sub _find_terminator
 		if ($quote)
 		{
 			# Ignore an escaped quote.
-			# The first few backslashes are just to fix syntax highlighting in UltraEdit.
+			# The 2nd & 3rd backslashes are just for the UltraEdit syntax hiliter.
 
 			next if ( ($char =~ /[\]\"\'>]/) && ($i > 0) && ($char[$i - 1] eq '\\') );
 
@@ -899,7 +905,7 @@ sub _find_terminator
 			next if ( ($i > 0) && ($char[$i - 1] eq '\\') );
 
 			# 2: " and '.
-			# The backslashes are just to fix syntax highlighting in UltraEdit.
+			# The backslashes are just for the UltraEdit syntax hiliter.
 
 			if ($char =~ /[\"\']/)
 			{
@@ -911,7 +917,7 @@ sub _find_terminator
 			# 3: <.
 			# In the case of attributes but not nodes names, quotes can be <...> or <<...>>.
 
-			if ($char =~ '<')
+			if ($char eq '<')
 			{
 				$quote = '>';
 				$angle = 1 if ( ($i < $#char) && ($char[$i + 1] eq '<') );
@@ -919,7 +925,7 @@ sub _find_terminator
 				next;
 			}
 
-			last if ($char eq ']');
+			last if ($char eq $target);
 		}
 	}
 
@@ -1123,7 +1129,7 @@ sub _process
 			$self -> log(debug => "open_bracket => '$literal'");
 			$self -> _process_bracket($literal);
 
-			$pos = $self -> _find_terminator(\$string, $start);
+			$pos = $self -> _find_terminator(\$string, $start, ']');
 
 			$attribute_list = substr($string, $start + 1, $pos - $start - 1);
 
@@ -1171,10 +1177,15 @@ sub _process_attributes
 
 	while (length($attribute_list) > 0)
 	{
-		($name, $attribute_list)  = $self -> _attribute_field('name', $attribute_list);
+		($name, $attribute_list)  = $self -> _attribute_field('name', $attribute_list, '=');
 		$name_length              = length $name;
-		($value, $attribute_list) = $self -> _attribute_field('value', $attribute_list);
+
+		$self -> log(debug => "Found attribute name  <$name>");
+
+		($value, $attribute_list) = $self -> _attribute_field('value', $attribute_list, '=');
 		$value_length             = length $value;
+
+		$self -> log(debug => "Found attribute value <$value>");
 
 		# Check for 'node_name [ ]'.
 
@@ -1189,10 +1200,7 @@ sub _process_attributes
 
 		# Discard attribute teminators.
 
-		while ($attribute_list =~ /^[;,]/)
-		{
-			substr($attribute_list, 0, 1) = '';
-		}
+		$attribute_list =~ s/^\s*[;,]\s*//;
 	}
 
 } # End of _process_attributes.
