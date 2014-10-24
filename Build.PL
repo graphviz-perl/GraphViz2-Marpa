@@ -99,7 +99,7 @@ $class -> new
 		'Getopt::Long'                => 2.38,
 		'HTML::Entities::Interpolate' => 1.04,
 		'Log::Handler'                => 0.71,
-		'Marpa::R2'                   => 2.022000,
+		'Marpa::R2'                   => 2.096000,
 		'Moo'                         => 1.006000,
 		'open'                        => 0, # For writing utf8 node etc names.
 		'perl'                        => 5.014002,

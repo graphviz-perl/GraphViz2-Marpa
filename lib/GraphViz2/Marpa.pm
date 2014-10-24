@@ -437,7 +437,7 @@ END_OF_GRAMMAR
 
 	# The 'prolog' daughter is the parent of all items in the prolog,
 	# so it gets pushed onto the stack.
-	# Later, when 'digraph' or 'graph' is encountered, the 'Graph' daughter replaces it.
+	# Later, when 'digraph' or 'graph' is encountered, the 'graph' daughter replaces it.
 
 	my(@daughters) = $self -> tree -> daughters;
 	my($index)     = 0; # 0 => prolog, 1 => graph.
@@ -1745,6 +1745,10 @@ The value supplied by the 'description' option takes precedence over the value r
 See also the L</description()> method.
 
 'input_file' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
+=head2 log($level, $s)
+
+If a logger is defined, this logs the message $s at level $level.
 
 =head2 logger([$logger_object])
 
