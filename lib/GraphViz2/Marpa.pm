@@ -18,9 +18,17 @@ use Moo;
 
 use Tree::DAG_Node;
 
-use Types::Standard qw/Any ArrayRef Int Str/;
+use Types::Standard qw/Any ArrayRef Int HashRef Str/;
 
 use Try::Tiny;
+
+has bnf =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Any,
+	required => 0,
+);
 
 has brace_count =>
 (
@@ -59,6 +67,14 @@ has input_file =>
 	default  => sub{return ''},
 	is       => 'rw',
 	isa      => Str,
+	required => 0,
+);
+
+has known_events =>
+(
+	default  => sub{return {} },
+	is       => 'rw',
+	isa      => HashRef,
 	required => 0,
 );
 
@@ -156,11 +172,11 @@ sub BUILD
 		);
 	}
 
-	$self -> grammar
+	# Policy: Event names are always the same as the name of the corresponding lexeme.
+
+	$self -> bnf
 	(
-		Marpa::R2::Scanless::G -> new
-		({
-source					=> \(<<'END_OF_GRAMMAR'),
+<<'END_OF_GRAMMAR'
 
 :default				::= action => [values]
 
@@ -411,6 +427,13 @@ zero					~ '0'
 whitespace				~ [\s]*
 
 END_OF_GRAMMAR
+	);
+
+	$self -> grammar
+	(
+		Marpa::R2::Scanless::G -> new
+		({
+			source => \$self -> bnf
 		})
 	);
 
@@ -418,16 +441,23 @@ END_OF_GRAMMAR
 	(
 		Marpa::R2::Scanless::R -> new
 		({
-			grammar          => $self -> grammar,
-			#trace_terminals => 99,
+			grammar => $self -> grammar,
 		})
 	);
+
+	my(%event);
+
+	for my $line (split(/\n/, $self -> bnf) )
+	{
+		$event{$1} = 1 if ($line =~ /event\s+=>\s+(\w+)/);
+	}
+
+	$self -> known_events(\%event);
 
 	# Since $self -> tree has not been initialized yet,
 	# we can't call our _add_daughter() until after this statement.
 
 	$self -> tree(Tree::DAG_Node -> new({name => 'root', attributes => {uid => 0} }));
-
 	$self -> stack([$self -> tree -> root]);
 
 	for my $name (qw/prolog graph/)
@@ -752,6 +782,36 @@ sub _attribute_field
 
 # --------------------------------------------------
 
+sub clean_after
+{
+	my($self, $s) = @_;
+
+	$s =~ s/^\s+//;
+	$s =~ s/\s+$//;
+	$s =~ s/^([\"\'])(.*)\1$/$2/; # The backslashes are just for the UltraEdit syntax hiliter.
+
+	return $s;
+
+} # End of clean_after.
+
+# --------------------------------------------------
+
+sub clean_before
+{
+	my($self, $s) = @_;
+
+	$s =~ s/\s*;\s*$//;
+	$s =~ s/^\s+//;
+	$s =~ s/\s+$//;
+	$s =~ s/^(<)\s+/$1/;
+	$s =~ s/\s+(>)$/$1/;
+
+	return $s;
+
+} # End of clean_before.
+
+# --------------------------------------------------
+
 sub _compress_node_port_compass
 {
 	my($self, $mothers) = @_;
@@ -1030,22 +1090,24 @@ sub _post_process
 sub _process
 {
 	my($self)          = @_;
-	my($string)        = $self -> graph_text;
+	my($string)        = $self -> clean_before($self -> graph_text);
 	my($length)        = length $string;
+	my($last_event)    = '';
+	my($format)        = '%-20s    %5s    %5s    %5s    %-s';
 	my($literal_token) = qr/(?:colon|edge_literal|equals_literal|strict_literal|subgraph_literal)/;
 	my($prolog_token)  = qr/(?:digraph_literal|graph_literal)/;
 	my($simple_token)  = qr/(?:float|integer)/;
 
-	$self -> log(debug => "Input:\n$string");
+	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
 
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
 
 	my($attribute_list, $attribute_value);
-	my(@event, $event_name);
+	my($event_name);
 	my($generic_id);
-	my($lexeme_name, $lexeme, $literal);
+	my($lexeme, $literal);
 	my($node_name);
-	my($span, $start, $s);
+	my($span, $start);
 	my($type);
 
 	for
@@ -1055,20 +1117,17 @@ sub _process
 		$pos = $self -> recce -> resume($pos)
 	)
 	{
-		$self -> log(debug => "read() => pos: $pos. ");
-
-		@event          = @{$self -> recce -> events};
-		$event_name     = ${$event[0]}[0];
+		$event_name     = $self -> _validate_event;
 		($start, $span) = $self -> recce -> pause_span;
-		$lexeme_name    = $self -> recce -> pause_lexeme;
+		$pos            = $self -> recce -> lexeme_read($event_name);
+		$literal        = substr($string, $start, $pos - $start);
 		$lexeme         = $self -> recce -> literal($start, $span);
 
-		$self -> log(debug => "pause_span($lexeme_name) => start: $start. span: $span. " .
-			"lexeme: $lexeme. event: $event_name. ");
+		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
 
 		if ($event_name =~ $simple_token)
 		{
-			$pos = $self -> _process_lexeme(\$string, $start, $event_name, $event_name, $lexeme_name, $event_name);
+			$self -> _add_daughter($event_name, {type => $event_name, value => $literal});
 		}
 		elsif ($event_name =~ $literal_token)
 		{
@@ -1077,28 +1136,21 @@ sub _process
 							: ($event_name eq 'equals_literal')
 							? 'equals'
 							: 'literal';
-			$pos       = $self -> _process_lexeme(\$string, $start, $event_name, $node_name, $lexeme_name, undef);
+			$self -> _add_daughter($node_name, {value => $literal});
 		}
 		elsif ($event_name eq 'close_brace')
 		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
 			$self -> log(debug => "close_brace => '$literal'");
 			$self -> _process_brace($literal);
 		}
 		elsif ($event_name eq 'close_bracket')
 		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
 			$self -> log(debug => "close_bracket => '$literal'");
 			$self -> _process_bracket($literal);
 		}
 		elsif ($event_name eq 'generic_id')
 		{
-			$pos        = $self -> recce -> lexeme_read($lexeme_name);
-			$generic_id = substr($string, $start, $pos - $start);
+			$generic_id = $literal;
 			$type       = 'node_id';
 
 			if ($generic_id =~ /^(?:edge|graph|node)$/i)
@@ -1115,17 +1167,11 @@ sub _process
 		}
 		elsif ($event_name eq 'open_brace')
 		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
 			$self -> log(debug => "open_brace => '$literal'");
 			$self -> _process_brace($literal);
 		}
 		elsif ($event_name eq 'open_bracket')
 		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
 			$self -> log(debug => "open_bracket => '$literal'");
 			$self -> _process_bracket($literal);
 
@@ -1138,25 +1184,17 @@ sub _process
 		}
 		elsif ($event_name eq 'string')
 		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = substr($string, $start, $pos - $start);
-
 			$self -> log(debug => "string => '$literal'");
 			$self -> _process_token('node_id', $literal);
 		}
 		# From here on are the low-frequency events.
 		elsif ($event_name =~ $prolog_token)
 		{
-			$pos     = $self -> recce -> lexeme_read($lexeme_name);
-			$literal = lc substr($string, $start, $pos - $start);
-
 			$self -> log(debug => "$event_name => '$literal'");
 			$self -> _process_digraph_graph($event_name, $literal);
 		}
-		else
-		{
-			die "Unexpected lexeme '$lexeme_name' with a pause\n";
-		}
+
+		$last_event = $event_name;
     }
 
 	# Return a defined value for success and undef for failure.
@@ -1309,24 +1347,6 @@ sub _process_digraph_graph
 
 # --------------------------------------------------
 
-sub _process_lexeme
-{
-	my($self, $string, $start, $event_name, $name, $lexeme_name, $type) = @_;
-	my($pos)   = $self -> recce -> lexeme_read($lexeme_name);
-	my($value) = lc substr($$string, $start, $pos - $start);
-
-	$self -> log(debug => "$event_name => '$value'");
-
-	$value = $type ? {type => $type, value => $value} : {value => $value};
-
-	$self -> _add_daughter($name, $value);
-
-	return $pos;
-
-} # End of _process_lexeme.
-
-# --------------------------------------------------
-
 sub _process_token
 {
 	my($self, $name, $value) = @_;
@@ -1428,6 +1448,36 @@ sub run
 	return $result;
 
 } # End of run.
+
+# ------------------------------------------------
+
+sub _validate_event
+{
+	my($self)        = @_;
+	my(@event)       = @{$self -> recce -> events};
+	my($event_count) = scalar @event;
+
+	if ($event_count > 1)
+	{
+		$self -> log(error => "Events triggered: $event_count (should be 1). Names: " . join(', ', map{${$_}[0]} @event) . '.');
+
+		die "The code only handles 1 event at a time\n";
+	}
+
+	my($event_name) = ${$event[0]}[0];
+
+	if (! ${$self -> known_events}{$event_name})
+	{
+		my($msg) = "Unexpected event name '$event_name'";
+
+		$self -> log(error => $msg);
+
+		die "$msg\n";
+	}
+
+	return $event_name;
+
+} # End of _validate_event.
 
 # --------------------------------------------------
 
