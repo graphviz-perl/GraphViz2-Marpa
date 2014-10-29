@@ -184,28 +184,41 @@ lexeme default			=  latm => 1		# Longest Acceptable Token Match.
 
 :start					::= graph_grammar
 
-graph_grammar			::= graph_definition
+graph_grammar			::= statement_list
 
 # Graph stuff.
 
-graph_definition		::= node_definition
+statement_list			::= statement_token*
+
+statement_token			::= statement statement_terminator
+							| comments statement_token
+
+comments				::= comment+
+
+comment					::= <C style comment>
+							| <Cplusplus style comment>
+							| <hash style comment>
+
+statement_terminator	::= semicolon_literal
+statement_terminator	::=
+
+statement				::= node_statement
 							| edge_definition
 # Node stuff
-
-node_definition			::= node_statement
-							| node_statement graph_definition
 
 node_statement			::= node_name_token
 							| node_name_token attribute_definition
 							| node_statement (',') node_statement
 
-node_name_token			::= start_node end_node		# Allow for the anonymous node.
-							| start_node node_name end_node
+node_name_token			::= node_name
+							| number
+
+number					::= float
+							| integer
 
 # Edge stuff
 
 edge_definition			::= edge_statement
-							| edge_statement graph_definition
 
 edge_statement			::= edge_name
 							| edge_name attribute_definition
@@ -235,18 +248,32 @@ attribute_name			~ string_char_set+
 
 attribute_value			~ string_char_set+
 
+digit					~ [0-9]
+digit_any				~ digit*
+digit_many				~ digit+
+
 :lexeme					~ directed_edge				pause => before		event => directed_edge		priority => 2
 directed_edge			~ '->'
 
 :lexeme					~ end_attributes			pause => before		event => end_attributes		priority => 1
 end_attributes			~ '}'
 
-:lexeme					~ end_node					pause => before		event => end_node			priority => 1
-end_node				~ ']'
+#:lexeme					~ end_node					pause => before		event => end_node			priority => 1
+#end_node				~ ']'
 
 escaped_char			~ '\' [[:print:]]
 
 # Use ' here just for the UltraEdit syntax hiliter.
+
+:lexeme					~ float							pause => before		event => float
+
+float					~ sign_maybe digit_any '.' digit_many
+							| sign_maybe digit_many '.' digit_any
+
+integer					~ sign_maybe non_zero digit_any
+							| zero
+
+non_zero				~ [1-9]
 
 :lexeme					~ literal_label				pause => before		event => literal_label		priority => 1
 literal_label			~ 'label'
@@ -255,24 +282,60 @@ literal_label			~ 'label'
 
 node_name				~ string_char_set+
 
+semicolon_literal		~ ';'
+
+sign_maybe				~ [+-]
+sign_maybe				~
+
 :lexeme					~ start_attributes			pause => before		event => start_attributes
 start_attributes		~ '{'
 
-:lexeme					~ start_node				pause => before		event => start_node
-start_node				~ '['
+#:lexeme					~ start_node				pause => before		event => start_node
+#start_node				~ '['
 
 string_char_set			~ escaped_char
-							| [^;:}\]] # Neither a separator [;:] nor a terminator [}\]].
+							| [^;,\]] # Neither a separator [;,] nor a terminator [\]].
 
 :lexeme					~ undirected_edge			pause => before		event => undirected_edge	priority => 2
 undirected_edge			~ '--'
 
-# Lexemes in alphabetical order.
+zero					~ '0'
 
 # Boilerplate.
 
 :discard				~ whitespace
 whitespace				~ [\s]+
+
+# C and C++ comment handling copied from MarpaX::Languages::C::AST.
+
+<C style comment>					~ '/*' <comment interior> '*/'
+
+<comment interior>					~ <optional non stars> <optional star prefixed segments> <optional pre final stars>
+
+<optional non stars>				~ [^*]*
+<optional star prefixed segments>	~ <star prefixed segment>*
+<star prefixed segment>				~ <stars> [^/*] <optional star free text>
+<stars>								~ [*]+
+<optional star free text>			~ [^*]*
+<optional pre final stars>			~ [*]*
+
+<Cplusplus style comment>			~ '//' <Cplusplus comment interior>
+<Cplusplus comment interior>		~ [^\n]*
+
+# Hash comment handling copied from Marpa::R2's metag.bnf.
+
+<hash style comment>				~ <terminated hash comment>
+										| <unterminated final hash comment>
+
+<terminated hash comment>			~ '#' <hash comment body> <vertical space char>
+
+<unterminated final hash comment>	~ '#' <hash comment body>
+
+<hash comment body>					~ <hash comment char>*
+
+<vertical space char>				~ [\x{A}\x{B}\x{C}\x{D}\x{2028}\x{2029}]
+
+<hash comment char>					~ [^\x{A}\x{B}\x{C}\x{D}\x{2028}\x{2029}]
 
 END_OF_GRAMMAR
 	);
