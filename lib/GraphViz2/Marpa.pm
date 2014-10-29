@@ -152,7 +152,7 @@ has uid =>
 
 our $VERSION = '2.00';
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 sub BUILD
 {
@@ -208,7 +208,6 @@ statement				::= node_statement
 
 node_statement			::= node_name_token
 							| node_name_token attribute_definition
-							| node_statement (',') node_statement
 
 node_name_token			::= node_name
 							| number
@@ -222,7 +221,6 @@ edge_definition			::= edge_statement
 
 edge_statement			::= edge_name
 							| edge_name attribute_definition
-							| edge_statement (',') edge_statement
 
 edge_name				::= directed_edge
 							| undirected_edge
@@ -236,7 +234,7 @@ attribute_statement		::= start_attributes string_token_set end_attributes
 string_token_set		::= string_token_pair+
 
 string_token_pair		::= literal_label
-							| attribute_name (':') attribute_value
+							| attribute_name ('=') attribute_value
 
 # Lexemes in alphabetical order.
 
@@ -255,20 +253,19 @@ digit_many				~ digit+
 :lexeme					~ directed_edge				pause => before		event => directed_edge		priority => 2
 directed_edge			~ '->'
 
-:lexeme					~ end_attributes			pause => before		event => end_attributes		priority => 1
-end_attributes			~ '}'
-
-#:lexeme					~ end_node					pause => before		event => end_node			priority => 1
-#end_node				~ ']'
+:lexeme					~ end_attributes			pause => before		event => end_attributes		priority => 91
+end_attributes			~ ']'
 
 escaped_char			~ '\' [[:print:]]
 
 # Use ' here just for the UltraEdit syntax hiliter.
 
-:lexeme					~ float							pause => before		event => float
+:lexeme					~ float						pause => before		event => float				priority => 11
 
 float					~ sign_maybe digit_any '.' digit_many
 							| sign_maybe digit_many '.' digit_any
+
+:lexeme					~ integer					pause => before		event => integer			priority => 12
 
 integer					~ sign_maybe non_zero digit_any
 							| zero
@@ -278,7 +275,7 @@ non_zero				~ [1-9]
 :lexeme					~ literal_label				pause => before		event => literal_label		priority => 1
 literal_label			~ 'label'
 
-:lexeme					~ node_name					pause => before		event => node_name
+:lexeme					~ node_name					pause => before		event => node_name			priority => 13
 
 node_name				~ string_char_set+
 
@@ -287,14 +284,11 @@ semicolon_literal		~ ';'
 sign_maybe				~ [+-]
 sign_maybe				~
 
-:lexeme					~ start_attributes			pause => before		event => start_attributes
-start_attributes		~ '{'
-
-#:lexeme					~ start_node				pause => before		event => start_node
-#start_node				~ '['
+:lexeme					~ start_attributes			pause => before		event => start_attributes	priority => 91
+start_attributes		~ '['
 
 string_char_set			~ escaped_char
-							| [^;,\]] # Neither a separator [;,] nor a terminator [\]].
+							| [^;\s\[\]] # Neither a separator [;] nor a terminator [\s\[\]].
 
 :lexeme					~ undirected_edge			pause => before		event => undirected_edge	priority => 2
 undirected_edge			~ '--'
@@ -662,7 +656,7 @@ sub _add_daughter
 
 } # End of _add_daughter.
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 =pod
 
@@ -705,7 +699,7 @@ sub _adjust_attributes
 
 =cut
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 =pod
 
@@ -750,7 +744,7 @@ sub _adjust_edge_attributes
 
 =cut
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 =pod
 
@@ -966,7 +960,7 @@ sub _attribute_field
 
 =cut
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 sub clean_after
 {
@@ -980,7 +974,7 @@ sub clean_after
 
 } # End of clean_after.
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 sub clean_before
 {
@@ -996,7 +990,7 @@ sub clean_before
 
 } # End of clean_before.
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 =pod
 
@@ -1056,7 +1050,7 @@ sub _compress_node_port_compass
 
 =cut
 
-# -----------------------------------------------
+# ------------------------------------------------
 
 =pod
 
@@ -1108,7 +1102,7 @@ sub _compress_nodes
 
 =cut
 
-# -----------------------------------------------
+# ------------------------------------------------
 # $target is ']'.
 # The special case is <<...>>, as used in attributes.
 # The same code is used in MarpaX::Demo::StringParser.
@@ -1191,7 +1185,18 @@ sub _find_terminator
 
 =cut
 
-# --------------------------------------------------
+# ------------------------------------------------
+
+sub hashref2string
+{
+	my($self, $hashref) = @_;
+	$hashref ||= {};
+
+	return '{' . join(', ', map{qq|$_ => "$$hashref{$_}"|} sort keys %$hashref) . '}';
+
+} # End of hashref2string.
+
+# ------------------------------------------------
 
 sub log
 {
@@ -1201,7 +1206,7 @@ sub log
 
 } # End of log.
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 =pod
 
@@ -1287,7 +1292,7 @@ sub _post_process
 
 =cut
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 sub _process
 {
@@ -1515,7 +1520,7 @@ sub _process
 
 } # End of _process.
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 =pod
 
@@ -1559,18 +1564,18 @@ sub _process_attributes
 
 =cut
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 sub _process_brace
 {
 	my($self, $name) = @_;
 
-	# When a '{' is encountered, the last thing pushed becomes it's parent.
-	# Likewise, if '}' is encountered, we pop the stack.
+	# When a '[' is encountered, the last thing pushed becomes it's parent.
+	# Likewise, if ']' is encountered, we pop the stack.
 
 	my($stack) = $self -> stack;
 
-	if ($name eq '{')
+	if ($name eq '[')
 	{
 		my(@daughters) = $$stack[$#$stack] -> daughters;
 
@@ -1639,7 +1644,7 @@ sub _process_brace
 
 =cut
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 =pod
 
@@ -1673,7 +1678,7 @@ sub _process_bracket
 
 =cut
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 =pod
 
@@ -1765,7 +1770,7 @@ sub _process_label
 {
 	my($self, $recce, $fields, $string, $length, $pos) = @_;
 
-	$pos = $self -> _skip_separator($string, $length, $pos, ':');
+	$pos = $self -> _skip_separator($string, $length, $pos, '=');
 
 	return $pos if ($pos >= $length);
 
@@ -1857,7 +1862,7 @@ sub _process_quotes
 
 } # End of _process_quotes.
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 sub _process_token
 {
@@ -1872,7 +1877,7 @@ sub _process_token
 sub _process_unquoted
 {
 	my($self, $recce, $fields, $string, $length, $pos) = @_;
-	my($re) = qr/[;}]/;
+	my($re) = qr/[;\s\[\]]/; # Neither a separator [;] nor a terminator [\s\[\]].
 
 	if (substr($string, $pos, 1) =~ $re)
 	{
@@ -1907,7 +1912,7 @@ sub _process_unquoted
 
 } # End of _process_unquoted.
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 sub run
 {
@@ -2012,7 +2017,9 @@ sub _skip_separator
 	{
 		$char = substr($string, $pos, 1);
 
+		$self -> log(debug => "1 skip_separator: $separator. char: $char");
 		last if ($char !~ $re);
+		$self -> log(debug => "1 skip_separator: $separator. char: $char");
 
 		$pos++;
 	}
@@ -2051,7 +2058,7 @@ sub _validate_event
 
 } # End of _validate_event.
 
-# --------------------------------------------------
+# ------------------------------------------------
 
 1;
 
