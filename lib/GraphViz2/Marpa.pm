@@ -180,6 +180,111 @@ sub BUILD
 
 :default				::= action => [values]
 
+lexeme default			=  latm => 1		# Longest Acceptable Token Match.
+
+:start					::= graph_grammar
+
+graph_grammar			::= graph_definition
+
+# Graph stuff.
+
+graph_definition		::= node_definition
+							| edge_definition
+# Node stuff
+
+node_definition			::= node_statement
+							| node_statement graph_definition
+
+node_statement			::= node_name_token
+							| node_name_token attribute_definition
+							| node_statement (',') node_statement
+
+node_name_token			::= start_node end_node		# Allow for the anonymous node.
+							| start_node node_name end_node
+
+# Edge stuff
+
+edge_definition			::= edge_statement
+							| edge_statement graph_definition
+
+edge_statement			::= edge_name
+							| edge_name attribute_definition
+							| edge_statement (',') edge_statement
+
+edge_name				::= directed_edge
+							| undirected_edge
+
+# Attribute stuff.
+
+attribute_definition	::= attribute_statement+
+
+attribute_statement		::= start_attributes string_token_set end_attributes
+
+string_token_set		::= string_token_pair+
+
+string_token_pair		::= literal_label
+							| attribute_name (':') attribute_value
+
+# Lexemes in alphabetical order.
+
+:lexeme					~ attribute_name			pause => before		event => attribute_name
+
+attribute_name			~ string_char_set+
+
+:lexeme					~ attribute_value			pause => before		event => attribute_value
+
+attribute_value			~ string_char_set+
+
+:lexeme					~ directed_edge				pause => before		event => directed_edge		priority => 2
+directed_edge			~ '->'
+
+:lexeme					~ end_attributes			pause => before		event => end_attributes		priority => 1
+end_attributes			~ '}'
+
+:lexeme					~ end_node					pause => before		event => end_node			priority => 1
+end_node				~ ']'
+
+escaped_char			~ '\' [[:print:]]
+
+# Use ' here just for the UltraEdit syntax hiliter.
+
+:lexeme					~ literal_label				pause => before		event => literal_label		priority => 1
+literal_label			~ 'label'
+
+:lexeme					~ node_name					pause => before		event => node_name
+
+node_name				~ string_char_set+
+
+:lexeme					~ start_attributes			pause => before		event => start_attributes
+start_attributes		~ '{'
+
+:lexeme					~ start_node				pause => before		event => start_node
+start_node				~ '['
+
+string_char_set			~ escaped_char
+							| [^;:}\]] # Neither a separator [;:] nor a terminator [}\]].
+
+:lexeme					~ undirected_edge			pause => before		event => undirected_edge	priority => 2
+undirected_edge			~ '--'
+
+# Lexemes in alphabetical order.
+
+# Boilerplate.
+
+:discard				~ whitespace
+whitespace				~ [\s]+
+
+END_OF_GRAMMAR
+	);
+
+=pod
+
+	$self -> bnf
+	(
+<<'END_OF_GRAMMAR'
+
+:default				::= action => [values]
+
 lexeme default			= latm => 1		# Longest Acceptable Token Match.
 
 :start 					::= graph_definition
@@ -429,6 +534,8 @@ whitespace				~ [\s]*
 END_OF_GRAMMAR
 	);
 
+=cut
+
 	$self -> grammar
 	(
 		Marpa::R2::Scanless::G -> new
@@ -494,6 +601,8 @@ sub _add_daughter
 
 # --------------------------------------------------
 
+=pod
+
 sub _adjust_attributes
 {
 	my($self, $mother) = @_;
@@ -531,7 +640,11 @@ sub _adjust_attributes
 
 } # End of _adjust_attributes.
 
+=cut
+
 # --------------------------------------------------
+
+=pod
 
 sub _adjust_edge_attributes
 {
@@ -572,7 +685,11 @@ sub _adjust_edge_attributes
 
 } # End of _adjust_edge_attributes.
 
+=cut
+
 # --------------------------------------------------
+
+=pod
 
 sub _adjust_head_attributes
 {
@@ -650,8 +767,12 @@ sub _adjust_head_attributes
 
 } # End of _adjust_head_attributes.
 
+=cut
+
 # ------------------------------------------------
 # $separator is '='.
+
+=pod
 
 sub _attribute_field
 {
@@ -780,6 +901,8 @@ sub _attribute_field
 
 } # End of _attribute_field.
 
+=cut
+
 # --------------------------------------------------
 
 sub clean_after
@@ -811,6 +934,8 @@ sub clean_before
 } # End of clean_before.
 
 # --------------------------------------------------
+
+=pod
 
 sub _compress_node_port_compass
 {
@@ -866,7 +991,11 @@ sub _compress_node_port_compass
 
 } # End of _compress_node_port_compass.
 
+=cut
+
 # -----------------------------------------------
+
+=pod
 
 sub _compress_nodes
 {
@@ -914,10 +1043,14 @@ sub _compress_nodes
 
 } # End of _compress_nodes;
 
+=cut
+
 # -----------------------------------------------
 # $target is ']'.
 # The special case is <<...>>, as used in attributes.
 # The same code is used in MarpaX::Demo::StringParser.
+
+=pod
 
 sub _find_terminator
 {
@@ -993,6 +1126,8 @@ sub _find_terminator
 
 } # End of _find_terminator.
 
+=cut
+
 # --------------------------------------------------
 
 sub log
@@ -1004,6 +1139,8 @@ sub log
 } # End of log.
 
 # --------------------------------------------------
+
+=pod
 
 sub _post_process
 {
@@ -1085,10 +1222,120 @@ sub _post_process
 
 } # End of _post_process.
 
+=cut
+
 # --------------------------------------------------
 
 sub _process
 {
+	my($self)       = @_;
+	my($string)     = $self -> clean_before($self -> graph_text);
+	my($length)     = length $string;
+	my($last_event) = '';
+	my($format)     = '%-20s    %5s    %5s    %5s    %-s';
+
+	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
+
+	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
+
+	my($event_name);
+	my(@fields);
+	my($lexeme, $literal);
+	my($span, $start);
+
+	for
+	(
+		my $pos = $self -> recce -> read(\$string);
+		$pos < $length;
+		$pos = $self -> recce -> resume($pos)
+	)
+	{
+		$event_name     = $self -> _validate_event;
+		($start, $span) = $self -> recce -> pause_span;
+		$pos            = $self -> recce -> lexeme_read($event_name);
+		$literal        = substr($string, $start, $pos - $start);
+		$lexeme         = $self -> recce -> literal($start, $span);
+
+		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
+
+		if ($event_name eq 'attribute_name')
+		{
+			$fields[0] = $self -> clean_after($literal);
+		}
+		elsif ($event_name eq 'attribute_value')
+		{
+			$literal = $self -> clean_after($literal);
+
+			$self -> _add_daughter($fields[0], {value => $literal});
+
+			@fields = ();
+
+			# Skip the separator.
+
+			while ( ($pos < (length($string) - 1) ) && (substr($string, $pos, 1) =~ /[\s;]/) ) { $pos++ };
+		}
+		elsif ($event_name eq 'directed_edge')
+		{
+			$self -> _add_daughter('edge_id', {value => $self -> clean_after($literal)});
+		}
+		elsif ($event_name eq 'end_attributes')
+		{
+			$self -> _process_brace($literal);
+		}
+		elsif ($event_name eq 'end_node')
+		{
+			# Is this the anonymous node?
+
+			if ($last_event eq 'start_node')
+			{
+				$self -> _add_daughter('node_id', {value => ''});
+			}
+		}
+		elsif ($event_name eq 'literal_label')
+		{
+			push @fields, $literal;
+
+			$pos    = $self -> _process_label($self -> recce, \@fields, $string, $length, $pos);
+			@fields = ();
+		}
+		elsif ($event_name eq 'node_name')
+		{
+			$literal = $self -> clean_after($literal);
+
+			$self -> _add_daughter('node_id', {value => $literal});
+		}
+		elsif ($event_name eq 'start_attributes')
+		{
+			$self -> _process_brace($literal);
+		}
+		elsif ($event_name eq 'start_node')
+		{
+			# Do nothing.
+		}
+		elsif ($event_name eq 'undirected_edge')
+		{
+			$self -> _add_daughter('edge_id', {value => $self -> clean_after($literal)});
+		}
+
+		$last_event = $event_name;
+    }
+
+	if ($self -> recce -> ambiguity_metric > 1)
+	{
+		$self -> log(notice => 'Ambiguous parse');
+	}
+
+	if (my $ambiguous_status = $self -> recce -> ambiguous)
+	{
+		$self -> log(notice => "Parse is ambiguous: $ambiguous_status.");
+	}
+
+	# Return a defined value for success and undef for failure.
+
+	return $self -> recce -> value;
+
+=pod
+
 	my($self)          = @_;
 	my($string)        = $self -> clean_before($self -> graph_text);
 	my($length)        = length $string;
@@ -1201,9 +1448,13 @@ sub _process
 
 	return $self -> recce -> value;
 
+=cut
+
 } # End of _process.
 
 # --------------------------------------------------
+
+=pod
 
 sub _process_attributes
 {
@@ -1243,7 +1494,39 @@ sub _process_attributes
 
 } # End of _process_attributes.
 
+=cut
+
 # --------------------------------------------------
+
+sub _process_brace
+{
+	my($self, $name) = @_;
+
+	# When a '{' is encountered, the last thing pushed becomes it's parent.
+	# Likewise, if '}' is encountered, we pop the stack.
+
+	my($stack) = $self -> stack;
+
+	if ($name eq '{')
+	{
+		my(@daughters) = $$stack[$#$stack] -> daughters;
+
+		push @$stack, $daughters[$#daughters];
+
+		$self -> _process_token('literal', $name);
+	}
+	else
+	{
+		$self -> _process_token('literal', $name);
+
+		pop @$stack;
+
+		$self -> stack($stack);
+	}
+
+} # End of _process_brace.
+
+=pod
 
 sub _process_brace
 {
@@ -1291,7 +1574,11 @@ sub _process_brace
 
 } # End of _process_brace.
 
+=cut
+
 # --------------------------------------------------
+
+=pod
 
 sub _process_bracket
 {
@@ -1321,7 +1608,11 @@ sub _process_bracket
 
 } # End of _process_bracket.
 
+=cut
+
 # --------------------------------------------------
+
+=pod
 
 sub _process_digraph_graph
 {
@@ -1345,6 +1636,164 @@ sub _process_digraph_graph
 
 } # End of _process_digraph_graph.
 
+=cut
+
+# ------------------------------------------------
+
+sub _process_html
+{
+	my($self, $recce, $fields, $string, $length, $pos) = @_;
+
+	my($bracket_count) = 0;
+	my($open_bracket)  = '<';
+	my($close_bracket) = '>';
+	my($previous_char) = '';
+	my($label)         = '';
+
+	my($char);
+
+	while ($pos < $length)
+	{
+		$char  = substr($string, $pos, 1);
+		$label .= $char;
+
+		if ($previous_char eq '\\')
+		{
+		}
+		elsif ($char eq $open_bracket)
+		{
+			$bracket_count++;
+		}
+		elsif ($char eq $close_bracket)
+		{
+			$bracket_count--;
+
+			if ($bracket_count == 0)
+			{
+				$pos++;
+
+				last;
+			}
+		}
+
+		$previous_char = $char;
+
+		$pos++;
+	}
+
+	$label = $self -> clean_after($label);
+
+	if ( ($label =~ /^</) && ($label !~ /^<.*>$/) )
+	{
+		my($line, $column) = $recce -> line_column;
+
+		die "Mismatched <> in HTML !$label! at (line, column) = ($line, $column)\n";
+	}
+
+	push @$fields, $label;
+
+	return $self -> _skip_separator($string, $length, $pos, ';');
+
+} # End of _process_html.
+
+# ------------------------------------------------
+
+sub _process_label
+{
+	my($self, $recce, $fields, $string, $length, $pos) = @_;
+
+	$pos = $self -> _skip_separator($string, $length, $pos, ':');
+
+	return $pos if ($pos >= $length);
+
+	my($char) = substr($string, $pos, 1);
+
+	if ($char eq "'")
+	{
+		$pos = $self -> _process_quotes($recce, $fields, $string, $length, $pos, "'");
+	}
+	elsif ($char eq '"')
+	{
+		$pos = $self -> _process_quotes($recce, $fields, $string, $length, $pos, '"');
+	}
+	elsif ($char eq '<')
+	{
+		$pos = $self -> _process_html($recce, $fields, $string, $length, $pos);
+	}
+	else
+	{
+		$pos = $self -> _process_unquoted($recce, $fields, $string, $length, $pos);
+	}
+
+	for (my $i = 0; $i < $#$fields; $i += 2)
+	{
+		$self -> _add_daughter($$fields[$i], {value => $$fields[$i + 1]});
+	}
+
+	return $pos;
+
+} # End of _process_label.
+
+# ------------------------------------------------
+
+sub _process_quotes
+{
+	my($self, $recce, $fields, $string, $length, $pos, $terminator) = @_;
+
+	my($previous_char) = '';
+	my($label)         = '';
+	my($quote_count)   = 0;
+
+	my($char);
+
+	while ($pos < $length)
+	{
+		$char = substr($string, $pos, 1);
+
+		if ( ($previous_char ne '\\') && ($char eq $terminator) )
+		{
+			$quote_count++;
+
+			if ($quote_count == 2)
+			{
+				$label .= $char;
+
+					$pos++;
+
+				last;
+			}
+		}
+
+		$label         .= $char;
+		$previous_char = $char;
+
+		$pos++;
+	}
+
+	# Don't call clean_after, since it removes the ' and " we are about to check.
+
+	$label =~ s/^\s+//;
+	$label =~ s/\s+$//;
+
+	if ( ($label =~ /^['"]/) && ($label !~ /^(['"]).*\1$/) )
+	{
+		# Use ' and " here just for the UltraEdit syntax hiliter.
+
+		my($line, $column) = $recce -> line_column;
+
+		die "Mismatched quotes in label !$label! at (line, column) = ($line, $column)\n";
+	}
+
+	$label = $self -> clean_after($label);
+
+	push @$fields, $label;
+
+	$self -> log(debug => "_process_quotes(). Label !$label!");
+
+	return $self -> _skip_separator($string, $length, $pos, ';');
+
+} # End of _process_quotes.
+
 # --------------------------------------------------
 
 sub _process_token
@@ -1354,6 +1803,46 @@ sub _process_token
 	$self -> _add_daughter($name, {value => $value});
 
 } # End of _process_token.
+
+# ------------------------------------------------
+
+sub _process_unquoted
+{
+	my($self, $recce, $fields, $string, $length, $pos) = @_;
+	my($re) = qr/[;}]/;
+
+	if (substr($string, $pos, 1) =~ $re)
+	{
+		push @$fields, '';
+
+		return $pos;
+	}
+
+	my($previous_char) = '';
+	my($label)         = '';
+	my($quote_count)   = 0;
+
+	my($char);
+
+	while ($pos < $length)
+	{
+		$char = substr($string, $pos, 1);
+
+		last if ( ($previous_char ne '\\') && ($char =~ $re) );
+
+		$label         .= $char;
+		$previous_char = $char;
+
+		$pos++;
+	}
+
+	$label = $self -> clean_after($label);
+
+	push @$fields, $label;
+
+	return $self -> _skip_separator($string, $length, $pos, ';');
+
+} # End of _process_unquoted.
 
 # --------------------------------------------------
 
@@ -1371,14 +1860,7 @@ sub run
 	{
 		# Quick removal of whole-line C++ and hash comments.
 
-		my @graph_text = grep{! m!^\s*(?:#|//)!}
-							read_file
-								(
-									$self -> input_file,
-									binmode => ':encoding(UTF-8)',
-								);
-
-		$self -> graph_text(join('', @graph_text) );
+		$self -> graph_text(join(' ', grep{! m!^(?:#|//)!} read_file($self -> input_file, binmode => ':encoding(utf-8)') ) );
 	}
 	else
 	{
@@ -1391,24 +1873,27 @@ sub run
 
 	try
 	{
-		if (defined $self -> _process)
+		if (defined (my $value = $self -> _process) )
 		{
-			$self -> _post_process;
 			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
 		}
 		else
 		{
 			$result = 1;
+
+			$self -> log(error => 'Parse failed');
 		}
 	}
 	catch
 	{
 		$result = 1;
 
-		$self -> log(error => "Exception: $_");
+		$self -> log(error => "Parse failed. Error: $_");
 	};
 
 	$self -> log(info => "Parse result: $result (0 is success)");
+
+=pod
 
 	if ($result == 0)
 	{
@@ -1443,11 +1928,35 @@ sub run
 		}
 	}
 
+=cut
+
 	# Return 0 for success and 1 for failure.
 
 	return $result;
 
 } # End of run.
+
+# ------------------------------------------------
+
+sub _skip_separator
+{
+	my($self, $string, $length, $pos, $separator) = @_;
+	my($re) = qr/[\s$separator]/;
+
+	my($char);
+
+	while ($pos < $length - 1)
+	{
+		$char = substr($string, $pos, 1);
+
+		last if ($char !~ $re);
+
+		$pos++;
+	}
+
+	return $pos;
+
+} # End of _skip_separator.
 
 # ------------------------------------------------
 
