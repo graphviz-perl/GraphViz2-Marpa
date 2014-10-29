@@ -182,16 +182,42 @@ sub BUILD
 
 lexeme default			=  latm => 1		# Longest Acceptable Token Match.
 
-:start					::= graph_grammar
+:start					::= graph_definition
 
-graph_grammar			::= statement_list
+graph_definition		::= graph_body
+#							| comments graph_body
+#							| graph_body comments
+#							| comments graph_body comments
+
+graph_body				::= prolog_tokens graph_statement
+
+prolog_tokens			::= strict_token graph_type global_id_type
+
+strict_token			::=
+strict_token			::= strict_literal
+
+graph_type				::= digraph_literal
+							| graph_literal
+
+global_id_type			::=
+global_id_type			::= node_name_token
 
 # Graph stuff.
+
+graph_statement			::= open_brace statement_list close_brace
 
 statement_list			::= statement_token*
 
 statement_token			::= statement statement_terminator
 							| comments statement_token
+
+statement				::= node_statement
+							| edge_statement
+
+statement_terminator	::= semicolon_literal
+statement_terminator	::=
+
+# Comment stuff.
 
 comments				::= comment+
 
@@ -199,37 +225,42 @@ comment					::= <C style comment>
 							| <Cplusplus style comment>
 							| <hash style comment>
 
-statement_terminator	::= semicolon_literal
-statement_terminator	::=
-
-statement				::= node_statement
-							| edge_definition
 # Node stuff
 
 node_statement			::= node_name_token
-							| node_name_token attribute_definition
+							| node_name_token attribute_statement
 
 node_name_token			::= node_name
-							| number
-
-number					::= float
+							| float
 							| integer
 
 # Edge stuff
 
-edge_definition			::= edge_statement
+edge_statement			::= edge_lhs edge_rhs
+							| edge_lhs edge_rhs attribute_statement
 
-edge_statement			::= edge_name
-							| edge_name attribute_definition
+edge_lhs				::= node_name_token
+#							| subgraph_statement
+
+edge_rhs				::= edge_name edge_lhs
+							| edge_name edge_lhs edge_rhs
 
 edge_name				::= directed_edge
 							| undirected_edge
 
+#edge_node_token			::= generic_id_token
+#							| node_port_id
+#							| node_port_compass_id
+#
+#node_port_id			::= generic_id_token<colon>generic_id_token
+#
+#node_port_compass_id	::= node_port_id<colon>generic_id_token
+
 # Attribute stuff.
 
-attribute_definition	::= attribute_statement+
+#attribute_definition	::= attribute_statement+
 
-attribute_statement		::= start_attributes string_token_set end_attributes
+attribute_statement		::= open_bracket string_token_set close_bracket
 
 string_token_set		::= string_token_pair+
 
@@ -238,59 +269,79 @@ string_token_pair		::= literal_label
 
 # Lexemes in alphabetical order.
 
-:lexeme					~ attribute_name			pause => before		event => attribute_name
+:lexeme					~ attribute_name		pause => before		event => attribute_name
 
 attribute_name			~ string_char_set+
 
-:lexeme					~ attribute_value			pause => before		event => attribute_value
+:lexeme					~ attribute_value		pause => before		event => attribute_value
 
 attribute_value			~ string_char_set+
+
+:lexeme					~ close_brace			pause => before		event => close_brace
+close_brace				~ '}'
 
 digit					~ [0-9]
 digit_any				~ digit*
 digit_many				~ digit+
 
-:lexeme					~ directed_edge				pause => before		event => directed_edge		priority => 2
+:lexeme					~ digraph_literal		pause => before		event => digraph_literal
+digraph_literal			~ 'digraph':i
+
+# directed_edge and undirected_edge have high priorities to stop them being incorporated into node names.
+
+:lexeme					~ directed_edge			pause => before		event => directed_edge		priority => 51
 directed_edge			~ '->'
 
-:lexeme					~ end_attributes			pause => before		event => end_attributes		priority => 91
-end_attributes			~ ']'
+# close_bracket and open_bracket have high priorities to stop them being incorporated into node names.
+
+:lexeme					~ close_bracket			pause => before		event => close_bracket		priority => 91
+close_bracket			~ ']'
 
 escaped_char			~ '\' [[:print:]]
 
 # Use ' here just for the UltraEdit syntax hiliter.
 
-:lexeme					~ float						pause => before		event => float				priority => 11
-
+:lexeme					~ float					pause => before		event => float				priority => 11
 float					~ sign_maybe digit_any '.' digit_many
 							| sign_maybe digit_many '.' digit_any
 
-:lexeme					~ integer					pause => before		event => integer			priority => 12
+:lexeme					~ graph_literal			pause => before		event => graph_literal
+graph_literal			~ 'graph':i
 
+:lexeme					~ integer				pause => before		event => integer			priority => 12
 integer					~ sign_maybe non_zero digit_any
 							| zero
 
-non_zero				~ [1-9]
-
-:lexeme					~ literal_label				pause => before		event => literal_label		priority => 1
+:lexeme					~ literal_label			pause => before		event => literal_label		priority => 1
 literal_label			~ 'label'
 
-:lexeme					~ node_name					pause => before		event => node_name			priority => 13
-
+:lexeme					~ node_name				pause => before		event => node_name			priority => 13
 node_name				~ string_char_set+
+
+non_zero				~ [1-9]
+
+:lexeme					~ open_brace			pause => before		event => open_brace
+open_brace				~ '{'
+
+# close_bracket and open_bracket have high priorities to stop them being incorporated into node names.
+
+:lexeme					~ open_bracket			pause => before		event => open_bracket		priority => 91
+open_bracket			~ '['
 
 semicolon_literal		~ ';'
 
 sign_maybe				~ [+-]
 sign_maybe				~
 
-:lexeme					~ start_attributes			pause => before		event => start_attributes	priority => 91
-start_attributes		~ '['
+:lexeme					~ strict_literal		pause => before		event => strict_literal
+strict_literal			~ 'strict':i
 
 string_char_set			~ escaped_char
 							| [^;\s\[\]] # Neither a separator [;] nor a terminator [\s\[\]].
 
-:lexeme					~ undirected_edge			pause => before		event => undirected_edge	priority => 2
+# directed_edge and undirected_edge have high priorities to stop them being incorporated into node names.
+
+:lexeme					~ undirected_edge		pause => before		event => undirected_edge	priority => 51
 undirected_edge			~ '--'
 
 zero					~ '0'
@@ -658,8 +709,6 @@ sub _add_daughter
 
 # ------------------------------------------------
 
-=pod
-
 sub _adjust_attributes
 {
 	my($self, $mother) = @_;
@@ -697,11 +746,7 @@ sub _adjust_attributes
 
 } # End of _adjust_attributes.
 
-=cut
-
 # ------------------------------------------------
-
-=pod
 
 sub _adjust_edge_attributes
 {
@@ -723,7 +768,7 @@ sub _adjust_edge_attributes
 
 			$name = $daughters[$i] -> name;
 
-			next if ($name ne 'edge');
+			next if ($name ne 'edge_id');
 
 			# This test is redundant if we know the input file is syntactally valid,
 			# since then there must necessarily be a next daughter after an edge.
@@ -742,11 +787,7 @@ sub _adjust_edge_attributes
 
 } # End of _adjust_edge_attributes.
 
-=cut
-
 # ------------------------------------------------
-
-=pod
 
 sub _adjust_head_attributes
 {
@@ -824,142 +865,6 @@ sub _adjust_head_attributes
 
 } # End of _adjust_head_attributes.
 
-=cut
-
-# ------------------------------------------------
-# $separator is '='.
-
-=pod
-
-sub _attribute_field
-{
-	my($self, $type, $input, $separator) = @_;
-	my(@char)          = split(//, $input);
-	my($char_count)    = 0;
-	my($quote_count)   = 0;
-	my($field)         = '';
-	my($html)          = 'no';
-	my($previous_char) = '';
-	my($result)        = '';
-
-	my($char);
-
-	for my $i (0 .. $#char)
-	{
-		$char_count++;
-
-		$char = $char[$i];
-		$html = 'yes' if ( ($html eq 'no') && ($char eq '<') && ($field eq '') );
-
-		$self -> log(debug => "Char: <$char>. HTML: $html. quote_count: $quote_count. Field: $field.");
-
-		if ($char eq '"')
-		{
-			# Gobble up any escaped quotes.
-
-			if ($previous_char eq '\\')
-			{
-				$field         .= $char;
-				$previous_char = $char;
-
-				next;
-			}
-
-			$quote_count++;
-
-			$field .= $char;
-
-			# If HTML, gobble up any quotes.
-
-			if ($html eq 'yes')
-			{
-				$previous_char = $char;
-
-				next;
-			}
-
-			# First quote is start of field.
-
-			if ($quote_count == 1)
-			{
-				$previous_char = $char;
-
-				next;
-			}
-
-			# Second quote is end of field.
-
-			$quote_count = 0;
-			$result      = $field;
-			$field       = '';
-
-			$self -> log(debug => "Result 1: $result.");
-
-			# Skip the quote, and skip any training '\s=\s'.
-
-			$i++;
-
-			$self -> log(debug => "Input: " . join('', @char[$i .. $#char]) . '.');
-
-			while ( ($i < $#char) && ($char[$i] =~ /[=\s]/) )
-			{
-				$i++;
-				$char_count++;
-			}
-
-			$self -> log(debug => "Input: " . join('', @char[$i .. $#char]) . '.');
-
-			last;
-		}
-		elsif ($quote_count == 0)
-		{
-			if ($html eq 'no')
-			{
-				# Discard some chars outside quotes, and possibly finish.
-
-				if ($char =~ /[$separator\s;,]/)
-				{
-					next if (length($field) == 0);
-
-					$result = $field;
-					$field  = '';
-
-					$self -> log(debug => "Result 2: $result.");
-
-					last;
-				}
-			}
-
-			$field         .= $char;
-			$previous_char = $char;
-		}
-		else
-		{
-			$field .= $char;
-		}
-
-		$previous_char = $char;
-	}
-
-	$result = $field if ($field ne '');
-	$result =~ s/^"(.+)"$/$1/;
-
-	$self -> log(debug => "Input 1: $input.");
-
-	$input  = substr($input, $char_count);
-
-	$self -> log(debug => "Input 2: $input.");
-
-	$input  =~ s/^[\s;,]+//;
-
-	$self -> log(debug => "Input 3: $input.");
-
-	return ($result, $input);
-
-} # End of _attribute_field.
-
-=cut
-
 # ------------------------------------------------
 
 sub clean_after
@@ -991,8 +896,6 @@ sub clean_before
 } # End of clean_before.
 
 # ------------------------------------------------
-
-=pod
 
 sub _compress_node_port_compass
 {
@@ -1048,11 +951,7 @@ sub _compress_node_port_compass
 
 } # End of _compress_node_port_compass.
 
-=cut
-
 # ------------------------------------------------
-
-=pod
 
 sub _compress_nodes
 {
@@ -1100,91 +999,6 @@ sub _compress_nodes
 
 } # End of _compress_nodes;
 
-=cut
-
-# ------------------------------------------------
-# $target is ']'.
-# The special case is <<...>>, as used in attributes.
-# The same code is used in MarpaX::Demo::StringParser.
-
-=pod
-
-sub _find_terminator
-{
-	my($self, $stringref, $start, $target) = @_;
-	my(@char)   = split(//, substr($$stringref, $start) );
-	my($offset) = 0;
-	my($quote)  = '';
-	my($angle)  = 0; # Set to 1 if inside <<...>>.
-
-	my($char);
-
-	for my $i (0 .. $#char)
-	{
-		$char   = $char[$i];
-		$offset = $i;
-
-		if ($quote)
-		{
-			# Ignore an escaped quote.
-			# The 2nd & 3rd backslashes are just for the UltraEdit syntax hiliter.
-
-			next if ( ($char =~ /[\]\"\'>]/) && ($i > 0) && ($char[$i - 1] eq '\\') );
-
-			# Get out of quotes if matching one found.
-
-			if ($char eq $quote)
-			{
-				if ($quote eq '>')
-				{
-					$quote = '' if (! $angle || ($char[$i - 1] eq '>') );
-
-					next;
-				}
-
-				$quote = '';
-
-				next;
-			}
-		}
-		else
-		{
-			# Look for quotes.
-			# 1: Skip escaped chars.
-
-			next if ( ($i > 0) && ($char[$i - 1] eq '\\') );
-
-			# 2: " and '.
-			# The backslashes are just for the UltraEdit syntax hiliter.
-
-			if ($char =~ /[\"\']/)
-			{
-				$quote = $char;
-
-				next;
-			}
-
-			# 3: <.
-			# In the case of attributes but not nodes names, quotes can be <...> or <<...>>.
-
-			if ($char eq '<')
-			{
-				$quote = '>';
-				$angle = 1 if ( ($i < $#char) && ($char[$i + 1] eq '<') );
-
-				next;
-			}
-
-			last if ($char eq $target);
-		}
-	}
-
-	return $start + $offset;
-
-} # End of _find_terminator.
-
-=cut
-
 # ------------------------------------------------
 
 sub hashref2string
@@ -1207,8 +1021,6 @@ sub log
 } # End of log.
 
 # ------------------------------------------------
-
-=pod
 
 sub _post_process
 {
@@ -1234,7 +1046,7 @@ sub _post_process
 
 			# Stash mother uids, for later processing.
 
-			if ($name eq 'edge')
+			if ($name eq 'edge_id')
 			{
 				$attributes    = $node -> mother -> attributes;
 				$uid           = $$attributes{uid};
@@ -1250,7 +1062,7 @@ sub _post_process
 
 			if ($node && ($node -> name ne 'root') )
 			{
-				$self -> _adjust_attributes($node);
+#				$self -> _adjust_attributes($node);
 			}
 
 			# Keep recursing.
@@ -1260,7 +1072,9 @@ sub _post_process
 		_depth => 0,
 	});
 
-	$self -> _compress_node_port_compass(\%mothers);
+#	$self -> _compress_node_port_compass(\%mothers);
+
+	$self -> log(info => "Mother: $_") for keys %mothers;
 
 	# Now look for attributes hanging off the edge's head node/subgraph,
 	# and move them back to belong to the edge itself.
@@ -1290,17 +1104,18 @@ sub _post_process
 
 } # End of _post_process.
 
-=cut
-
 # ------------------------------------------------
 
 sub _process
 {
-	my($self)       = @_;
-	my($string)     = $self -> clean_before($self -> graph_text);
-	my($length)     = length $string;
-	my($last_event) = '';
-	my($format)     = '%-20s    %5s    %5s    %5s    %-s';
+	my($self)          = @_;
+	my($string)        = $self -> clean_before($self -> graph_text);
+	my($length)        = length $string;
+	my($format)        = '%-20s    %5s    %5s    %5s    %-s';
+	my($last_event)    = '';
+	my($literal_token) = qr/(?:colon|edge_literal|strict_literal|subgraph_literal)/;
+	my($prolog_token)  = qr/(?:digraph_literal|graph_literal)/;
+	my($simple_token)  = qr/(?:float|integer)/;
 
 	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
 
@@ -1309,6 +1124,7 @@ sub _process
 	my($event_name);
 	my(@fields);
 	my($lexeme, $literal);
+	my($node_name);
 	my($span, $start);
 
 	for
@@ -1326,7 +1142,18 @@ sub _process
 
 		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
 
-		if ($event_name eq 'attribute_name')
+		if ($event_name =~ $simple_token)
+		{
+			$self -> _add_daughter($event_name, {type => $event_name, value => $literal});
+		}
+		elsif ($event_name =~ $literal_token)
+		{
+			$node_name = ($event_name eq 'edge_literal')
+							? 'edge'
+							: 'literal';
+			$self -> _add_daughter($node_name, {value => $literal});
+		}
+		elsif ($event_name eq 'attribute_name')
 		{
 			$fields[0] = $self -> clean_after($literal);
 		}
@@ -1342,22 +1169,17 @@ sub _process
 
 			while ( ($pos < (length($string) - 1) ) && (substr($string, $pos, 1) =~ /[\s;]/) ) { $pos++ };
 		}
-		elsif ($event_name eq 'directed_edge')
-		{
-			$self -> _add_daughter('edge_id', {value => $self -> clean_after($literal)});
-		}
-		elsif ($event_name eq 'end_attributes')
+		elsif ($event_name eq 'close_brace')
 		{
 			$self -> _process_brace($literal);
 		}
-		elsif ($event_name eq 'end_node')
+		elsif ($event_name eq 'close_bracket')
 		{
-			# Is this the anonymous node?
-
-			if ($last_event eq 'start_node')
-			{
-				$self -> _add_daughter('node_id', {value => ''});
-			}
+			$self -> _process_bracket($literal);
+		}
+		elsif ($event_name eq 'directed_edge')
+		{
+			$self -> _add_daughter('edge_id', {value => $self -> clean_after($literal)});
 		}
 		elsif ($event_name eq 'literal_label')
 		{
@@ -1372,13 +1194,17 @@ sub _process
 
 			$self -> _add_daughter('node_id', {value => $literal});
 		}
-		elsif ($event_name eq 'start_attributes')
+		elsif ($event_name eq 'open_brace')
 		{
 			$self -> _process_brace($literal);
 		}
-		elsif ($event_name eq 'start_node')
+		elsif ($event_name eq 'open_bracket')
 		{
-			# Do nothing.
+			$self -> _process_bracket($literal);
+		}
+		elsif ($event_name =~ $prolog_token)
+		{
+			$self -> _process_digraph_graph($event_name, $literal);
 		}
 		elsif ($event_name eq 'undirected_edge')
 		{
@@ -1390,12 +1216,12 @@ sub _process
 
 	if ($self -> recce -> ambiguity_metric > 1)
 	{
-		$self -> log(notice => 'Ambiguous parse');
+		$self -> log(notice => 'Parse is ambiguous. Ambiguity metric > 1');
 	}
 
 	if (my $ambiguous_status = $self -> recce -> ambiguous)
 	{
-		$self -> log(notice => "Parse is ambiguous: $ambiguous_status.");
+		$self -> log(notice => "Parse is ambiguous. Status: $ambiguous_status");
 	}
 
 	# Return a defined value for success and undef for failure.
@@ -1522,80 +1348,6 @@ sub _process
 
 # ------------------------------------------------
 
-=pod
-
-sub _process_attributes
-{
-	my($self, $attribute_list) = @_;
-
-	my($name_length, $value_length);
-	my($name);
-	my($value);
-
-	while (length($attribute_list) > 0)
-	{
-		($name, $attribute_list)  = $self -> _attribute_field('name', $attribute_list, '=');
-		$name_length              = length $name;
-
-		$self -> log(debug => "Found attribute name  <$name>");
-
-		($value, $attribute_list) = $self -> _attribute_field('value', $attribute_list, '=');
-		$value_length             = length $value;
-
-		$self -> log(debug => "Found attribute value <$value>");
-
-		# Check for 'node_name [ ]'.
-
-		if ( ($name_length > 0) && ($value_length > 0) )
-		{
-			# Remove trailing whitespace from HTML labels.
-
-			$value =~ s/\s+$//;
-
-			$self -> _add_daughter($name, {value => $value});
-		}
-
-		# Discard attribute teminators.
-
-		$attribute_list =~ s/^\s*[;,]\s*//;
-	}
-
-} # End of _process_attributes.
-
-=cut
-
-# ------------------------------------------------
-
-sub _process_brace
-{
-	my($self, $name) = @_;
-
-	# When a '[' is encountered, the last thing pushed becomes it's parent.
-	# Likewise, if ']' is encountered, we pop the stack.
-
-	my($stack) = $self -> stack;
-
-	if ($name eq '[')
-	{
-		my(@daughters) = $$stack[$#$stack] -> daughters;
-
-		push @$stack, $daughters[$#daughters];
-
-		$self -> _process_token('literal', $name);
-	}
-	else
-	{
-		$self -> _process_token('literal', $name);
-
-		pop @$stack;
-
-		$self -> stack($stack);
-	}
-
-} # End of _process_brace.
-
-=pod
-
 sub _process_brace
 {
 	my($self, $name) = @_;
@@ -1642,11 +1394,7 @@ sub _process_brace
 
 } # End of _process_brace.
 
-=cut
-
 # ------------------------------------------------
-
-=pod
 
 sub _process_bracket
 {
@@ -1676,11 +1424,7 @@ sub _process_bracket
 
 } # End of _process_bracket.
 
-=cut
-
 # ------------------------------------------------
-
-=pod
 
 sub _process_digraph_graph
 {
@@ -1703,8 +1447,6 @@ sub _process_digraph_graph
 	$self -> stack($stack);
 
 } # End of _process_digraph_graph.
-
-=cut
 
 # ------------------------------------------------
 
@@ -1943,6 +1685,7 @@ sub run
 	{
 		if (defined (my $value = $self -> _process) )
 		{
+			$self -> _post_process;
 			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
 		}
 		else
