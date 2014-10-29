@@ -200,7 +200,7 @@ graph_type				::= digraph_literal
 							| graph_literal
 
 global_id_type			::=
-global_id_type			::= node_name_token
+global_id_type			::= node_name
 
 # Graph stuff.
 
@@ -227,19 +227,15 @@ comment					::= <C style comment>
 
 # Node stuff
 
-node_statement			::= node_name_token
-							| node_name_token attribute_statement
-
-node_name_token			::= node_name
-							| float
-							| integer
+node_statement			::= node_name
+							| node_name attribute_statement
 
 # Edge stuff
 
 edge_statement			::= edge_lhs edge_rhs
 							| edge_lhs edge_rhs attribute_statement
 
-edge_lhs				::= node_name_token
+edge_lhs				::= node_name
 #							| subgraph_statement
 
 edge_rhs				::= edge_name edge_lhs
@@ -280,10 +276,6 @@ attribute_value			~ string_char_set+
 :lexeme					~ close_brace			pause => before		event => close_brace
 close_brace				~ '}'
 
-digit					~ [0-9]
-digit_any				~ digit*
-digit_many				~ digit+
-
 :lexeme					~ digraph_literal		pause => before		event => digraph_literal
 digraph_literal			~ 'digraph':i
 
@@ -301,24 +293,14 @@ escaped_char			~ '\' [[:print:]]
 
 # Use ' here just for the UltraEdit syntax hiliter.
 
-:lexeme					~ float					pause => before		event => float				priority => 11
-float					~ sign_maybe digit_any '.' digit_many
-							| sign_maybe digit_many '.' digit_any
-
 :lexeme					~ graph_literal			pause => before		event => graph_literal
 graph_literal			~ 'graph':i
-
-:lexeme					~ integer				pause => before		event => integer			priority => 12
-integer					~ sign_maybe non_zero digit_any
-							| zero
 
 :lexeme					~ literal_label			pause => before		event => literal_label		priority => 1
 literal_label			~ 'label'
 
-:lexeme					~ node_name				pause => before		event => node_name			priority => 13
+:lexeme					~ node_name				pause => before		event => node_name			#priority => 13
 node_name				~ string_char_set+
-
-non_zero				~ [1-9]
 
 :lexeme					~ open_brace			pause => before		event => open_brace
 open_brace				~ '{'
@@ -330,21 +312,18 @@ open_bracket			~ '['
 
 semicolon_literal		~ ';'
 
-sign_maybe				~ [+-]
-sign_maybe				~
-
 :lexeme					~ strict_literal		pause => before		event => strict_literal
 strict_literal			~ 'strict':i
 
+# Warning: This qr// must match the exclusions, i.e. [^...], in sub _process_unquoted.
+
 string_char_set			~ escaped_char
-							| [^;\s\[\]] # Neither a separator [;] nor a terminator [\s\[\]].
+							| [^;\s\[\]\{\}] # Neither a separator [;] nor a terminator [\s\[\]\{\}].
 
 # directed_edge and undirected_edge have high priorities to stop them being incorporated into node names.
 
 :lexeme					~ undirected_edge		pause => before		event => undirected_edge	priority => 51
 undirected_edge			~ '--'
-
-zero					~ '0'
 
 # Boilerplate.
 
@@ -656,7 +635,9 @@ END_OF_GRAMMAR
 	(
 		Marpa::R2::Scanless::R -> new
 		({
-			grammar => $self -> grammar,
+			grammar         => $self -> grammar,
+			ranking_method  => 'high_rule_only',
+			#trace_terminals => 1,
 		})
 	);
 
@@ -706,45 +687,6 @@ sub _add_daughter
 	$$stack[$#$stack] -> add_daughter($node);
 
 } # End of _add_daughter.
-
-# ------------------------------------------------
-
-sub _adjust_attributes
-{
-	my($self, $mother) = @_;
-	my(@daughters)     = $mother -> daughters;
-
-	my(@attributes);
-	my(@name);
-
-	for (my $i = 0; $i < ($#daughters - 1); $i++)
-	{
-		# Have we found a triplet of the form ['node_id', 'equals', 'float|integer|node_id']?
-
-		if ($daughters[$i] -> name eq 'node_id')
-		{
-			$name[0] = $daughters[$i + 1] -> name;
-			$name[1] = $daughters[$i + 2] -> name;
-
-			if ("$name[0]$name[1]" =~ /^equals(?:float|integer|node_id)/)
-			{
-				$attributes[0] = $daughters[$i] -> attributes;
-				$attributes[1] = $daughters[$i + 2]-> attributes;
-				$attributes[2] = {type => $attributes[1]{type} || 'string', uid => $attributes[0]{uid}, value => $attributes[1]{value} };
-
-				$daughters[$i] -> name($attributes[0]{value});
-				$daughters[$i] -> attributes($attributes[2]);
-
-				# Really, we want to do ...
-
-				#splice(@daughters, ($i + 1), 2);
-
-				# ... but Tree::DAG_Node warns against changing the tree during a walk_down.
-			}
-		}
-	}
-
-} # End of _adjust_attributes.
 
 # ------------------------------------------------
 
@@ -1053,19 +995,7 @@ sub _post_process
 				$mothers{$uid} = $node -> mother if (! $mothers{$uid});
 			}
 
-			# Phase 1: Replace tree node triplets ('node_id', 'equals', 'float|integer|node_id')
-			# with the 3 daughters ('$attribute_name', 'equals', 'float|integer|node_id').
-
-			$node = $node -> mother;
-
-			# Ignore the root's mother, and nodes whose mother is 'root'.
-
-			if ($node && ($node -> name ne 'root') )
-			{
-#				$self -> _adjust_attributes($node);
-			}
-
-			# Keep recursing.
+			# Keep walking.
 
 			return 1;
 		},
@@ -1077,30 +1007,9 @@ sub _post_process
 	$self -> log(info => "Mother: $_") for keys %mothers;
 
 	# Now look for attributes hanging off the edge's head node/subgraph,
-	# and move them back to belong to the edge itself.
+	# and move them back to belong to all edges in the path.
 
 	$self -> _adjust_edge_attributes(\%mothers);
-
-	# Phase 2: Replace tree node triplets ('node_id', 'equals', 'float|integer|node_id')
-	# with the 1 daughter ('$attribute_name'.
-
-	my(@daughters);
-	my($i);
-
-	for my $uid (keys %mothers)
-	{
-		@daughters = $mothers{$uid} -> daughters;
-
-		for ($i = 0; $i < ($#daughters - 2); $i++)
-		{
-			if ($daughters[$i + 1] -> name eq 'equals')
-			{
-				splice(@daughters, ($i + 1), 2);
-
-				$mothers{$uid} -> set_daughters(@daughters);
-			}
-		}
-	}
 
 } # End of _post_process.
 
@@ -1115,7 +1024,6 @@ sub _process
 	my($last_event)    = '';
 	my($literal_token) = qr/(?:colon|edge_literal|strict_literal|subgraph_literal)/;
 	my($prolog_token)  = qr/(?:digraph_literal|graph_literal)/;
-	my($simple_token)  = qr/(?:float|integer)/;
 
 	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
 
@@ -1142,18 +1050,7 @@ sub _process
 
 		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
 
-		if ($event_name =~ $simple_token)
-		{
-			$self -> _add_daughter($event_name, {type => $event_name, value => $literal});
-		}
-		elsif ($event_name =~ $literal_token)
-		{
-			$node_name = ($event_name eq 'edge_literal')
-							? 'edge'
-							: 'literal';
-			$self -> _add_daughter($node_name, {value => $literal});
-		}
-		elsif ($event_name eq 'attribute_name')
+		if ($event_name eq 'attribute_name')
 		{
 			$fields[0] = $self -> clean_after($literal);
 		}
@@ -1187,6 +1084,13 @@ sub _process
 
 			$pos    = $self -> _process_label($self -> recce, \@fields, $string, $length, $pos);
 			@fields = ();
+		}
+		elsif ($event_name =~ $literal_token)
+		{
+			$node_name = ($event_name eq 'edge_literal')
+							? 'edge'
+							: 'literal';
+			$self -> _add_daughter($node_name, {value => $literal});
 		}
 		elsif ($event_name eq 'node_name')
 		{
@@ -1619,7 +1523,10 @@ sub _process_token
 sub _process_unquoted
 {
 	my($self, $recce, $fields, $string, $length, $pos) = @_;
-	my($re) = qr/[;\s\[\]]/; # Neither a separator [;] nor a terminator [\s\[\]].
+
+	# Warning: This qr// must match the [^...] in 'string_char_set			~ escaped_char'.
+
+	my($re) = qr/[;\s\[\]\{\}]/; # Neither a separator [;] nor a terminator [\s\[\]\{\}].
 
 	if (substr($string, $pos, 1) =~ $re)
 	{
@@ -1778,6 +1685,8 @@ sub _validate_event
 	my($self)        = @_;
 	my(@event)       = @{$self -> recce -> events};
 	my($event_count) = scalar @event;
+
+	#$self -> log(debug => "Events triggered: $event_count. Names: " . join(', ', map{${$_}[0]} @event) . '.');
 
 	if ($event_count > 1)
 	{
