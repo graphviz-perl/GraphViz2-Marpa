@@ -653,7 +653,7 @@ END_OF_GRAMMAR
 		({
 			grammar         => $self -> grammar,
 			ranking_method  => 'high_rule_only',
-			trace_terminals => 1,
+			#trace_terminals => 1,
 		})
 	);
 
@@ -819,6 +819,45 @@ sub hashref2string
 
 # ------------------------------------------------
 
+sub _identify_lexeme
+{
+	my($self, $string, $start, $span) = @_;
+	my($finished) = 0;
+
+	my($char);
+	my($offset);
+	my($type);
+
+	while (! $finished)
+	{
+		$offset = $start + $span;
+
+		if ($offset >= length($string) )
+		{
+			$finished = 1;
+		}
+		else
+		{
+			$char = substr($string, $offset, 1);
+
+			if ($char =~ /\s/)
+			{
+				$span++;
+			}
+			else
+			{
+				$finished = 1;
+				$type     = ($char eq '=') ? 'attribute_name' : 'node_name';
+			}
+		}
+	}
+
+	return $type;
+
+} # End of _identify_lexeme.
+
+# ------------------------------------------------
+
 sub log
 {
 	my($self, $level, $s) = @_;
@@ -902,7 +941,7 @@ sub _process
 	)
 	{
 		($start, $span) = $self -> recce -> pause_span;
-		$event_name     = $self -> _validate_event($string, $start, $pos);
+		$event_name     = $self -> _validate_event($string, $start, $span);
 		$pos            = $self -> recce -> lexeme_read($event_name);
 		$literal        = substr($string, $start, $pos - $start);
 		$lexeme         = $self -> recce -> literal($start, $span);
@@ -1547,34 +1586,16 @@ sub _skip_separator
 
 sub _validate_event
 {
-	my($self, $string, $start, $pos) = @_;
+	my($self, $string, $start, $span) = @_;
+	my(@event)         = @{$self -> recce -> events};
+	my($event_name)    = ${$event[0]}[0];
+	my($lexeme)        = substr($string, $start, $span);
 	my($line, $column) = $self -> recce -> line_column($start);
-	my($literal)       = substr($string, $start, 20);
+	my($literal)       = substr($string, $start + $span, 20);
 	$literal           =~ tr/\n/ /;
 	$literal           =~ s/^\s+//;
 	$literal           =~ s/\s+$//;
-	my($message)       = "Location: ($line, $column). Next few chars: !$literal!";
-	my(@event)         = @{$self -> recce -> events};
-	my($event_count)   = scalar @event;
-
-	if ($event_count > 1)
-	{
-		$message = "$message. Events triggered: $event_count. Names: ";
-
-		$self -> log(warning => $message . join(', ', map{${$_}[0]} @event) . '.');
-
-		for my $event (@event)
-		{
-			my($result) = $self -> recce -> lexeme_alternative($$event[0]);
-			$result     = 'undef' if (! defined $result);
-
-			$self -> log(info => "Call lexeme_alternative($$event[0]). Result: $result");
-		}
-
-		die "The code only handles 1 event at a time\n";
-	}
-
-	my($event_name) = ${$event[0]}[0];
+	my($message)       = "Location: ($line, $column). Lexeme: !$lexeme!. Next few chars: !$literal!";
 
 	if (! ${$self -> known_events}{$event_name})
 	{
@@ -1583,6 +1604,38 @@ sub _validate_event
 		$self -> log(error => $message);
 
 		die "$message\n";
+	}
+
+	my($event_count) = scalar @event;
+
+	if ($event_count > 1)
+	{
+		# We can handle ambiguous events when they are 'attribute_name' and 'node_name'.
+		# 'attribute_name' is followed by '=', and 'node_name' is followed by anything else.
+		# In fact, 'node_name' may be folowed by '[' to indicate the start of its attributes.
+
+		if ($event_count == 2)
+		{
+			my(@event_name) = (${$event[0]}[0], ${$event[1]}[0]);
+			$event_name     = $self -> _identify_lexeme($string, $start, $span);
+
+			if (! defined $event_name)
+			{
+				$message = "$message. Events triggered: $event_count. Names: ";
+
+				$self -> log(warning => $message . join(', ', map{${$_}[0]} @event) . '.');
+
+				die "Cannot identify lexeme as either 'attribute_name' or 'node_name'\n";
+			}
+		}
+		else
+		{
+			$message = "$message. Events triggered: $event_count. Names: ";
+
+			$self -> log(warning => $message . join(', ', map{${$_}[0]} @event) . '.');
+
+			die "The code only handles 1 event at a time\n";
+		}
 	}
 
 	return $event_name;
