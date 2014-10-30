@@ -3,6 +3,8 @@
 graph graph_12
 {
 	size = "6,7"
+
+	node_12 [shape = square]
 }
 
 # Suffix comment.

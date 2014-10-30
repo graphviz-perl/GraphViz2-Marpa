@@ -211,13 +211,6 @@ statement_list			::= statement_token*
 statement_token			::= statement statement_terminator
 							| comments statement_token
 
-statement				::= node_statement
-							| edge_statement
-							| subgraph_statement
-
-statement_terminator	::= semicolon_literal
-statement_terminator	::=
-
 # Comment stuff.
 
 comments				::= comment+
@@ -226,10 +219,20 @@ comment					::= <C style comment>
 							| <Cplusplus style comment>
 							| <hash style comment>
 
+# Statement stuff.
+
+statement				::= node_statement
+							| edge_statement
+							| subgraph_statement
+
+statement_terminator	::= semicolon_literal
+statement_terminator	::=
+
 # Node stuff
 
 node_statement			::= node_name
 							| node_name attribute_statement
+							| assignment_statement
 
 # Edge stuff
 
@@ -245,24 +248,18 @@ edge_rhs				::= edge_name edge_lhs
 edge_name				::= directed_edge
 							| undirected_edge
 
-#edge_node_token			::= generic_id_token
-#							| node_port_id
-#							| node_port_compass_id
-#
-#node_port_id			::= generic_id_token<colon>generic_id_token
-#
-#node_port_compass_id	::= node_port_id<colon>generic_id_token
-
 # Attribute stuff.
-
-#attribute_definition	::= attribute_statement+
 
 attribute_statement		::= open_bracket string_token_set close_bracket
 
 string_token_set		::= string_token_pair+
 
 string_token_pair		::= literal_label
-							| attribute_name ('=') attribute_value
+							| assignment_statement
+
+# Assignment stuff.
+
+assignment_statement	::= attribute_name ('=') attribute_value
 
 # Subgraph stuff.
 # Subgraphs are handled by the statement type 'graph_statement_tokens'.
@@ -284,15 +281,18 @@ subgraph_id_token		::= node_name
 # Lexemes in alphabetical order.
 
 :lexeme					~ attribute_name		pause => before		event => attribute_name
-
 attribute_name			~ string_char_set+
 
 :lexeme					~ attribute_value		pause => before		event => attribute_value
-
 attribute_value			~ string_char_set+
 
 :lexeme					~ close_brace			pause => before		event => close_brace
 close_brace				~ '}'
+
+# close_bracket and open_bracket have high priorities to stop them being incorporated into node names.
+
+:lexeme					~ close_bracket			pause => before		event => close_bracket		priority => 91
+close_bracket			~ ']'
 
 :lexeme					~ digraph_literal		pause => before		event => digraph_literal
 digraph_literal			~ 'digraph':i
@@ -302,11 +302,6 @@ digraph_literal			~ 'digraph':i
 :lexeme					~ directed_edge			pause => before		event => directed_edge		priority => 51
 directed_edge			~ '->'
 
-# close_bracket and open_bracket have high priorities to stop them being incorporated into node names.
-
-:lexeme					~ close_bracket			pause => before		event => close_bracket		priority => 91
-close_bracket			~ ']'
-
 escaped_char			~ '\' [[:print:]]
 
 # Use ' here just for the UltraEdit syntax hiliter.
@@ -314,10 +309,10 @@ escaped_char			~ '\' [[:print:]]
 :lexeme					~ graph_literal			pause => before		event => graph_literal
 graph_literal			~ 'graph':i
 
-:lexeme					~ literal_label			pause => before		event => literal_label		priority => 1
+:lexeme					~ literal_label			pause => before		event => literal_label
 literal_label			~ 'label'
 
-:lexeme					~ node_name				pause => before		event => node_name			#priority => 13
+:lexeme					~ node_name				pause => before		event => node_name
 node_name				~ string_char_set+
 
 :lexeme					~ open_brace			pause => before		event => open_brace
@@ -658,7 +653,7 @@ END_OF_GRAMMAR
 		({
 			grammar         => $self -> grammar,
 			ranking_method  => 'high_rule_only',
-			#trace_terminals => 1,
+			trace_terminals => 1,
 		})
 	);
 
@@ -750,88 +745,6 @@ sub _adjust_edge_attributes
 	}
 
 } # End of _adjust_edge_attributes.
-
-# ------------------------------------------------
-
-=pod
-
-sub _adjust_head_attributes
-{
-	my($self, $mother, $daughters, $i) = @_;
-
-	# The head of the edge will be one of:
-	# o A node.
-	# o A subgraph, as in ['subgraph', 'id', '{', ..., '}'].
-	# o A subgraph, as in ['subgraph', '{', ..., '}'].
-	# o A subgraph, as in ['{', ..., '}'].
-	# In all 4 cases, we want to move the attributes, if any, off the last element in the list,
-	# and re-attach them to the tree node of all edges of this mother. And why do that?
-	# Because I think that's a good idea for when the graph is rendered.
-
-	my($name) = $$daughters[$i + 1] -> name;
-
-	if ($name =~ /node_id/)
-	{
-		# It's a node.
-
-		$$daughters[$i] -> set_daughters($$daughters[$i + 1] -> clear_daughters);
-	}
-	elsif ($name eq 'literal')
-	{
-		my($attributes) = $$daughters[$i + 1] -> attributes;
-
-		my($offset);
-
-		if ($$attributes{value})
-		{
-			if ($$attributes{value} eq '{')
-			{
-				# Find '}'. It'll be the first '}' in this daughter list.
-
-				for (my $j = $i + 2; $j <= $#$daughters; $j++)
-				{
-					$attributes = $$daughters[$j] -> attributes;
-
-					if ($$attributes{value} && ($$attributes{value} eq '}') )
-					{
-						$offset = $j;
-						$j      = $#$daughters;
-					}
-				}
-			}
-			elsif ( ( ($i + 2) < $#$daughters) && ($$attributes{value} eq 'subgraph') )
-			{
-				# Is the next item a subgraph id or a '{'?
-
-				my($name) = $$daughters[$i + 2] -> name;
-
-				if ($name eq 'node_id')
-				{
-					$offset = $i + 2;
-				}
-				elsif ( ($i + 3) < $#$daughters)
-				{
-					$attributes = $$daughters[$i + 3] -> attributes;
-
-					if ($$attributes{value} && ($$attributes{value} eq '{') )
-					{
-						$offset = $i + 3;
-					}
-				}
-			}
-		}
-
-		if ($offset)
-		{
-			# It's a subgraph.
-
-			$$daughters[$i] -> set_daughters($$daughters[$offset] -> clear_daughters);
-		}
-	}
-
-} # End of _adjust_head_attributes.
-
-=cut
 
 # ------------------------------------------------
 
@@ -988,8 +901,8 @@ sub _process
 		$pos = $self -> recce -> resume($pos)
 	)
 	{
-		$event_name     = $self -> _validate_event;
 		($start, $span) = $self -> recce -> pause_span;
+		$event_name     = $self -> _validate_event($string, $start, $pos);
 		$pos            = $self -> recce -> lexeme_read($event_name);
 		$literal        = substr($string, $start, $pos - $start);
 		$lexeme         = $self -> recce -> literal($start, $span);
@@ -1634,15 +1547,29 @@ sub _skip_separator
 
 sub _validate_event
 {
-	my($self)        = @_;
-	my(@event)       = @{$self -> recce -> events};
-	my($event_count) = scalar @event;
-
-	#$self -> log(debug => "Events triggered: $event_count. Names: " . join(', ', map{${$_}[0]} @event) . '.');
+	my($self, $string, $start, $pos) = @_;
+	my($line, $column) = $self -> recce -> line_column($start);
+	my($literal)       = substr($string, $start, 20);
+	$literal           =~ tr/\n/ /;
+	$literal           =~ s/^\s+//;
+	$literal           =~ s/\s+$//;
+	my($message)       = "Location: ($line, $column). Next few chars: !$literal!";
+	my(@event)         = @{$self -> recce -> events};
+	my($event_count)   = scalar @event;
 
 	if ($event_count > 1)
 	{
-		$self -> log(error => "Events triggered: $event_count (should be 1). Names: " . join(', ', map{${$_}[0]} @event) . '.');
+		$message = "$message. Events triggered: $event_count. Names: ";
+
+		$self -> log(warning => $message . join(', ', map{${$_}[0]} @event) . '.');
+
+		for my $event (@event)
+		{
+			my($result) = $self -> recce -> lexeme_alternative($$event[0]);
+			$result     = 'undef' if (! defined $result);
+
+			$self -> log(info => "Call lexeme_alternative($$event[0]). Result: $result");
+		}
 
 		die "The code only handles 1 event at a time\n";
 	}
@@ -1651,11 +1578,11 @@ sub _validate_event
 
 	if (! ${$self -> known_events}{$event_name})
 	{
-		my($msg) = "Unexpected event name '$event_name'";
+		$message = "$message. Unexpected event name '$event_name'";
 
-		$self -> log(error => $msg);
+		$self -> log(error => $message);
 
-		die "$msg\n";
+		die "$message\n";
 	}
 
 	return $event_name;
