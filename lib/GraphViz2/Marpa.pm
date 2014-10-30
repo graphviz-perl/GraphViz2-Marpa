@@ -724,20 +724,7 @@ sub _adjust_edge_attributes
 
 			$subtree = $self -> copy_nodes(\@attribute_nodes);
 
-			for my $sub (@$subtree)
-			{
-				$self -> log(info => "$i: Using: " . $sub -> name . ". Attr: " . $self -> hashref2string($sub -> attributes) );
-			}
-
 			$daughters[$i] -> set_daughters(@$subtree);
-
-			for my $sub ($daughters[$i] -> daughters)
-			{
-				$self -> log(info => "$i: Now: " . $sub -> name . ". Attr: " . $self -> hashref2string($sub -> attributes) );
-			}
-
-			$self -> log(info => 'Tree after fixing edge attributes');
-			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
 		}
 	}
 
@@ -860,23 +847,28 @@ sub clean_before
 sub copy_nodes
 {
 	my($self, $attributes_nodes) = @_;
-	my($copy) = [];
+	my(@copy);
 
 	my($attributes);
 	my($new);
 
 	for my $old (@$attributes_nodes)
 	{
-		$attributes       = $old -> attributes;
+		# Warning, double warning and triple warning:
+		# The code elsewhere will fail if you use:
+		#	$attributes = $old -> attributes;
+		# because then $attributes is an alias of the attributes, it is not a new variable.
+		# So, subsequent calls to this method will overwrite the attributes of all nodes
+		# minted during previous calls to the method.
+
+		$attributes       = {%{$old -> attributes} };
 		$$attributes{uid} = $self -> uid($self -> uid + 1);
 		$new              = Tree::DAG_Node -> new({name => $old -> name, attributes => $attributes});
 
-		$self -> log(info => "Minted: " . $old -> name . ". Attr: " . $self -> hashref2string($attributes) );
-
-		push @$copy, $new;
+		push @copy, $new;
 	}
 
-	return $copy;
+	return [@copy]	;
 
 } # End of copy_nodes.
 
