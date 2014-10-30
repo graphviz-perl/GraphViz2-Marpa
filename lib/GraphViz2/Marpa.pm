@@ -185,9 +185,9 @@ lexeme default			=  latm => 1		# Longest Acceptable Token Match.
 :start					::= graph_definition
 
 graph_definition		::= graph_body
-#							| comments graph_body
-#							| graph_body comments
-#							| comments graph_body comments
+							| comments graph_body
+							| graph_body comments
+							| comments graph_body comments
 
 graph_body				::= prolog_tokens graph_statement
 
@@ -213,6 +213,7 @@ statement_token			::= statement statement_terminator
 
 statement				::= node_statement
 							| edge_statement
+							| subgraph_statement
 
 statement_terminator	::= semicolon_literal
 statement_terminator	::=
@@ -236,7 +237,7 @@ edge_statement			::= edge_lhs edge_rhs
 							| edge_lhs edge_rhs attribute_statement
 
 edge_lhs				::= node_name
-#							| subgraph_statement
+							| subgraph_statement
 
 edge_rhs				::= edge_name edge_lhs
 							| edge_name edge_lhs edge_rhs
@@ -262,6 +263,23 @@ string_token_set		::= string_token_pair+
 
 string_token_pair		::= literal_label
 							| attribute_name ('=') attribute_value
+
+# Subgraph stuff.
+# Subgraphs are handled by the statement type 'graph_statement_tokens'.
+# Hence subgraph sub_1 {...} and subgraph {...} and sub_1 {...} and {...} are all output as:
+# o The optional literal 'subgraph', which is classified as a literal.
+# o The optional subgraph id, which is classified as a node_id.
+# o The literal '{'.
+# o The body of the subgraph.
+# o The literal '}'.
+
+subgraph_statement		::= subgraph_prefix subgraph_id_token graph_statement
+
+subgraph_prefix			::=
+subgraph_prefix			::= subgraph_literal
+
+subgraph_id_token		::=
+subgraph_id_token		::= node_name
 
 # Lexemes in alphabetical order.
 
@@ -319,6 +337,9 @@ strict_literal			~ 'strict':i
 
 string_char_set			~ escaped_char
 							| [^;\s\[\]\{\}] # Neither a separator [;] nor a terminator [\s\[\]\{\}].
+
+:lexeme					~ subgraph_literal		pause => before		event => subgraph_literal	priority => 91
+subgraph_literal		~ 'subgraph':i
 
 # directed_edge and undirected_edge have high priorities to stop them being incorporated into node names.
 
@@ -874,110 +895,6 @@ sub copy_nodes
 
 # ------------------------------------------------
 
-sub _compress_node_port_compass
-{
-	my($self, $mothers) = @_;
-
-	# Compress node:port and node:port:compass into 1 node each.
-	# These are the possibilities:
-	# $i	+ 1		+ 2		+ 3		+ 4			Action
-	# Node										None
-	# Node	Colon	Port						Compress
-	# Node	Colon	Port	Colon	Compass		Compress
-	#
-	# We use a stack so we can reprocess a daughter list after
-	# compressing a set of daughters.
-
-	my(@stack) = keys %$mothers;
-
-	my(@daughters);
-	my(@edge_daughters);
-	my($mother);
-	my(@name, $new_name, $node_attributes);
-
-	while (my $uid = shift @stack)
-	{
-		$mother    = $$mothers{$uid};
-		@daughters = $mother -> daughters;
-
-		MIDDLE_LOOP:
-		for my $i (0 .. $#daughters)
-		{
-			# We try the longest possible match first, since the alternative
-			# would accidently find the first part of the longest match.
-
-			for (my $offset = 4; $offset > 0; $offset -= 2)
-			{
-				if ( ($i + $offset) <= $#daughters)
-				{
-					if ($self -> _compress_nodes($mothers, $uid, \@daughters, $i, $offset) )
-					{
-						# Reprocess the mother's daughters after compressing ($offset + 1) nodes.
-
-						unshift @stack, $uid;
-
-						# I don't like jumps, but I need to exit these 2 loops immediately,
-						# since the mother's daughter list has just been fiddled.
-
-						last MIDDLE_LOOP;
-					}
-				}
-			}
-		}
-	}
-
-} # End of _compress_node_port_compass.
-
-# ------------------------------------------------
-
-sub _compress_nodes
-{
-	my($self, $mothers, $uid, $daughters, $i, $offset) = @_;
-	my($found) = 0;
-
-	my(@attributes);
-	my(@name);
-
-	$attributes[0] = $$daughters[$i + 1] -> attributes;
-	$attributes[1] = ($offset == 4) ? $$daughters[$i + 3] -> attributes : {value => ':'};
-
-	if ("${$attributes[0]}{value}${$attributes[1]}{value}" eq '::')
-	{
-		# Preserve the attributes of the last node, since they belong to the edge.
-		# Here we attach them to the new node which is a combination of several nodes.
-		# Later, the caller of compress_node_port_compass() will move them back to the edge.
-
-		my(@edge_daughters) = ( ($i + $offset) <= $#$daughters) ? $$daughters[$i + $offset] -> daughters : ();
-		$found              = 1;
-		my($new_name)       = '';
-
-		my($node_attributes);
-
-		for (my $j = $i; $j <= ($i + $offset); $j++)
-		{
-			$node_attributes  = $$daughters[$j] -> attributes;
-			$new_name        .= $$node_attributes{value};
-		}
-
-		splice(@$daughters, ($i + 1), $offset);
-
-		# We update the attributes with the node's real name.
-		# The tree node's name will still be 'node_id'.
-
-		$node_attributes         = $$daughters[$i] -> attributes;
-		$$node_attributes{value} = $new_name;
-
-		$$daughters[$i] -> attributes($node_attributes);
-		$$daughters[$i] -> set_daughters(@edge_daughters) if ($#edge_daughters >= 0);
-		$$mothers{$uid} -> set_daughters(@$daughters);
-	}
-
-	return $found;
-
-} # End of _compress_nodes;
-
-# ------------------------------------------------
-
 sub hashref2string
 {
 	my($self, $hashref) = @_;
@@ -1004,9 +921,6 @@ sub _post_process
 	my($self) = @_;
 
 	# Walk the tree, find the edges, and then stockpile their mothers.
-	# Later, compress the [node]:[port]:[compass] quintuplets and the
-	# [node]:[port] triplets each into a single node, either [node:port:compass]
-	# or [node:port].
 	# The Tree::DAG_Node docs warn against modifying the tree during a walk,
 	# so we use a hash to track all the mothers found, and post-process them.
 
@@ -1037,12 +951,6 @@ sub _post_process
 		_depth => 0,
 	});
 
-	$self -> log(info => 'Tree after finding mothers of edges');
-	$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
-	$self -> log(info => 'UIDs of mothers: ' . join(', ', sort keys %mothers) );
-
-#	$self -> _compress_node_port_compass(\%mothers);
-
 	# Now look for attributes hanging off the edge's head node/subgraph,
 	# and move them back to belong to all edges in the path.
 
@@ -1071,6 +979,7 @@ sub _process
 	my($lexeme, $literal);
 	my($node_name);
 	my($span, $start);
+	my($type);
 
 	for
 	(
@@ -1132,8 +1041,14 @@ sub _process
 		elsif ($event_name eq 'node_name')
 		{
 			$literal = $self -> clean_after($literal);
+			$type    = 'node_id';
 
-			$self -> _add_daughter('node_id', {value => $literal});
+			if ($literal eq 'subgraph')
+			{
+				$type = 'literal';
+			}
+
+			$self -> _add_daughter($type, {value => $literal});
 		}
 		elsif ($event_name eq 'open_brace')
 		{
