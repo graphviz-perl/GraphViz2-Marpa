@@ -1794,8 +1794,8 @@ Demo output: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/index.html
 
 L<Marpa's homepage|http://savage.net.au/Marpa.html>.
 
-L<An article on this module|http://savage.net.au/Ron/html/A.New.Marpa-based.Parser.for.GraphViz.html>.
-This article contains the ToDo list.
+L<An article|http://savage.net.au/Ron/html/A.New.Marpa-based.Parser.for.GraphViz.html>  on this
+module. The article contains the TODO list.
 
 =head1 Modules
 
@@ -2013,7 +2013,8 @@ Specify the name of a file for the renderer to write.
 
 That is, write the DOT-style graph definition to a file.
 
-When this file and the input file are both run thru C<dot>, they should produce identical *.svg files.
+When this file and the input file are both run thru C<dot>, they should produce identical *.svg
+files.
 
 If an output file name is specified, an object of type L<GraphViz2::Marpa::Renderer::Graphviz> is
 created and called after the input file has been successfully parsed.
@@ -2175,7 +2176,7 @@ To follow along with this discussion, run:
 
 	perl -Ilib scripts/g2m.pl -input_file data/16.gv -max info
 
-The root node has 2 daughters:
+The 'root' node has 2 daughters:
 
 =over 4
 
@@ -2213,7 +2214,8 @@ And yes, the graph ID, if any, is under the 'Graph' node.
 
 =item o The 'graph' sub-tree
 
-This daughter is the root of a sub-tree holding everything about the graph, including the graph's ID, if any.
+This daughter is the root of a sub-tree holding everything about the graph, including the graph's
+ID, if any.
 
 The node is called 'graph', and its hashref of attributes is C<< {uid => 2} >>.
 
@@ -2292,10 +2294,12 @@ Here's part of the log from processing data/16.gv:
 	|   |   |---literal. Attributes: {uid => "49", value => "]"}
 	|   |---node_id. Attributes: {uid => "39", value => "node_16_2:p22:s"}
 
-Futher, in some cases, the code can identify the type of the 'value' as one of 'integer', 'float' or 'string.
+Futher, in some cases, the code can identify the type of the 'value' as one of 'integer', 'float' or
+'string.
 
-Lastly notice that for classes, edges and node, the attributes are surrounded by 2 nodes called 'literal',
-with 'value's of '[' and ']'. However, for attributes specified as 'fontsize = 16.0', this is not the case.
+Lastly notice that for classes, edges and node, the attributes are surrounded by 2 nodes called
+'literal', with 'value's of '[' and ']'. However, for attributes specified as 'fontsize = 16.0',
+this is not the case.
 
 =item o class
 
@@ -2331,8 +2335,9 @@ Samples are:
 	n1 -> {n2}
 	{n1} -> n2
 
-Note: Post-processing of the tree moves edge attributes off the head daughter (node or subgraph), and
-attaches them to the closest proceeding edge.
+Note: Post-processing of the tree moves edge attributes off the head daughter (node or subgraph),
+and attaches them to all intermediary edges. Why? Because I think it's a good idea that at the
+instant code processing the tree finds an edge, it should have access to all that edge's attributes.
 
 Thus:
 
@@ -2374,7 +2379,8 @@ And theoutput log contains:
 
 =item o literal
 
-'literal' is the name of some nodes, with the 'value' key in the attributes having one of these	values:
+'literal' is the name of some nodes, with the 'value' key in the attributes having one of these
+values:
 
 =over 4
 
@@ -2386,7 +2392,8 @@ And theoutput log contains:
 
 This indicate the start of a set of attributes for a specific class, edge or node.
 
-The 1st and last daughters will be literals whose attribute 'value' keys are '[' and ']' respectively.
+The 1st and last daughters will be literals whose attribute 'value' keys are '[' and ']'
+respectively.
 
 Between these 2 nodes will be 1 node for each attribute, as seen above with
 C<< edge ["color" = "green",] >>.
@@ -2465,8 +2472,8 @@ If moving does not involve duplication, then new uids are not needed.
 
 But moving can involve duplication, which is when new uids are generated. And duplication happens
 when a sequence of 2 or more edges (a path) are all given a copy of the attributes attached to the
-head node or subgraph of the path. The original set of nodes in the tree, the attributes of the head,
-are deleted, and that leaves holes in the sequence of uids.
+head node or subgraph of the path. The original set of nodes in the tree, the attributes of the
+head, are deleted, and that leaves holes in the sequence of uids.
 
 =head2 How are comments stored in the tree?
 
@@ -2542,6 +2549,11 @@ See scripts/generate.demo.sh.
 They are Graphviz files with deliberate syntax errors. Errors here means from the point of view of
 Graphviz itself. They help me test the code.
 
+=head1 See Also
+
+L<Marpa::Demo::StringParser>. The significance of this module is that during the re-write of
+GraphViz2::Marpa, the string-handling code was perfected in L<Marpa::Demo::StringParser>.
+
 =head1 Machine-Readable Change Log
 
 The file CHANGES was converted into Changelog.ini by L<Module::Metadata::Changes>.
@@ -2554,7 +2566,8 @@ Version numbers < 1.00 represent development versions. From 1.00 up, they are pr
 
 Many thanks are due to the people who worked on L<Graphviz|http://www.graphviz.org/>.
 
-Jeffrey Kegler wrote L<Marpa::XS>, and has a blog on it at L<http://blogs.perl.org/users/jeffrey_kegler/>.
+Jeffrey Kegler wrote L<Marpa::XS>, and has a blog on it at
+L<http://blogs.perl.org/users/jeffrey_kegler/>.
 
 =head1 Repository
 
@@ -2570,7 +2583,9 @@ L<https://rt.cpan.org/Public/Dist/Display.html?Name=GraphViz2::Marpa>.
 
 L<GraphViz2::Marpa> was written by Ron Savage I<E<lt>ron@savage.net.auE<gt>> in 2012.
 
-Home page: L<http://savage.net.au/index.html>.
+Marpa's homepage: <http://savage.net.au/Marpa.html>.
+
+My homepage: L<http://savage.net.au/>.
 
 =head1 Copyright
 
