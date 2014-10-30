@@ -694,15 +694,25 @@ sub _adjust_edge_attributes
 {
 	my($self, $mothers) = @_;
 
+	my(@attribute_nodes);
 	my(@daughters);
 	my($mother);
-	my($offset);
-	my($name, $next_daughter, $next_name);
+	my($name);
+	my($subtree);
 
 	for my $uid (keys %$mothers)
 	{
 		$mother    = $$mothers{$uid};
 		@daughters = $mother -> daughters;
+
+		# Does the last daughter have attributes?
+		# If so, move them onto all edges within this mother.
+
+		@attribute_nodes = $daughters[$#daughters] -> daughters;
+
+		next if ($#attribute_nodes < 0);
+
+		$daughters[$#daughters] -> clear_daughters;
 
 		for my $i (0 .. $#daughters)
 		{
@@ -712,18 +722,22 @@ sub _adjust_edge_attributes
 
 			next if ($name ne 'edge_id');
 
-			# This test is redundant if we know the input file is syntactally valid,
-			# since then there must necessarily be a next daughter after an edge.
-			# But is the file known to be valid at this point?
-			# Yes, since we're in the post-processing phase, and Marpa has validated it.
-			# Unless, of course, there's a defect in our BNF for DOT.
+			$subtree = $self -> copy_nodes(\@attribute_nodes);
 
-			#next if ($i < $#daughters);
+			for my $sub (@$subtree)
+			{
+				$self -> log(info => "$i: Using: " . $sub -> name . ". Attr: " . $self -> hashref2string($sub -> attributes) );
+			}
 
-			# But what exactly is the thing at the head of the edge?
-			# It could be a node, or it could be a subgraph.
+			$daughters[$i] -> set_daughters(@$subtree);
 
-			$self -> _adjust_head_attributes(\@daughters, $i);
+			for my $sub ($daughters[$i] -> daughters)
+			{
+				$self -> log(info => "$i: Now: " . $sub -> name . ". Attr: " . $self -> hashref2string($sub -> attributes) );
+			}
+
+			$self -> log(info => 'Tree after fixing edge attributes');
+			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
 		}
 	}
 
@@ -731,9 +745,11 @@ sub _adjust_edge_attributes
 
 # ------------------------------------------------
 
+=pod
+
 sub _adjust_head_attributes
 {
-	my($self, $daughters, $i) = @_;
+	my($self, $mother, $daughters, $i) = @_;
 
 	# The head of the edge will be one of:
 	# o A node.
@@ -741,7 +757,7 @@ sub _adjust_head_attributes
 	# o A subgraph, as in ['subgraph', '{', ..., '}'].
 	# o A subgraph, as in ['{', ..., '}'].
 	# In all 4 cases, we want to move the attributes, if any, off the last element in the list,
-	# and re-attach them to the tree node of the edge. And why do that?
+	# and re-attach them to the tree node of all edges of this mother. And why do that?
 	# Because I think that's a good idea for when the graph is rendered.
 
 	my($name) = $$daughters[$i + 1] -> name;
@@ -807,6 +823,8 @@ sub _adjust_head_attributes
 
 } # End of _adjust_head_attributes.
 
+=cut
+
 # ------------------------------------------------
 
 sub clean_after
@@ -836,6 +854,31 @@ sub clean_before
 	return $s;
 
 } # End of clean_before.
+
+# ------------------------------------------------
+
+sub copy_nodes
+{
+	my($self, $attributes_nodes) = @_;
+	my($copy) = [];
+
+	my($attributes);
+	my($new);
+
+	for my $old (@$attributes_nodes)
+	{
+		$attributes       = $old -> attributes;
+		$$attributes{uid} = $self -> uid($self -> uid + 1);
+		$new              = Tree::DAG_Node -> new({name => $old -> name, attributes => $attributes});
+
+		$self -> log(info => "Minted: " . $old -> name . ". Attr: " . $self -> hashref2string($attributes) );
+
+		push @$copy, $new;
+	}
+
+	return $copy;
+
+} # End of copy_nodes.
 
 # ------------------------------------------------
 
@@ -1002,9 +1045,11 @@ sub _post_process
 		_depth => 0,
 	});
 
-#	$self -> _compress_node_port_compass(\%mothers);
+	$self -> log(info => 'Tree after finding mothers of edges');
+	$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
+	$self -> log(info => 'UIDs of mothers: ' . join(', ', sort keys %mothers) );
 
-	$self -> log(info => "Mother: $_") for keys %mothers;
+#	$self -> _compress_node_port_compass(\%mothers);
 
 	# Now look for attributes hanging off the edge's head node/subgraph,
 	# and move them back to belong to all edges in the path.
@@ -2418,10 +2463,23 @@ And the output log contains:
 
 You can see the ports and compass points have been incorporated into the 'value' attribute.
 
+=head2 Why are some uids missing?
+
+Uids are unique integers.
+
+When subtrees are moved around, they might be given new uids.
+
+If moving does not involve duplication, then new uids are not needed.
+
+But moving can involve duplication, which is when new uids are generated. And duplication happens
+when a sequence of 2 or more edges (a path) are all given a copy of the attributes attached to the
+head node or subgraph of the path. The original set of nodes in the tree, the attributes of the head,
+are deleted, and that leaves holes in the sequence of uids.
+
 =head2 How are comments stored in the tree?
 
-They aren't stored, they are discarded. And this in turn means rendered C<dot> files can't ever contain
-them.
+They aren't stored, they are discarded. And this in turn means rendered C<dot> files can't ever
+contain them.
 
 =head2 What is the homepage of Marpa?
 
