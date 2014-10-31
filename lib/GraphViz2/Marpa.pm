@@ -252,7 +252,7 @@ edge_name				::= directed_edge
 
 attribute_statement		::= open_bracket string_token_set close_bracket
 
-string_token_set		::= string_token_pair+
+string_token_set		::= string_token_pair*
 
 string_token_pair		::= literal_label
 							| assignment_statement
