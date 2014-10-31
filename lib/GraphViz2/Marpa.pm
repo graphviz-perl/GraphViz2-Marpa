@@ -822,35 +822,12 @@ sub hashref2string
 sub _identify_lexeme
 {
 	my($self, $string, $start, $span) = @_;
-	my($finished) = 0;
 
-	my($char);
-	my($offset);
-	my($type);
+	pos($string) = $start + $span;
+	$string      =~ /\G\s*(\S)/ || return;
+	my($type)    = ($1 eq '=') ? 'attribute_name' : 'node_name';
 
-	while (! $finished)
-	{
-		$offset = $start + $span;
-
-		if ($offset >= length($string) )
-		{
-			$finished = 1;
-		}
-		else
-		{
-			$char = substr($string, $offset, 1);
-
-			if ($char =~ /\s/)
-			{
-				$span++;
-			}
-			else
-			{
-				$finished = 1;
-				$type     = ($char eq '=') ? 'attribute_name' : 'node_name';
-			}
-		}
-	}
+	$self -> log(debug => "Disambiguated lexeme as '$type'");
 
 	return $type;
 
@@ -921,6 +898,13 @@ sub _process
 	my($last_event)    = '';
 	my($literal_token) = qr/(?:colon|edge_literal|strict_literal|subgraph_literal)/;
 	my($prolog_token)  = qr/(?:digraph_literal|graph_literal)/;
+	my(%class)         =
+	(
+		edge     => 'class',
+		graph    => 'class',
+		node     => 'class',
+		subgraph => 'literal',
+	);
 
 	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
 
@@ -956,7 +940,7 @@ sub _process
 		{
 			$literal = $self -> clean_after($literal);
 
-			$self -> _add_daughter($fields[0], {value => $literal});
+			$self -> _add_daughter('attribute', {name => $fields[0], value => $literal});
 
 			@fields = ();
 
@@ -978,7 +962,7 @@ sub _process
 		}
 		elsif ($event_name eq 'literal_label')
 		{
-			push @fields, $literal;
+			push @fields, 'label';
 
 			$pos    = $self -> _process_label($self -> recce, \@fields, $string, $length, $pos);
 			@fields = ();
@@ -993,12 +977,7 @@ sub _process
 		elsif ($event_name eq 'node_name')
 		{
 			$literal = $self -> clean_after($literal);
-			$type    = 'node_id';
-
-			if ($literal eq 'subgraph')
-			{
-				$type = 'literal';
-			}
+			$type    = $class{$literal} ? $class{$literal} : 'node_id';
 
 			$self -> _add_daughter($type, {value => $literal});
 		}
@@ -1305,7 +1284,7 @@ sub _process_html
 	{
 		my($line, $column) = $recce -> line_column;
 
-		die "Mismatched <> in HTML !$label! at (line, column) = ($line, $column)\n";
+		die "Mismatched <> in HTML !$label! at (line, column) = ($line, $column). \n";
 	}
 
 	push @$fields, $label;
@@ -1345,7 +1324,7 @@ sub _process_label
 
 	for (my $i = 0; $i < $#$fields; $i += 2)
 	{
-		$self -> _add_daughter($$fields[$i], {value => $$fields[$i + 1]});
+		$self -> _add_daughter('attribute', {name => $$fields[$i], value => $$fields[$i + 1]});
 	}
 
 	return $pos;
@@ -1399,7 +1378,7 @@ sub _process_quotes
 
 		my($line, $column) = $recce -> line_column;
 
-		die "Mismatched quotes in label !$label! at (line, column) = ($line, $column)\n";
+		die "Mismatched quotes in label !$label! at (line, column) = ($line, $column). \n";
 	}
 
 	$label = $self -> clean_after($label);
@@ -1485,7 +1464,7 @@ sub run
 	}
 	else
 	{
-		die "Error: You must provide a graph using one of -input_file or -description\n";
+		die "Error: You must provide a graph using one of -input_file or -description. \n";
 	}
 
 	# Return 0 for success and 1 for failure.
@@ -1603,7 +1582,7 @@ sub _validate_event
 
 		$self -> log(error => $message);
 
-		die "$message\n";
+		die "$message. \n";
 	}
 
 	my($event_count) = scalar @event;
@@ -1616,25 +1595,44 @@ sub _validate_event
 
 		if ($event_count == 2)
 		{
-			my(@event_name) = (${$event[0]}[0], ${$event[1]}[0]);
-			$event_name     = $self -> _identify_lexeme($string, $start, $span);
+			my(@event_name) = sort (${$event[0]}[0], ${$event[1]}[0]);
+			my($expected)   = "$event_name[0]!$event_name[1]";
+
+			if ($expected eq 'attribute_name!literal_label')
+			{
+				$self -> log(debug => $message);
+
+				$event_name = 'literal_label';
+			}
+			elsif ($expected eq 'attribute_name!node_name')
+			{
+				$self -> log(debug => $message);
+
+				# This might return undef.
+
+				$event_name = $self -> _identify_lexeme($string, $start, $span);
+			}
+			else
+			{
+				$event_name = undef;
+			}
 
 			if (! defined $event_name)
 			{
 				$message = "$message. Events triggered: $event_count. Names: ";
 
-				$self -> log(warning => $message . join(', ', map{${$_}[0]} @event) . '.');
+				$self -> log(error => $message . join(', ', map{${$_}[0]} @event) . '.');
 
-				die "Cannot identify lexeme as either 'attribute_name' or 'node_name'\n";
+				die "Cannot identify lexeme as either 'attribute_name' or 'node_name'. \n";
 			}
 		}
 		else
 		{
 			$message = "$message. Events triggered: $event_count. Names: ";
 
-			$self -> log(warning => $message . join(', ', map{${$_}[0]} @event) . '.');
+			$self -> log(error => $message . join(', ', map{${$_}[0]} @event) . '.');
 
-			die "The code only handles 1 event at a time\n";
+			die "The code only handles 1 event at a time, or the pair ('attribute_name', 'node_name'). \n";
 		}
 	}
 
