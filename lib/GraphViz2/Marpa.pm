@@ -184,12 +184,7 @@ lexeme default			=  latm => 1		# Longest Acceptable Token Match.
 
 :start					::= graph_definition
 
-graph_definition		::= graph_body
-							| comments graph_body
-							| graph_body comments
-							| comments graph_body comments
-
-graph_body				::= prolog_tokens graph_statement
+graph_definition		::= prolog_tokens graph_statement
 
 prolog_tokens			::= strict_token graph_type global_id_type
 
@@ -209,15 +204,6 @@ graph_statement			::= open_brace statement_list close_brace
 statement_list			::= statement_token*
 
 statement_token			::= statement statement_terminator
-							| comments statement_token
-
-# Comment stuff.
-
-comments				::= comment+
-
-comment					::= <C style comment>
-							| <Cplusplus style comment>
-							| <hash style comment>
 
 # Statement stuff.
 
@@ -345,6 +331,10 @@ undirected_edge			~ '--'
 
 :discard				~ whitespace
 whitespace				~ [\s]+
+
+:discard				~ <C style comment>
+:discard				~ <Cplusplus style comment>
+:discard				~ <hash style comment>
 
 # C and C++ comment handling copied from MarpaX::Languages::C::AST.
 
