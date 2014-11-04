@@ -240,8 +240,7 @@ attribute_statement		::= open_bracket string_token_set close_bracket
 
 string_token_set		::= string_token_pair*
 
-string_token_pair		::= literal_label
-							| assignment_statement
+string_token_pair		::= assignment_statement
 
 # Assignment stuff.
 
@@ -267,10 +266,10 @@ subgraph_id_token		::= node_name
 # Lexemes in alphabetical order.
 
 :lexeme					~ attribute_name		pause => before		event => attribute_name
-attribute_name			~ string_char_set+
+attribute_name			~ string
 
 :lexeme					~ attribute_value		pause => before		event => attribute_value
-attribute_value			~ string_char_set+
+attribute_value			~ string
 
 :lexeme					~ close_brace			pause => before		event => close_brace
 close_brace				~ '}'
@@ -288,18 +287,13 @@ digraph_literal			~ 'digraph':i
 :lexeme					~ directed_edge			pause => before		event => directed_edge		priority => 51
 directed_edge			~ '->'
 
-escaped_char			~ '\' [[:print:]]
-
 # Use ' here just for the UltraEdit syntax hiliter.
 
 :lexeme					~ graph_literal			pause => before		event => graph_literal
 graph_literal			~ 'graph':i
 
-:lexeme					~ literal_label			pause => before		event => literal_label
-literal_label			~ 'label'
-
 :lexeme					~ node_name				pause => before		event => node_name
-node_name				~ string_char_set+
+node_name				~ <unquoted string>
 
 :lexeme					~ open_brace			pause => before		event => open_brace
 open_brace				~ '{'
@@ -314,10 +308,9 @@ semicolon_literal		~ ';'
 :lexeme					~ strict_literal		pause => before		event => strict_literal
 strict_literal			~ 'strict':i
 
-# Warning: This qr// must match the exclusions, i.e. [^...], in sub _process_unquoted.
-
-string_char_set			~ escaped_char
-							| [^;\s\[\]\{\}] # Neither a separator [;] nor a terminator [\s\[\]\{\}].
+string					~ <double quoted string>
+string					~ <single quoted string>
+string					~ <unquoted string>
 
 :lexeme					~ subgraph_literal		pause => before		event => subgraph_literal	priority => 91
 subgraph_literal		~ 'subgraph':i
@@ -329,6 +322,9 @@ undirected_edge			~ '--'
 
 # Boilerplate.
 
+:discard				~ separators
+separators				~ [;,]
+
 :discard				~ whitespace
 whitespace				~ [\s]+
 
@@ -336,6 +332,17 @@ whitespace				~ [\s]+
 :discard				~ <Cplusplus style comment>
 :discard				~ <hash style comment>
 
+# Single quoted string handling copied from Marpa::R2's metag.bnf.
+
+<double quoted string> ~ [\"] <string without double quote or vertical space> [\"]
+<string without double quote or vertical space> ~ [^\"\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
+
+<single quoted string> ~ [\'] <string without single quote or vertical space> [\']
+<string without single quote or vertical space> ~ [^\'\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
+
+<unquoted string> ~ <string without horizontal or vertical space>
+<string without horizontal or vertical space> ~ [^\s]+
+
 # C and C++ comment handling copied from MarpaX::Languages::C::AST.
 
 <C style comment>					~ '/*' <comment interior> '*/'
@@ -369,265 +376,6 @@ whitespace				~ [\s]+
 
 END_OF_GRAMMAR
 	);
-
-=pod
-
-	$self -> bnf
-	(
-<<'END_OF_GRAMMAR'
-
-:default				::= action => [values]
-
-lexeme default			= latm => 1		# Longest Acceptable Token Match.
-
-:start 					::= graph_definition
-
-# The prolog to the graph.
-
-graph_definition		::= graph_body
-							| comments graph_body
-							| graph_body comments
-							| comments graph_body comments
-
-comments				::= comment+
-
-comment					::= <C style comment>
-							| <Cplusplus style comment>
-							| <hash style comment>
-
-graph_body				::= prolog_tokens graph_statement_tokens
-
-prolog_tokens			::= strict_token graph_type global_id_type
-
-strict_token			::=
-strict_token			::= strict_literal
-
-graph_type				::= digraph_literal
-							| graph_literal
-
-global_id_type			::=
-global_id_type			::= generic_id_token
-
-# The graph proper.
-
-graph_statement_tokens	::= open_brace statement_list close_brace
-
-statement_list			::= statement_token*
-
-statement_token			::= statement statement_terminator
-							| comments statement_token
-
-statement_terminator	::= semicolon_literal
-statement_terminator	::=
-
-statement				::= node_statement
-							| edge_statement
-							| attribute_statement
-							| assignment_statement
-							| subgraph_statement
-							| comments
-# Node stuff.
-
-node_statement			::= generic_id_token attribute_tokens
-
-generic_id_token		::= generic_id
-							| ('<') generic_id ('>')
-							| number
-							| '"' string '"'
-							| empty_string
-
-number					::= float
-							| integer
-
-# Edge stuff.
-
-edge_statement			::= edge_segment attribute_tokens
-
-edge_segment			::= edge_tail edge_literal edge_head
-
-edge_tail				::= edge_node_token
-							| subgraph_statement
-
-edge_head				::= edge_tail
-							|  edge_tail edge_literal edge_head
-
-edge_node_token			::= generic_id_token
-							| node_port_id
-							| node_port_compass_id
-
-node_port_id			::= generic_id_token<colon>generic_id_token
-
-node_port_compass_id	::= node_port_id<colon>generic_id_token
-
-# Attribute stuff.
-# These have no body between the '[]' because they are parsed manually in order to
-# preserve whitespace in double-quoted strings, which is otherwise discarded by this grammar.
-# See _process_attributes(). See also the same method for the handling of attribute terminators: [;,].
-
-attribute_tokens		::=
-attribute_tokens		::= open_bracket close_bracket statement_terminator
-
-attribute_statement		::= node_statement # Search for 'class'! It's in _process().
-
-# Assignment stuff.
-# There is nothing after 'equals_literal' because it is parsed manually in order to
-# preserve whitespace in double-quoted strings, which is otherwise discarded by this grammar.
-# See _attribute_field().
-
-assignment_statement	::= generic_id equals_literal generic_id_token
-
-# Subgraph stuff.
-# Subgraphs are handled by the statement type 'graph_statement_tokens'.
-# Hence subgraph sub_1 {...} and subgraph {...} and sub_1 {...} and {...} are all output as:
-# o The optional literal 'subgraph', which is classified as a literal.
-# o The optional subgraph id, which is classified as a node_id.
-# o The literal '{'.
-# o The body of the subgraph.
-# o The literal '}'.
-
-subgraph_statement		::= subgraph_prefix subgraph_id_token graph_statement_tokens
-
-subgraph_prefix			::=
-subgraph_prefix			::= subgraph_literal
-
-subgraph_id_token		::=
-subgraph_id_token		::= generic_id_token
-
-# Lexeme-level stuff, in alphabetical order.
-
-:lexeme					~ close_brace		pause => before		event => close_brace
-
-close_brace				~ '}'
-
-:lexeme					~ close_bracket		pause => before		event => close_bracket
-
-close_bracket			~ ']'
-
-:lexeme					~ colon				pause => before		event => colon
-
-colon					~ ':'
-
-digit					~ [0-9]
-digit_any				~ digit*
-digit_many				~ digit+
-
-:lexeme					~ digraph_literal	pause => before		event => digraph_literal
-
-digraph_literal			~ 'digraph':i
-
-:lexeme					~ edge_literal		pause => before		event => edge_literal
-
-edge_literal			~ '->'
-edge_literal			~ '--'
-
-:lexeme					~ empty_string		pause => before		event => string
-
-empty_string			~ '""'
-
-:lexeme					~ equals_literal	pause => before		event => equals_literal
-
-equals_literal			~ '='
-
-escaped_char			~ '\' string_char
-
-# Comment with ' just for the UltraEdit syntax hiliter.
-
-escaped_quote			~ '\"'
-
-:lexeme					~ float				pause => before		event => float
-
-float					~ sign_maybe digit_any '.' digit_many
-							| sign_maybe digit_many '.' digit_any
-
-:lexeme					~ generic_id		pause => before		event => generic_id
-
-generic_id_prefix		~ [a-zA-Z\200-\377_]
-generic_id_suffix		~ [a-zA-Z\200-\377_0-9]*
-generic_id				~ <generic_id_prefix>generic_id_suffix
-
-:lexeme					~ graph_literal		pause => before		event => graph_literal
-
-graph_literal			~ 'graph':i
-
-:lexeme					~ integer			pause => before		event => integer
-
-integer					~ sign_maybe non_zero digit_any
-							| zero
-
-non_zero				~ [1-9]
-
-:lexeme					~ open_brace		pause => before		event => open_brace
-
-open_brace				~ '{'
-
-:lexeme					~ open_bracket		pause => before		event => open_bracket
-
-open_bracket			~ '['
-
-semicolon_literal		~ ';'
-
-sign_maybe				~ [+-]
-sign_maybe				~
-
-:lexeme					~ strict_literal	pause => before		event => strict_literal
-
-strict_literal			~ 'strict':i
-
-:lexeme					~ string			pause => before		event => string
-
-string					~ string_char+
-
-string_char				~ escaped_char | escaped_quote | [^"]
-
-# Comment with " just for the UltraEdit syntax hiliter.
-
-:lexeme					~ subgraph_literal	pause => before		event => subgraph_literal
-
-subgraph_literal		~ 'subgraph':i
-
-zero					~ '0'
-
-# C and C++ comment handling copied from MarpaX::Languages::C::AST.
-
-<C style comment>					~ '/*' <comment interior> '*/'
-
-<comment interior>					~ <optional non stars> <optional star prefixed segments> <optional pre final stars>
-
-<optional non stars>				~ [^*]*
-<optional star prefixed segments>	~ <star prefixed segment>*
-<star prefixed segment>				~ <stars> [^/*] <optional star free text>
-<stars>								~ [*]+
-<optional star free text>			~ [^*]*
-<optional pre final stars>			~ [*]*
-
-<Cplusplus style comment>			~ '//' <Cplusplus comment interior>
-<Cplusplus comment interior>		~ [^\n]*
-
-# Hash comment handling copied from Marpa::R2's metag.bnf.
-
-<hash style comment>				~ <terminated hash comment>
-										| <unterminated final hash comment>
-
-<terminated hash comment>			~ '#' <hash comment body> <vertical space char>
-
-<unterminated final hash comment>	~ '#' <hash comment body>
-
-<hash comment body>					~ <hash comment char>*
-
-<vertical space char>				~ [\x{A}\x{B}\x{C}\x{D}\x{2028}\x{2029}]
-
-<hash comment char>					~ [^\x{A}\x{B}\x{C}\x{D}\x{2028}\x{2029}]
-
-# White space.
-
-:discard				~ whitespace
-
-whitespace				~ [\s]*
-
-END_OF_GRAMMAR
-	);
-
-=cut
 
 	$self -> grammar
 	(
@@ -741,6 +489,18 @@ sub _adjust_edge_attributes
 sub clean_after
 {
 	my($self, $s) = @_;
+
+	# The grammar allows things like '"xyz",', so clean them up.
+	# Note: You can't use (?:[\"\']) here!
+
+	if ($s =~ /^([\"\'])(.*)\1,$/)
+	{
+		$s = $2;
+	}
+	elsif ($s =~ /^(.*),$/)
+	{
+		$s = $1;
+	}
 
 	$s =~ s/^\s+//;
 	$s =~ s/\s+$//;
@@ -928,15 +688,13 @@ sub _process
 		}
 		elsif ($event_name eq 'attribute_value')
 		{
+			$self -> log(debug => "Attribute value |$literal|");
+
 			$literal = $self -> clean_after($literal);
 
 			$self -> _add_daughter('attribute', {name => $fields[0], value => $literal});
 
 			@fields = ();
-
-			# Skip the separator.
-
-			while ( ($pos < (length($string) - 1) ) && (substr($string, $pos, 1) =~ /[\s;]/) ) { $pos++ };
 		}
 		elsif ($event_name eq 'close_brace')
 		{
@@ -949,13 +707,6 @@ sub _process
 		elsif ($event_name eq 'directed_edge')
 		{
 			$self -> _add_daughter('edge_id', {value => $self -> clean_after($literal)});
-		}
-		elsif ($event_name eq 'literal_label')
-		{
-			push @fields, 'label';
-
-			$pos    = $self -> _process_label($self -> recce, \@fields, $string, $length, $pos);
-			@fields = ();
 		}
 		elsif ($event_name =~ $literal_token)
 		{
@@ -1004,122 +755,6 @@ sub _process
 	# Return a defined value for success and undef for failure.
 
 	return $self -> recce -> value;
-
-=pod
-
-	my($self)          = @_;
-	my($string)        = $self -> clean_before($self -> graph_text);
-	my($length)        = length $string;
-	my($last_event)    = '';
-	my($format)        = '%-20s    %5s    %5s    %5s    %-s';
-	my($literal_token) = qr/(?:colon|edge_literal|equals_literal|strict_literal|subgraph_literal)/;
-	my($prolog_token)  = qr/(?:digraph_literal|graph_literal)/;
-	my($simple_token)  = qr/(?:float|integer)/;
-
-	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
-
-	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
-
-	my($attribute_list, $attribute_value);
-	my($event_name);
-	my($generic_id);
-	my($lexeme, $literal);
-	my($node_name);
-	my($span, $start);
-	my($type);
-
-	for
-	(
-		my $pos = $self -> recce -> read(\$string);
-		$pos < $length;
-		$pos = $self -> recce -> resume($pos)
-	)
-	{
-		$event_name     = $self -> _validate_event;
-		($start, $span) = $self -> recce -> pause_span;
-		$pos            = $self -> recce -> lexeme_read($event_name);
-		$literal        = substr($string, $start, $pos - $start);
-		$lexeme         = $self -> recce -> literal($start, $span);
-
-		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
-
-		if ($event_name =~ $simple_token)
-		{
-			$self -> _add_daughter($event_name, {type => $event_name, value => $literal});
-		}
-		elsif ($event_name =~ $literal_token)
-		{
-			$node_name = ($event_name eq 'edge_literal')
-							? 'edge'
-							: ($event_name eq 'equals_literal')
-							? 'equals'
-							: 'literal';
-			$self -> _add_daughter($node_name, {value => $literal});
-		}
-		elsif ($event_name eq 'close_brace')
-		{
-			$self -> log(debug => "close_brace => '$literal'");
-			$self -> _process_brace($literal);
-		}
-		elsif ($event_name eq 'close_bracket')
-		{
-			$self -> log(debug => "close_bracket => '$literal'");
-			$self -> _process_bracket($literal);
-		}
-		elsif ($event_name eq 'generic_id')
-		{
-			$generic_id = $literal;
-			$type       = 'node_id';
-
-			if ($generic_id =~ /^(?:edge|graph|node)$/i)
-			{
-				$type = 'class';
-			}
-			elsif ($generic_id eq 'subgraph')
-			{
-				$type = 'literal';
-			}
-
-			$self -> log(debug => "generic_id => '$generic_id'. type => $type");
-			$self -> _process_token($type, $generic_id);
-		}
-		elsif ($event_name eq 'open_brace')
-		{
-			$self -> log(debug => "open_brace => '$literal'");
-			$self -> _process_brace($literal);
-		}
-		elsif ($event_name eq 'open_bracket')
-		{
-			$self -> log(debug => "open_bracket => '$literal'");
-			$self -> _process_bracket($literal);
-
-			$pos = $self -> _find_terminator(\$string, $start, ']');
-
-			$attribute_list = substr($string, $start + 1, $pos - $start - 1);
-
-			$self -> log(debug => "index() => attribute list: $attribute_list");
-			$self -> _process_attributes($attribute_list);
-		}
-		elsif ($event_name eq 'string')
-		{
-			$self -> log(debug => "string => '$literal'");
-			$self -> _process_token('node_id', $literal);
-		}
-		# From here on are the low-frequency events.
-		elsif ($event_name =~ $prolog_token)
-		{
-			$self -> log(debug => "$event_name => '$literal'");
-			$self -> _process_digraph_graph($event_name, $literal);
-		}
-
-		$last_event = $event_name;
-    }
-
-	# Return a defined value for success and undef for failure.
-
-	return $self -> recce -> value;
-
-=cut
 
 } # End of _process.
 
@@ -1231,6 +866,8 @@ sub _process_html
 {
 	my($self, $recce, $fields, $string, $length, $pos) = @_;
 
+	$self -> log(debug => 'Entered _process_html()');
+
 	my($bracket_count) = 0;
 	my($open_bracket)  = '<';
 	my($close_bracket) = '>';
@@ -1277,9 +914,12 @@ sub _process_html
 		die "Mismatched <> in HTML !$label! at (line, column) = ($line, $column). \n";
 	}
 
+	$self -> log(debug => "_process_html(). Push: |$label|");
+
 	push @$fields, $label;
 
-	return $self -> _skip_separator($string, $length, $pos, ';');
+	return $pos;
+	#return $self -> _skip_separator($string, $length, $pos, ';, ');
 
 } # End of _process_html.
 
@@ -1289,9 +929,9 @@ sub _process_label
 {
 	my($self, $recce, $fields, $string, $length, $pos) = @_;
 
-	$pos = $self -> _skip_separator($string, $length, $pos, '=');
+	#$pos = $self -> _skip_separator($string, $length, $pos, '=');
 
-	return $pos if ($pos >= $length);
+	#return $pos if ($pos >= $length);
 
 	my($char) = substr($string, $pos, 1);
 
@@ -1326,6 +966,8 @@ sub _process_label
 sub _process_quotes
 {
 	my($self, $recce, $fields, $string, $length, $pos, $terminator) = @_;
+
+	$self -> log(debug => 'Entered _process_quotes()');
 
 	my($previous_char) = '';
 	my($label)         = '';
@@ -1373,11 +1015,12 @@ sub _process_quotes
 
 	$label = $self -> clean_after($label);
 
+	$self -> log(debug => "_process_quotes(). Push: |$label|");
+
 	push @$fields, $label;
 
-	$self -> log(debug => "_process_quotes(). Label !$label!");
-
-	return $self -> _skip_separator($string, $length, $pos, ';');
+	return $pos;
+	#return $self -> _skip_separator($string, $length, $pos, ';, ');
 
 } # End of _process_quotes.
 
@@ -1397,13 +1040,17 @@ sub _process_unquoted
 {
 	my($self, $recce, $fields, $string, $length, $pos) = @_;
 
+	$self -> log(debug => 'Entered _process_unquoted()');
+
 	# Warning: This qr// must match the [^...] in 'string_char_set			~ escaped_char'.
 
-	my($re) = qr/[;\s\[\]\{\}]/; # Neither a separator [;] nor a terminator [\s\[\]\{\}].
+	my($re) = qr/[=;,\[\]\{\}]/; # Neither a separator [=;,] nor a terminator [\[\]\{\}].
 
 	if (substr($string, $pos, 1) =~ $re)
 	{
 		push @$fields, '';
+
+		$self -> log(debug => "_process_unquoted(). Push: ||");
 
 		return $pos;
 	}
@@ -1428,9 +1075,12 @@ sub _process_unquoted
 
 	$label = $self -> clean_after($label);
 
+	$self -> log(debug => "_process_unquoted(). Push: |$label|");
+
 	push @$fields, $label;
 
-	return $self -> _skip_separator($string, $length, $pos, ';');
+	return $pos;
+	#return $self -> _skip_separator($string, $length, $pos, ';, ');
 
 } # End of _process_unquoted.
 
@@ -1542,7 +1192,7 @@ sub _skip_separator
 
 		$self -> log(debug => "1 skip_separator: $separator. char: $char");
 		last if ($char !~ $re);
-		$self -> log(debug => "1 skip_separator: $separator. char: $char");
+		$self -> log(debug => "2 skip_separator: $separator. char: $char");
 
 		$pos++;
 	}
@@ -1557,7 +1207,9 @@ sub _validate_event
 {
 	my($self, $string, $start, $span) = @_;
 	my(@event)         = @{$self -> recce -> events};
-	my($event_name)    = ${$event[0]}[0];
+	my($event_count)   = scalar @event;
+	my($event_name)    = ${$event[0]}[0]; # Default;
+	my(@event_name)    = sort map{$$_[0]} @event;
 	my($lexeme)        = substr($string, $start, $span);
 	my($line, $column) = $self -> recce -> line_column($start);
 	my($literal)       = substr($string, $start + $span, 20);
@@ -1565,39 +1217,35 @@ sub _validate_event
 	$literal           =~ s/^\s+//;
 	$literal           =~ s/\s+$//;
 	my($message)       = "Location: ($line, $column). Lexeme: !$lexeme!. Next few chars: !$literal!";
+	$message           = "$message. Events: $event_count. Names: ";
 
-	if (! ${$self -> known_events}{$event_name})
+	$self -> log(debug => $message . join(', ', map{${$_}[0]} @event) . '.');
+
+	my(%event_name);
+
+	@event_name{@event_name} = (1) x @event_name;
+
+	for (@event_name)
 	{
-		$message = "$message. Unexpected event name '$event_name'";
-
-		$self -> log(error => $message);
-
-		die "$message. \n";
+		die "Unexpected event name '$_'" if (! ${$self -> known_events}{$_});
 	}
-
-	my($event_count) = scalar @event;
 
 	if ($event_count > 1)
 	{
-		# We can handle ambiguous events when they are 'attribute_name' and 'node_name'.
-		# 'attribute_name' is followed by '=', and 'node_name' is followed by anything else.
-		# In fact, 'node_name' may be folowed by '[' to indicate the start of its attributes.
-
-		if ($event_count == 2)
+		if ($event_name{close_brace})
 		{
-			my(@event_name) = sort (${$event[0]}[0], ${$event[1]}[0]);
-			my($expected)   = "$event_name[0]!$event_name[1]";
+			# Ignore events attribute_name & node_name.
+		}
+		elsif ($event_count == 2)
+		{
+			# We can handle ambiguous events when they are 'attribute_name' and 'node_name'.
+			# 'attribute_name' is followed by '=', and 'node_name' is followed by anything else.
+			# In fact, 'node_name' may be folowed by '[' to indicate the start of its attributes.
 
-			if ($expected eq 'attribute_name!literal_label')
+			my($expected) = "$event_name[0]!$event_name[1]";
+
+			if ($expected eq 'attribute_name!node_name')
 			{
-				$self -> log(debug => $message);
-
-				$event_name = 'literal_label';
-			}
-			elsif ($expected eq 'attribute_name!node_name')
-			{
-				$self -> log(debug => $message);
-
 				# This might return undef.
 
 				$event_name = $self -> _identify_lexeme($string, $start, $span);
@@ -1609,18 +1257,11 @@ sub _validate_event
 
 			if (! defined $event_name)
 			{
-				$message = "$message. Events triggered: $event_count. Names: ";
-
-				$self -> log(error => $message . join(', ', map{${$_}[0]} @event) . '.');
-
 				die "Cannot identify lexeme as either 'attribute_name' or 'node_name'. \n";
 			}
 		}
 		else
 		{
-			$message = "$message. Events triggered: $event_count. Names: ";
-
-			$self -> log(error => $message . join(', ', map{${$_}[0]} @event) . '.');
 
 			die "The code only handles 1 event at a time, or the pair ('attribute_name', 'node_name'). \n";
 		}
