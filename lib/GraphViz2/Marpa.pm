@@ -309,6 +309,7 @@ semicolon_literal		~ ';'
 strict_literal			~ 'strict':i
 
 string					~ <double quoted string>
+string					~ <html quoted string>
 string					~ <single quoted string>
 string					~ <unquoted string>
 
@@ -336,6 +337,9 @@ whitespace				~ [\s]+
 
 <double quoted string> ~ [\"] <string without double quote or vertical space> [\"]
 <string without double quote or vertical space> ~ [^\"\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
+
+<html quoted string> ~ [<] <string without close angle quote or vertical space> [>]
+<string without close angle quote or vertical space> ~ [^\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
 
 <single quoted string> ~ [\'] <string without single quote or vertical space> [\']
 <string without single quote or vertical space> ~ [^\'\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
@@ -919,110 +923,8 @@ sub _process_html
 	push @$fields, $label;
 
 	return $pos;
-	#return $self -> _skip_separator($string, $length, $pos, ';, ');
 
 } # End of _process_html.
-
-# ------------------------------------------------
-
-sub _process_label
-{
-	my($self, $recce, $fields, $string, $length, $pos) = @_;
-
-	#$pos = $self -> _skip_separator($string, $length, $pos, '=');
-
-	#return $pos if ($pos >= $length);
-
-	my($char) = substr($string, $pos, 1);
-
-	if ($char eq "'")
-	{
-		$pos = $self -> _process_quotes($recce, $fields, $string, $length, $pos, "'");
-	}
-	elsif ($char eq '"')
-	{
-		$pos = $self -> _process_quotes($recce, $fields, $string, $length, $pos, '"');
-	}
-	elsif ($char eq '<')
-	{
-		$pos = $self -> _process_html($recce, $fields, $string, $length, $pos);
-	}
-	else
-	{
-		$pos = $self -> _process_unquoted($recce, $fields, $string, $length, $pos);
-	}
-
-	for (my $i = 0; $i < $#$fields; $i += 2)
-	{
-		$self -> _add_daughter('attribute', {name => $$fields[$i], value => $$fields[$i + 1]});
-	}
-
-	return $pos;
-
-} # End of _process_label.
-
-# ------------------------------------------------
-
-sub _process_quotes
-{
-	my($self, $recce, $fields, $string, $length, $pos, $terminator) = @_;
-
-	$self -> log(debug => 'Entered _process_quotes()');
-
-	my($previous_char) = '';
-	my($label)         = '';
-	my($quote_count)   = 0;
-
-	my($char);
-
-	while ($pos < $length)
-	{
-		$char = substr($string, $pos, 1);
-
-		if ( ($previous_char ne '\\') && ($char eq $terminator) )
-		{
-			$quote_count++;
-
-			if ($quote_count == 2)
-			{
-				$label .= $char;
-
-					$pos++;
-
-				last;
-			}
-		}
-
-		$label         .= $char;
-		$previous_char = $char;
-
-		$pos++;
-	}
-
-	# Don't call clean_after, since it removes the ' and " we are about to check.
-
-	$label =~ s/^\s+//;
-	$label =~ s/\s+$//;
-
-	if ( ($label =~ /^['"]/) && ($label !~ /^(['"]).*\1$/) )
-	{
-		# Use ' and " here just for the UltraEdit syntax hiliter.
-
-		my($line, $column) = $recce -> line_column;
-
-		die "Mismatched quotes in label !$label! at (line, column) = ($line, $column). \n";
-	}
-
-	$label = $self -> clean_after($label);
-
-	$self -> log(debug => "_process_quotes(). Push: |$label|");
-
-	push @$fields, $label;
-
-	return $pos;
-	#return $self -> _skip_separator($string, $length, $pos, ';, ');
-
-} # End of _process_quotes.
 
 # ------------------------------------------------
 
@@ -1033,56 +935,6 @@ sub _process_token
 	$self -> _add_daughter($name, {value => $value});
 
 } # End of _process_token.
-
-# ------------------------------------------------
-
-sub _process_unquoted
-{
-	my($self, $recce, $fields, $string, $length, $pos) = @_;
-
-	$self -> log(debug => 'Entered _process_unquoted()');
-
-	# Warning: This qr// must match the [^...] in 'string_char_set			~ escaped_char'.
-
-	my($re) = qr/[=;,\[\]\{\}]/; # Neither a separator [=;,] nor a terminator [\[\]\{\}].
-
-	if (substr($string, $pos, 1) =~ $re)
-	{
-		push @$fields, '';
-
-		$self -> log(debug => "_process_unquoted(). Push: ||");
-
-		return $pos;
-	}
-
-	my($previous_char) = '';
-	my($label)         = '';
-	my($quote_count)   = 0;
-
-	my($char);
-
-	while ($pos < $length)
-	{
-		$char = substr($string, $pos, 1);
-
-		last if ( ($previous_char ne '\\') && ($char =~ $re) );
-
-		$label         .= $char;
-		$previous_char = $char;
-
-		$pos++;
-	}
-
-	$label = $self -> clean_after($label);
-
-	$self -> log(debug => "_process_unquoted(). Push: |$label|");
-
-	push @$fields, $label;
-
-	return $pos;
-	#return $self -> _skip_separator($string, $length, $pos, ';, ');
-
-} # End of _process_unquoted.
 
 # ------------------------------------------------
 
@@ -1136,6 +988,8 @@ sub run
 
 =pod
 
+	# TODO.
+
 	if ($result == 0)
 	{
 		# Clean up the stack by popping the root node.
@@ -1179,30 +1033,6 @@ sub run
 
 # ------------------------------------------------
 
-sub _skip_separator
-{
-	my($self, $string, $length, $pos, $separator) = @_;
-	my($re) = qr/[\s$separator]/;
-
-	my($char);
-
-	while ($pos < $length - 1)
-	{
-		$char = substr($string, $pos, 1);
-
-		$self -> log(debug => "1 skip_separator: $separator. char: $char");
-		last if ($char !~ $re);
-		$self -> log(debug => "2 skip_separator: $separator. char: $char");
-
-		$pos++;
-	}
-
-	return $pos;
-
-} # End of _skip_separator.
-
-# ------------------------------------------------
-
 sub _validate_event
 {
 	my($self, $string, $start, $span) = @_;
@@ -1235,6 +1065,18 @@ sub _validate_event
 		if ($event_name{close_brace})
 		{
 			# Ignore events attribute_name & node_name.
+
+			$event_name = 'close_brace';
+
+			$self -> log(debug => "Disambiguated lexeme as '$event_name'");
+		}
+		elsif ($event_name{open_brace})
+		{
+			# Ignore events node_name.
+
+			$event_name = 'open_brace';
+
+			$self -> log(debug => "Disambiguated lexeme as '$event_name'");
 		}
 		elsif ($event_count == 2)
 		{
