@@ -440,6 +440,9 @@ sub _add_daughter
 	my($node)         = Tree::DAG_Node -> new({name => $name, attributes => $attributes});
 	my($stack)        = $self -> stack;
 
+	my($v) = $$attributes{value} || '-';
+	$self -> _dump_stack("_add_daughter($name, $v)");
+
 	$$stack[$#$stack] -> add_daughter($node);
 
 } # End of _add_daughter.
@@ -560,6 +563,27 @@ sub copy_nodes
 
 # ------------------------------------------------
 
+sub _dump_stack
+{
+	my($self, $caller) = @_;
+
+=pod
+
+	$self -> log(debug => "\tStack @ $caller");
+
+	for my $item (@{$self -> stack})
+	{
+		$self -> log(debug => "\tName: " . $item -> name);
+	}
+
+	$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
+
+=cut
+
+} # End of _dump_stack.
+
+# ------------------------------------------------
+
 sub hashref2string
 {
 	my($self, $hashref) = @_;
@@ -579,10 +603,6 @@ sub _identify_lexeme
 	$string      =~ /\G\s*(\S)/ || return;
 	my($literal) = $1;
 	my($type)    = ($literal eq '=') ? 'attribute_name' : 'node_name';
-
-	# Note: $pos is updated in _process().
-
-	$type = 'open_bracket' if (substr($lexeme, 0, 1) eq '[');
 
 	$self -> log(debug => "Disambiguated lexeme as '$type'");
 
@@ -694,16 +714,6 @@ sub _process
 		}
 		elsif ($event_name eq 'attribute_value')
 		{
-			if (substr($lexeme, -1, 1) )
-			{
-				$self -> log(debug => "Before |$lexeme|");
-				substr($lexeme, -1, 1) = '';
-				$self -> log(debug => "After  |$lexeme|");
-				$pos                   = $start + $span - 1;
-			}
-
-			$self -> log(debug => "Attribute value |$lexeme|");
-
 			$lexeme = $self -> clean_after($lexeme);
 
 			$self -> _add_daughter('attribute', {name => $fields[0], value => $lexeme});
@@ -743,10 +753,6 @@ sub _process
 		elsif ($event_name eq 'open_bracket')
 		{
 			$self -> _process_bracket($lexeme);
-
-			# See _identify_lexeme().
-
-			$pos = $start + 1 if (length($lexeme) > 1);
 		}
 		elsif ($event_name =~ $prolog_token)
 		{
@@ -791,6 +797,8 @@ sub _process_brace
 
 		pop @$stack;
 
+		$self -> _dump_stack('_process_brace({)');
+
 		my(@daughters) = $self -> tree -> daughters;
 		my($index)     = 1; # 0 => prolog, 1 => graph.
 
@@ -816,6 +824,8 @@ sub _process_brace
 	else
 	{
 		pop @$stack;
+
+		$self -> _dump_stack('_process_brace(})');
 
 		$self -> stack($stack);
 		$self -> _add_daughter('literal', {value => $name});
@@ -849,6 +859,8 @@ sub _process_bracket
 
 		pop @$stack;
 
+		$self -> _dump_stack('_process_bracket()');
+
 		$self -> stack($stack);
 	}
 
@@ -868,6 +880,8 @@ sub _process_digraph_graph
 	my($stack) = $self -> stack;
 
 	pop @$stack;
+
+	$self -> _dump_stack('_process_digraph_graph()');
 
 	my(@daughters) = $self -> tree -> daughters;
 	my($index)     = 1; # 0 => prolog, 1 => graph.
@@ -1011,11 +1025,6 @@ sub _validate_event
 	{
 		die "Unexpected event name '$_'" if (! ${$self -> known_events}{$_});
 	}
-
-	# Another type of special case.
-	# We don't need to adjust $pos because we discard the ';' anyway.
-
-	$event_name = 'close_bracket' if ($lexeme eq '];');
 
 	if ($event_count > 1)
 	{
