@@ -236,11 +236,9 @@ edge_name				::= directed_edge
 
 # Attribute stuff.
 
-attribute_statement		::= open_bracket string_token_set close_bracket
+attribute_statement		::= open_bracket assignment_statements close_bracket
 
-string_token_set		::= string_token_pair*
-
-string_token_pair		::= assignment_statement
+assignment_statements	::= assignment_statement*
 
 # Assignment stuff.
 
@@ -274,7 +272,7 @@ attribute_value			~ string
 :lexeme					~ close_brace			pause => before		event => close_brace
 close_brace				~ '}'
 
-# close_bracket and open_bracket have high priorities to stop them being incorporated into node names.
+# close_bracket and open_bracket have high priorities to stop them being incorporated into strings.
 
 :lexeme					~ close_bracket			pause => before		event => close_bracket
 close_bracket			~ ']'
@@ -298,7 +296,7 @@ node_name				~ <unquoted string>
 :lexeme					~ open_brace			pause => before		event => open_brace
 open_brace				~ '{'
 
-# close_bracket and open_bracket have high priorities to stop them being incorporated into node names.
+# close_bracket and open_bracket have high priorities to stop them being incorporated into strings.
 
 :lexeme					~ open_bracket			pause => before		event => open_bracket
 open_bracket			~ '['
@@ -338,8 +336,8 @@ whitespace				~ [\s]+
 <double quoted string> ~ [\"] <string without double quote or vertical space> [\"]
 <string without double quote or vertical space> ~ [^\"\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
 
-<html quoted string> ~ [<] <string without close angle quote or vertical space> [>]
-<string without close angle quote or vertical space> ~ [^\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
+<html quoted string> ~ [<] <string without vertical space> [>]
+<string without vertical space> ~ [^\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
 
 <single quoted string> ~ [\'] <string without single quote or vertical space> [\']
 <string without single quote or vertical space> ~ [^\'\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
@@ -395,7 +393,7 @@ END_OF_GRAMMAR
 		({
 			grammar         => $self -> grammar,
 			ranking_method  => 'high_rule_only',
-			#trace_terminals => 1,
+			trace_terminals => 0,
 		})
 	);
 
@@ -579,26 +577,12 @@ sub _identify_lexeme
 
 	pos($string) = $start + $span;
 	$string      =~ /\G\s*(\S)/ || return;
-	my($type)    = ($1 eq '=') ? 'attribute_name' : 'node_name';
+	my($literal) = $1;
+	my($type)    = ($literal eq '=') ? 'attribute_name' : 'node_name';
 
-	#$self -> log(debug => "Lexeme !$lexeme!. \$1: !$1!. Type: !$type!");
+	# Note: $pos is updated in _process().
 
-	# Handle special cases.
-	# These appear to be attribute names, but are actually class names.
-	# Code in _process() will handle analysis of 'node_name'.
-
-	if ($type eq 'attribute_name')
-	{
-		my(%special_case) =
-		(
-			edge     => 1,
-			graph    => 1,
-			node     => 1,
-			subgraph => 1,
-		);
-
-		$type = 'node_name' if ($special_case{$lexeme});
-	}
+	$type = 'open_bracket' if (substr($lexeme, 0, 1) eq '[');
 
 	$self -> log(debug => "Disambiguated lexeme as '$type'");
 
@@ -679,16 +663,16 @@ sub _process
 		subgraph => 'literal',
 	);
 
-	$self -> log(warning => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
-
-	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
+	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
 
 	my($event_name);
 	my(@fields);
-	my($lexeme, $literal);
+	my($lexeme);
 	my($node_name);
 	my($span, $start);
 	my($type);
+
+	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
 
 	for
 	(
@@ -700,66 +684,77 @@ sub _process
 		($start, $span) = $self -> recce -> pause_span;
 		$event_name     = $self -> _validate_event($string, $start, $span);
 		$pos            = $self -> recce -> lexeme_read($event_name);
-		$literal        = substr($string, $start, $pos - $start);
 		$lexeme         = $self -> recce -> literal($start, $span);
 
-		$self -> log(warning => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
+		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
 
 		if ($event_name eq 'attribute_name')
 		{
-			$fields[0] = $self -> clean_after($literal);
+			$fields[0] = $self -> clean_after($lexeme);
 		}
 		elsif ($event_name eq 'attribute_value')
 		{
-			$self -> log(debug => "Attribute value |$literal|");
+			if (substr($lexeme, -1, 1) )
+			{
+				$self -> log(debug => "Before |$lexeme|");
+				substr($lexeme, -1, 1) = '';
+				$self -> log(debug => "After  |$lexeme|");
+				$pos                   = $start + $span - 1;
+			}
 
-			$literal = $self -> clean_after($literal);
+			$self -> log(debug => "Attribute value |$lexeme|");
 
-			$self -> _add_daughter('attribute', {name => $fields[0], value => $literal});
+			$lexeme = $self -> clean_after($lexeme);
+
+			$self -> _add_daughter('attribute', {name => $fields[0], value => $lexeme});
 
 			@fields = ();
 		}
 		elsif ($event_name eq 'close_brace')
 		{
-			$self -> _process_brace($literal);
+			$self -> _process_brace($lexeme);
 		}
 		elsif ($event_name eq 'close_bracket')
 		{
-			$self -> _process_bracket($literal);
+			$self -> _process_bracket($lexeme);
 		}
 		elsif ($event_name eq 'directed_edge')
 		{
-			$self -> _add_daughter('edge_id', {value => $self -> clean_after($literal)});
+			$self -> _add_daughter('edge_id', {value => $self -> clean_after($lexeme)});
 		}
 		elsif ($event_name =~ $literal_token)
 		{
 			$node_name = ($event_name eq 'edge_literal')
 							? 'edge'
 							: 'literal';
-			$self -> _add_daughter($node_name, {value => $literal});
+			$self -> _add_daughter($node_name, {value => $lexeme});
 		}
 		elsif ($event_name eq 'node_name')
 		{
-			$literal = $self -> clean_after($literal);
-			$type    = $class{$literal} ? $class{$literal} : 'node_id';
+			$lexeme = $self -> clean_after($lexeme);
+			$type   = $class{$lexeme} ? $class{$lexeme} : 'node_id';
 
-			$self -> _add_daughter($type, {value => $literal});
+			$self -> _add_daughter($type, {value => $lexeme});
 		}
 		elsif ($event_name eq 'open_brace')
 		{
-			$self -> _process_brace($literal);
+			$self -> _process_brace($lexeme);
 		}
 		elsif ($event_name eq 'open_bracket')
 		{
-			$self -> _process_bracket($literal);
+			$self -> _process_bracket($lexeme);
+
+			# See _identify_lexeme().
+
+			$pos = $start + 1 if (length($lexeme) > 1);
 		}
 		elsif ($event_name =~ $prolog_token)
 		{
-			$self -> _process_digraph_graph($event_name, $literal);
+			$self -> _process_digraph_graph($event_name, $lexeme);
 		}
 		elsif ($event_name eq 'undirected_edge')
 		{
-			$self -> _add_daughter('edge_id', {value => $self -> clean_after($literal)});
+			$self -> _add_daughter('edge_id', {value => $self -> clean_after($lexeme)});
 		}
 
 		$last_event = $event_name;
@@ -885,68 +880,6 @@ sub _process_digraph_graph
 
 # ------------------------------------------------
 
-sub _process_html
-{
-	my($self, $recce, $fields, $string, $length, $pos) = @_;
-
-	$self -> log(debug => 'Entered _process_html()');
-
-	my($bracket_count) = 0;
-	my($open_bracket)  = '<';
-	my($close_bracket) = '>';
-	my($previous_char) = '';
-	my($label)         = '';
-
-	my($char);
-
-	while ($pos < $length)
-	{
-		$char  = substr($string, $pos, 1);
-		$label .= $char;
-
-		if ($previous_char eq '\\')
-		{
-		}
-		elsif ($char eq $open_bracket)
-		{
-			$bracket_count++;
-		}
-		elsif ($char eq $close_bracket)
-		{
-			$bracket_count--;
-
-			if ($bracket_count == 0)
-			{
-				$pos++;
-
-				last;
-			}
-		}
-
-		$previous_char = $char;
-
-		$pos++;
-	}
-
-	$label = $self -> clean_after($label);
-
-	if ( ($label =~ /^</) && ($label !~ /^<.*>$/) )
-	{
-		my($line, $column) = $recce -> line_column;
-
-		die "Mismatched <> in HTML !$label! at (line, column) = ($line, $column). \n";
-	}
-
-	$self -> log(debug => "_process_html(). Push: |$label|");
-
-	push @$fields, $label;
-
-	return $pos;
-
-} # End of _process_html.
-
-# ------------------------------------------------
-
 sub _process_token
 {
 	my($self, $name, $value) = @_;
@@ -1065,7 +998,7 @@ sub _validate_event
 	$literal           =~ tr/\n/ /;
 	$literal           =~ s/^\s+//;
 	$literal           =~ s/\s+$//;
-	my($message)       = "Location: ($line, $column). Lexeme: !$lexeme!. Next few chars: !$literal!";
+	my($message)       = "Location: ($line, $column). Lexeme: !$lexeme!. Next few chars: |$literal|";
 	$message           = "$message. Events: $event_count. Names: ";
 
 	$self -> log(debug => $message . join(', ', map{${$_}[0]} @event) . '.');
@@ -1079,8 +1012,15 @@ sub _validate_event
 		die "Unexpected event name '$_'" if (! ${$self -> known_events}{$_});
 	}
 
+	# Another type of special case.
+	# We don't need to adjust $pos because we discard the ';' anyway.
+
+	$event_name = 'close_bracket' if ($lexeme eq '];');
+
 	if ($event_count > 1)
 	{
+		# Another special case.
+
 		# Because of the sort above, we don't know where in the list the special case actually is.
 
 		my(%special_case) =
