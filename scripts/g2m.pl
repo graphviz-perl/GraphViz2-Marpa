@@ -26,6 +26,7 @@ if ($option_parser -> getoptions
 	'minlevel=s',
 	'output_file=s',
 	'renderer=s',
+	'trace_terminals=i',
 ) )
 {
 	pod2usage(1) if ($option{'help'});
@@ -59,6 +60,7 @@ g2m.pl [options]
 	-minlevel logOption2
 	-output_file aRenderedDotInputFileName
 	-renderer aGraphViz2::Marpa::Renderer::GraphViz2-compatible object
+	-trace_terminals anInteger
 
 Exit value: 0 for success, 1 for failure. Die upon error.
 
@@ -137,6 +139,14 @@ Default: ''.
 
 If an output file is specified, then an object of type L<GraphViz2::Marpa::Renderer::GraphViz2>
 is created and its C<run()> method is called.
+
+=item o -trace_terminals anInteger
+
+See the trace level in Marpa::R2::Scanless::R.
+
+Typical values: 0, 1, 99.
+
+Default: 0 (No tracing).
 
 =back
 
