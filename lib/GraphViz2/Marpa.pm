@@ -276,7 +276,7 @@ close_brace				~ '}'
 
 # close_bracket and open_bracket have high priorities to stop them being incorporated into node names.
 
-:lexeme					~ close_bracket			pause => before		event => close_bracket		priority => 91
+:lexeme					~ close_bracket			pause => before		event => close_bracket
 close_bracket			~ ']'
 
 :lexeme					~ digraph_literal		pause => before		event => digraph_literal
@@ -284,7 +284,7 @@ digraph_literal			~ 'digraph':i
 
 # directed_edge and undirected_edge have high priorities to stop them being incorporated into node names.
 
-:lexeme					~ directed_edge			pause => before		event => directed_edge		priority => 51
+:lexeme					~ directed_edge			pause => before		event => directed_edge
 directed_edge			~ '->'
 
 # Use ' here just for the UltraEdit syntax hiliter.
@@ -300,7 +300,7 @@ open_brace				~ '{'
 
 # close_bracket and open_bracket have high priorities to stop them being incorporated into node names.
 
-:lexeme					~ open_bracket			pause => before		event => open_bracket		priority => 91
+:lexeme					~ open_bracket			pause => before		event => open_bracket
 open_bracket			~ '['
 
 semicolon_literal		~ ';'
@@ -313,12 +313,12 @@ string					~ <html quoted string>
 string					~ <single quoted string>
 string					~ <unquoted string>
 
-:lexeme					~ subgraph_literal		pause => before		event => subgraph_literal	priority => 91
+:lexeme					~ subgraph_literal		pause => before		event => subgraph_literal
 subgraph_literal		~ 'subgraph':i
 
 # directed_edge and undirected_edge have high priorities to stop them being incorporated into node names.
 
-:lexeme					~ undirected_edge		pause => before		event => undirected_edge	priority => 51
+:lexeme					~ undirected_edge		pause => before		event => undirected_edge
 undirected_edge			~ '--'
 
 # Boilerplate.
@@ -575,11 +575,30 @@ sub hashref2string
 
 sub _identify_lexeme
 {
-	my($self, $string, $start, $span) = @_;
+	my($self, $string, $start, $span, $lexeme) = @_;
 
 	pos($string) = $start + $span;
 	$string      =~ /\G\s*(\S)/ || return;
 	my($type)    = ($1 eq '=') ? 'attribute_name' : 'node_name';
+
+	#$self -> log(debug => "Lexeme !$lexeme!. \$1: !$1!. Type: !$type!");
+
+	# Handle special cases.
+	# These appear to be attribute names, but are actually class names.
+	# Code in _process() will handle analysis of 'node_name'.
+
+	if ($type eq 'attribute_name')
+	{
+		my(%special_case) =
+		(
+			edge     => 1,
+			graph    => 1,
+			node     => 1,
+			subgraph => 1,
+		);
+
+		$type = 'node_name' if ($special_case{$lexeme});
+	}
 
 	$self -> log(debug => "Disambiguated lexeme as '$type'");
 
@@ -660,7 +679,7 @@ sub _process
 		subgraph => 'literal',
 	);
 
-	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
+	$self -> log(warning => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
 
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
 
@@ -684,7 +703,7 @@ sub _process
 		$literal        = substr($string, $start, $pos - $start);
 		$lexeme         = $self -> recce -> literal($start, $span);
 
-		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
+		$self -> log(warning => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
 
 		if ($event_name eq 'attribute_name')
 		{
@@ -1038,8 +1057,8 @@ sub _validate_event
 	my($self, $string, $start, $span) = @_;
 	my(@event)         = @{$self -> recce -> events};
 	my($event_count)   = scalar @event;
-	my($event_name)    = ${$event[0]}[0]; # Default;
 	my(@event_name)    = sort map{$$_[0]} @event;
+	my($event_name)    = $event_name[0]; # Default;
 	my($lexeme)        = substr($string, $start, $span);
 	my($line, $column) = $self -> recce -> line_column($start);
 	my($literal)       = substr($string, $start + $span, 20);
@@ -1062,19 +1081,21 @@ sub _validate_event
 
 	if ($event_count > 1)
 	{
-		if ($event_name{close_brace})
+		# Because of the sort above, we don't know where in the list the special case actually is.
+
+		my(%special_case) =
+		(
+			'}' => 'close_brace',
+			']' => 'close_bracket',
+			'{' => 'open_brace',
+			'[' => 'open_bracket',
+		);
+
+		if ($special_case{$lexeme})
 		{
-			# Ignore events attribute_name & node_name.
+			# Ignore other events.
 
-			$event_name = 'close_brace';
-
-			$self -> log(debug => "Disambiguated lexeme as '$event_name'");
-		}
-		elsif ($event_name{open_brace})
-		{
-			# Ignore events node_name.
-
-			$event_name = 'open_brace';
+			$event_name = $special_case{$lexeme};
 
 			$self -> log(debug => "Disambiguated lexeme as '$event_name'");
 		}
@@ -1090,7 +1111,7 @@ sub _validate_event
 			{
 				# This might return undef.
 
-				$event_name = $self -> _identify_lexeme($string, $start, $span);
+				$event_name = $self -> _identify_lexeme($string, $start, $span, $lexeme);
 			}
 			else
 			{
