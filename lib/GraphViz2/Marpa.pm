@@ -134,6 +134,14 @@ has stack =>
 	required => 0,
 );
 
+has trace_terminals =>
+(
+	default  => sub{return 0},
+	is       => 'rw',
+	isa      => Int,
+	required => 0,
+);
+
 has tree =>
 (
 	default  => sub{return ''},
@@ -393,7 +401,7 @@ END_OF_GRAMMAR
 		({
 			grammar         => $self -> grammar,
 			ranking_method  => 'high_rule_only',
-			trace_terminals => 0,
+			trace_terminals => $self -> trace_terminals,
 		})
 	);
 
@@ -604,9 +612,15 @@ sub _identify_lexeme
 	my($literal) = $1;
 	my($type)    = ($literal eq '=') ? 'attribute_name' : 'node_name';
 
-	$self -> log(debug => "Disambiguated lexeme as '$type'");
+	if (substr($lexeme, 0, 1) eq '[')
+	{
+		$type = 'open_brace';
+		$span = 1;
+	}
 
-	return $type;
+	$self -> log(debug => "Disambiguated lexeme |$lexeme| as '$type'");
+
+	return ($type, $span);
 
 } # End of _identify_lexeme.
 
@@ -689,6 +703,7 @@ sub _process
 	my(@fields);
 	my($lexeme);
 	my($node_name);
+	my($real_span);
 	my($span, $start);
 	my($type);
 
@@ -701,10 +716,17 @@ sub _process
 		$pos = $self -> recce -> resume($pos)
 	)
 	{
-		($start, $span) = $self -> recce -> pause_span;
-		$event_name     = $self -> _validate_event($string, $start, $span);
-		$pos            = $self -> recce -> lexeme_read($event_name);
-		$lexeme         = $self -> recce -> literal($start, $span);
+		($start, $span)           = $self -> recce -> pause_span;
+		($event_name, $real_span) = $self -> _validate_event($string, $start, $span);
+		$pos                      = $self -> recce -> lexeme_read($event_name);
+
+		if ($real_span != $span)
+		{
+			$pos  = $start + $real_span;
+			$span = $real_span;
+		}
+
+		$lexeme  = $self -> recce -> literal($start, $span);
 
 		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
 
@@ -1005,14 +1027,14 @@ sub _validate_event
 	my(@event)         = @{$self -> recce -> events};
 	my($event_count)   = scalar @event;
 	my(@event_name)    = sort map{$$_[0]} @event;
-	my($event_name)    = $event_name[0]; # Default;
+	my($event_name)    = $event_name[0]; # Default.
 	my($lexeme)        = substr($string, $start, $span);
 	my($line, $column) = $self -> recce -> line_column($start);
 	my($literal)       = substr($string, $start + $span, 20);
 	$literal           =~ tr/\n/ /;
 	$literal           =~ s/^\s+//;
 	$literal           =~ s/\s+$//;
-	my($message)       = "Location: ($line, $column). Lexeme: !$lexeme!. Next few chars: |$literal|";
+	my($message)       = "Location: ($line, $column). Lexeme: |$lexeme|. Next few chars: |$literal|";
 	$message           = "$message. Events: $event_count. Names: ";
 
 	$self -> log(debug => $message . join(', ', map{${$_}[0]} @event) . '.');
@@ -1028,8 +1050,6 @@ sub _validate_event
 
 	if ($event_count > 1)
 	{
-		# Another special case.
-
 		# Because of the sort above, we don't know where in the list the special case actually is.
 
 		my(%special_case) =
@@ -1045,8 +1065,9 @@ sub _validate_event
 			# Ignore other events.
 
 			$event_name = $special_case{$lexeme};
+			$span       = 1;
 
-			$self -> log(debug => "Disambiguated lexeme as '$event_name'");
+			$self -> log(debug => "Disambiguated lexeme |$lexeme| as '$event_name'");
 		}
 		elsif ($event_count == 2)
 		{
@@ -1054,17 +1075,12 @@ sub _validate_event
 			# 'attribute_name' is followed by '=', and 'node_name' is followed by anything else.
 			# In fact, 'node_name' may be folowed by '[' to indicate the start of its attributes.
 
+			$event_name   = undef;
 			my($expected) = "$event_name[0]!$event_name[1]";
 
 			if ($expected eq 'attribute_name!node_name')
 			{
-				# This might return undef.
-
-				$event_name = $self -> _identify_lexeme($string, $start, $span, $lexeme);
-			}
-			else
-			{
-				$event_name = undef;
+				($event_name, $span) = $self -> _identify_lexeme($string, $start, $span, $lexeme);
 			}
 
 			if (! defined $event_name)
@@ -1079,7 +1095,7 @@ sub _validate_event
 		}
 	}
 
-	return $event_name;
+	return ($event_name, $span);
 
 } # End of _validate_event.
 
