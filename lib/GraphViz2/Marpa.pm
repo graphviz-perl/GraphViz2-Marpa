@@ -246,7 +246,7 @@ edge_name				::= directed_edge
 
 attribute_statement		::= open_bracket assignment_statements close_bracket
 
-assignment_statements	::= assignment_statement+
+assignment_statements	::= assignment_statement*
 
 assignment_statement	::= attribute_name ('=') attribute_value
 
@@ -1043,7 +1043,7 @@ sub _validate_event
 	my($message)       = "Location: ($line, $column). Lexeme: |$lexeme|. Next few chars: |$literal|";
 	$message           = "$message. Events: $event_count. Names: ";
 
-	$self -> log(debug => $message . join(', ', map{${$_}[0]} @event) . '.');
+	$self -> log(debug => $message . join(', ', @event_name) . '.');
 
 	my(%event_name);
 
