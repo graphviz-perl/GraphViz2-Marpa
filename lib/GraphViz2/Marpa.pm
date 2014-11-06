@@ -722,12 +722,25 @@ sub _process
 			if (substr($lexeme, 0, 1) eq '[')
 			{
 				$self -> log(debug => sprintf($format, 'open_bracket', $start, 1, $pos, '[') );
-				$self -> _process_bracket($lexeme);
+				$self -> _process_bracket('[');
 
 				substr($lexeme, 0, 1) = '';
-			}
 
-			$fields[0] = $self -> clean_after($lexeme);
+				$fields[0] = $self -> clean_after($lexeme);
+			}
+			elsif ($lexeme eq '];')
+			{
+				$event_name           = 'open_bracket';
+				substr($lexeme, 0, 1) = '';
+				$pos                  = $pos - 1;
+
+				$self -> log(debug => sprintf($format, 'close_bracket', $start, 1, $pos, ']') );
+				$self -> _process_bracket(']');
+			}
+			else
+			{
+				$fields[0] = $self -> clean_after($lexeme);
+			}
 		}
 		elsif ($event_name eq 'attribute_value')
 		{
@@ -795,12 +808,9 @@ sub _process
 		}
 
 		$last_event = $event_name;
-    }
 
-	if ($self -> recce -> ambiguity_metric > 1)
-	{
-		$self -> log(notice => 'Parse is ambiguous. Ambiguity metric > 1');
-	}
+		#$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
+    }
 
 	if (my $ambiguous_status = $self -> recce -> ambiguous)
 	{
@@ -1062,7 +1072,9 @@ sub _validate_event
 		my(%special_case) =
 		(
 			'}' => 'close_brace',
+			']' => 'close_bracket',
 			'{' => 'open_brace',
+			'[' => 'open_bracket',
 		);
 
 		if ($special_case{$lexeme})
@@ -1092,7 +1104,6 @@ sub _validate_event
 		}
 		else
 		{
-
 			die "The code only handles 1 event at a time, or the pair ('attribute_name', 'node_name'). \n";
 		}
 	}
