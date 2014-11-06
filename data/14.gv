@@ -2,13 +2,5 @@ digraph graph_14
 {
 	rankdir = TB
 
-	node_14
-	[
-		label =
-		<<table>
-			<tr>
-				<td>HTML table</td>
-			</tr>
-		</table>>
-	]
+	node_14 [label = <<table><tr><td>HTML table</td></tr></table>>]
 }
