@@ -268,6 +268,7 @@ subgraph_id_token		::=
 subgraph_id_token		::= node_name
 
 # Lexemes in alphabetical order.
+# Quoted string handling copied from Marpa::R2's metag.bnf.
 
 :lexeme					~ attribute_name		pause => before		event => attribute_name
 attribute_name			~ string
@@ -288,13 +289,23 @@ digraph_literal			~ 'digraph':i
 :lexeme					~ directed_edge			pause => before		event => directed_edge
 directed_edge			~ '->'
 
+double_quoted_char_set	~ double_quoted_char+
+double_quoted_char		~ escaped_char
+							|  [^\"\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]
+
+escaped_char			~ '\' [[:print:]]
+
 # Use ' here just for the UltraEdit syntax hiliter.
 
 :lexeme					~ graph_literal			pause => before		event => graph_literal
 graph_literal			~ 'graph':i
 
+html_quoted_char_set	~ html_quoted_char+
+html_quoted_char		~ escaped_char
+							| [^\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]
+
 :lexeme					~ node_name				pause => before		event => node_name
-node_name				~ <unquoted string>
+node_name				~ unquoted_char_set
 
 :lexeme					~ open_brace			pause => before		event => open_brace
 open_brace				~ '{'
@@ -304,19 +315,27 @@ open_bracket			~ '['
 
 semicolon_literal		~ ';'
 
+single_quoted_char_set	~ single_quoted_char+
+single_quoted_char		~ escaped_char
+							[^\'\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]
+
 :lexeme					~ strict_literal		pause => before		event => strict_literal
 strict_literal			~ 'strict':i
 
-string					~ <double quoted string>
-string					~ <html quoted string>
-string					~ <single quoted string>
-string					~ <unquoted string>
+string					~ [\"]	double_quoted_char_set	[\"]
+string					~ [<]	html_quoted_char_set	[>]
+string					~ [\']	single_quoted_char_set	[\']
+string					~ unquoted_char_set
 
 :lexeme					~ subgraph_literal		pause => before		event => subgraph_literal
 subgraph_literal		~ 'subgraph':i
 
 :lexeme					~ undirected_edge		pause => before		event => undirected_edge
 undirected_edge			~ '--'
+
+unquoted_char_set		~ unquoted_char+
+unquoted_char			~ escaped_char
+							| [^\s\[\]]
 
 # Boilerplate.
 
@@ -329,20 +348,6 @@ whitespace				~ [\s]+
 :discard				~ <C style comment>
 :discard				~ <Cplusplus style comment>
 :discard				~ <hash style comment>
-
-# Single quoted string handling copied from Marpa::R2's metag.bnf.
-
-<double quoted string> ~ [\"] <string without double quote or vertical space> [\"]
-<string without double quote or vertical space> ~ [^\"\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
-
-<html quoted string> ~ [<] <string without vertical space> [>]
-<string without vertical space> ~ [^\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
-
-<single quoted string> ~ [\'] <string without single quote or vertical space> [\']
-<string without single quote or vertical space> ~ [^\'\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]+
-
-<unquoted string> ~ <string without horizontal or vertical space>
-<string without horizontal or vertical space> ~ [^\s]+
 
 # C and C++ comment handling copied from MarpaX::Languages::C::AST.
 
