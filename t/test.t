@@ -41,6 +41,8 @@ for my $file_name (GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, $
 {
 	$count++;
 
+	diag "Note: $data_dir_name/$file_name.gv takes 7 seconds" if ($file_name eq '57');
+
 	$in_file                  = File::Spec -> catfile($data_dir_name, "$file_name.$in_suffix");
 	$out_file                 = File::Spec -> catfile($temp_dir_name, "$file_name.$out_suffix");
 	($stdout, $stderr, $exit) = capture{system $^X, '-Ilib', 'scripts/g2m.pl', '-input_file', $in_file, '-output_file', $out_file};

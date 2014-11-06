@@ -5,7 +5,7 @@ for i in data/0*.gv data/1*.gv data/2*.gv data/3*.gv data/4*.gv data/5*.gv ;
 do
 	if [ "$i" == "data/57.gv" ]
 	then
-		echo Warning: $i takes 7 seconds
+		echo Note: $i takes 7 seconds
 	fi
 
 	scripts/g2m.sh $i
