@@ -242,13 +242,11 @@ edge_rhs				::= edge_name edge_lhs
 edge_name				::= directed_edge
 							| undirected_edge
 
-# Attribute stuff.
+# Attribute and Assignment stuff.
 
 attribute_statement		::= open_bracket assignment_statements close_bracket
 
-assignment_statements	::= assignment_statement*
-
-# Assignment stuff.
+assignment_statements	::= assignment_statement+
 
 assignment_statement	::= attribute_name ('=') attribute_value
 
@@ -666,7 +664,7 @@ sub _process
 {
 	my($self)          = @_;
 	my($string)        = $self -> clean_before($self -> graph_text);
-	my($real_length)   = length $string;
+	my($length)        = length $string;
 	my($format)        = '%-20s    %5s    %5s    %5s    %-s';
 	my($last_event)    = '';
 	my($literal_token) = qr/(?:colon|edge_literal|strict_literal|subgraph_literal)/;
@@ -680,7 +678,7 @@ sub _process
 		subgraph => 'literal',
 	);
 
-	$self -> log(debug => "Length of input: $real_length");
+	$self -> log(debug => "Length of input: $length");
 	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
 
 	my($event_name);
@@ -691,21 +689,23 @@ sub _process
 	my($temp, $type);
 
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
-	# And in read(), we use $pos and $real_length to avoid reading Ruby Slippers tokens.
+	# Also, in read(), we use $pos and $length to avoid reading Ruby Slippers tokens (if any).
 
 	for
 	(
-		$pos = $self -> recce -> read(\$string, $pos, $real_length);
-		$pos < $real_length;
+		$pos = $self -> recce -> read(\$string, $pos, $length);
+		$pos < $length;
 		$pos = $self -> recce -> resume($pos)
 	)
 	{
 		($start, $span) = $self -> recce -> pause_span;
 		$event_name     = $self -> _validate_event($string, $start, $span);
-		$pos            = $self -> recce -> lexeme_read($event_name);
 		$lexeme         = $self -> recce -> literal($start, $span);
+		$pos            = $self -> recce -> lexeme_read($event_name);
 
-		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos || -1, $lexeme) );
+		die "lexeme_read() returned undef, meaning lexeme |$lexeme| was rejected\n" if (! defined $pos);
+
+		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
 
 		if ($event_name eq 'attribute_name')
 		{
@@ -952,7 +952,7 @@ sub run
 	}
 	else
 	{
-		die "Error: You must provide a graph using one of -input_file or -description. \n";
+		die "You must provide a graph using one of -input_file or -description. \n";
 	}
 
 	# Return 0 for success and 1 for failure.
