@@ -1066,8 +1066,10 @@ sub _validate_event
 			'}'  => 'close_brace',
 			']'  => 'close_bracket',
 			'];' => 'close_bracket',
+			'->' => 'directed_edge',
 			'{'  => 'open_brace',
 			'['  => 'open_bracket',
+			'--' => 'undirected_edge',
 		);
 
 		if ($special_case{$lexeme})
