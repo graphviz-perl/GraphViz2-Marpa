@@ -2,22 +2,8 @@ digraph graph_14
 {
 	rankdir = TB
 
-	node_14_1
+	node_14
 	[
-		color      = red
-		fontcolor  = blue
-		shape      = egg
-	]
-	node_14_2
-	[
-		"color"    = red
-		fontcolor  = blue
-		shape      = egg
-	]
-	node_14_3
-	[
-		color      = "red"
-		fontcolor  = blue
-		shape      = egg
+		label = <<table><tr><td>HTML table</td></tr></table>>
 	]
 }

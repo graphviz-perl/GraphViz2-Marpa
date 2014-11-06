@@ -705,7 +705,7 @@ sub _process
 		$pos            = $self -> recce -> lexeme_read($event_name);
 		$lexeme         = $self -> recce -> literal($start, $span);
 
-		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
+		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos || -1, $lexeme) );
 
 		if ($event_name eq 'attribute_name')
 		{
@@ -762,7 +762,6 @@ sub _process
 
 			substr($lexeme, -1, 1) = '' if (substr($lexeme, -1, 1) eq ';');
 
-			$self -> log(debug => "Closing bracket $lexeme");
 			$self -> _process_bracket($lexeme);
 		}
 		elsif ($event_name eq 'directed_edge')
