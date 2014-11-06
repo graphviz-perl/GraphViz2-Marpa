@@ -1,5 +1,5 @@
 strict graph graph_11
 {
-	rankdir = "LR"
+	rankdir = LR;
 	ranksep = "0.2"
 }

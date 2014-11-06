@@ -808,7 +808,7 @@ sub _process
 
 		$last_event = $event_name;
 
-		#$self -> log(debug => join("\n", @{$self -> tree -> tree2string}) );
+		$self -> log(debug => join("\n", @{$self -> tree -> tree2string}) );
     }
 
 	if (my $ambiguous_status = $self -> recce -> ambiguous)
@@ -1063,13 +1063,14 @@ sub _validate_event
 	{
 		my(%special_case) =
 		(
-			'}'  => 'close_brace',
-			']'  => 'close_bracket',
-			'];' => 'close_bracket',
-			'->' => 'directed_edge',
-			'{'  => 'open_brace',
-			'['  => 'open_bracket',
-			'--' => 'undirected_edge',
+			'}'        => 'close_brace',
+			']'        => 'close_bracket',
+			'];'       => 'close_bracket',
+			'->'       => 'directed_edge',
+			'{'        => 'open_brace',
+			'['        => 'open_bracket',
+			'subgraph' => 'subgraph_literal',
+			'--'       => 'undirected_edge',
 		);
 
 		if ($special_case{$lexeme})
