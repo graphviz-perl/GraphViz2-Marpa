@@ -315,8 +315,6 @@ string					~ <unquoted string>
 :lexeme					~ subgraph_literal		pause => before		event => subgraph_literal
 subgraph_literal		~ 'subgraph':i
 
-# directed_edge and undirected_edge have high priorities to stop them being incorporated into node names.
-
 :lexeme					~ undirected_edge		pause => before		event => undirected_edge
 undirected_edge			~ '--'
 
@@ -703,7 +701,7 @@ sub _process
 		$lexeme         = $self -> recce -> literal($start, $span);
 		$pos            = $self -> recce -> lexeme_read($event_name);
 
-		die "lexeme_read() returned undef, meaning lexeme |$lexeme| was rejected\n" if (! defined $pos);
+		die "lexeme_read() rejected lexeme |$lexeme|\n" if (! defined $pos);
 
 		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
 
