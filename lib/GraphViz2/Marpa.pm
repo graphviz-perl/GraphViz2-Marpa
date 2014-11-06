@@ -280,15 +280,12 @@ attribute_value			~ string
 :lexeme					~ close_brace			pause => before		event => close_brace
 close_brace				~ '}'
 
-# close_bracket and open_bracket have high priorities to stop them being incorporated into strings.
-
 :lexeme					~ close_bracket			pause => before		event => close_bracket
 close_bracket			~ ']'
+close_bracket			~ '];'
 
 :lexeme					~ digraph_literal		pause => before		event => digraph_literal
 digraph_literal			~ 'digraph':i
-
-# directed_edge and undirected_edge have high priorities to stop them being incorporated into node names.
 
 :lexeme					~ directed_edge			pause => before		event => directed_edge
 directed_edge			~ '->'
@@ -303,8 +300,6 @@ node_name				~ <unquoted string>
 
 :lexeme					~ open_brace			pause => before		event => open_brace
 open_brace				~ '{'
-
-# close_bracket and open_bracket have high priorities to stop them being incorporated into strings.
 
 :lexeme					~ open_bracket			pause => before		event => open_bracket
 open_bracket			~ '['
@@ -448,9 +443,6 @@ sub _add_daughter
 	my($node)         = Tree::DAG_Node -> new({name => $name, attributes => $attributes});
 	my($stack)        = $self -> stack;
 
-	my($v) = $$attributes{value} || '-';
-	$self -> _dump_stack("_add_daughter($name, $v)");
-
 	$$stack[$#$stack] -> add_daughter($node);
 
 } # End of _add_daughter.
@@ -575,8 +567,6 @@ sub _dump_stack
 {
 	my($self, $caller) = @_;
 
-=pod
-
 	$self -> log(debug => "\tStack @ $caller");
 
 	for my $item (@{$self -> stack})
@@ -585,8 +575,6 @@ sub _dump_stack
 	}
 
 	$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
-
-=cut
 
 } # End of _dump_stack.
 
@@ -612,7 +600,7 @@ sub _identify_lexeme
 	my($literal) = $1;
 	my($type)    = ($literal eq '=') ? 'attribute_name' : 'node_name';
 
-	$self -> log(debug => "Disambiguated lexeme |$lexeme| as '$type'");
+	$self -> log(debug => "Disambiguated lexeme (2 of 2) |$lexeme| as '$type'");
 
 	return $type;
 
@@ -678,11 +666,12 @@ sub _process
 {
 	my($self)          = @_;
 	my($string)        = $self -> clean_before($self -> graph_text);
-	my($length)        = length $string;
+	my($real_length)   = length $string;
 	my($format)        = '%-20s    %5s    %5s    %5s    %-s';
 	my($last_event)    = '';
 	my($literal_token) = qr/(?:colon|edge_literal|strict_literal|subgraph_literal)/;
 	my($prolog_token)  = qr/(?:digraph_literal|graph_literal)/;
+	my($pos)           = 0;
 	my(%class)         =
 	(
 		edge     => 'class',
@@ -691,7 +680,7 @@ sub _process
 		subgraph => 'literal',
 	);
 
-	$self -> log(debug => "Length of input: $length");
+	$self -> log(debug => "Length of input: $real_length");
 	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
 
 	my($event_name);
@@ -699,14 +688,15 @@ sub _process
 	my($lexeme);
 	my($node_name);
 	my($span, $start);
-	my($type);
+	my($temp, $type);
 
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
+	# And in read(), we use $pos and $real_length to avoid reading Ruby Slippers tokens.
 
 	for
 	(
-		my $pos = $self -> recce -> read(\$string);
-		$pos < $length;
+		$pos = $self -> recce -> read(\$string, $pos, $real_length);
+		$pos < $real_length;
 		$pos = $self -> recce -> resume($pos)
 	)
 	{
@@ -719,23 +709,17 @@ sub _process
 
 		if ($event_name eq 'attribute_name')
 		{
+			# Special case.
+
 			if (substr($lexeme, 0, 1) eq '[')
 			{
-				$self -> log(debug => sprintf($format, 'open_bracket', $start, 1, $pos, '[') );
-				$self -> _process_bracket('[');
+				$temp = '[';
+
+				$self -> log(debug => sprintf($format, 'open_bracket', $start, 1, $pos, $temp) );
+				$self -> _process_bracket($temp);
 
 				substr($lexeme, 0, 1) = '';
-
-				$fields[0] = $self -> clean_after($lexeme);
-			}
-			elsif ($lexeme eq '];')
-			{
-				$event_name           = 'open_bracket';
-				substr($lexeme, 0, 1) = '';
-				$pos                  = $pos - 1;
-
-				$self -> log(debug => sprintf($format, 'close_bracket', $start, 1, $pos, ']') );
-				$self -> _process_bracket(']');
+				$fields[0]            = $self -> clean_after($lexeme);
 			}
 			else
 			{
@@ -744,11 +728,15 @@ sub _process
 		}
 		elsif ($event_name eq 'attribute_value')
 		{
-			my($bracket);
+			# Special cases.
+			# Handle ']' and '];'.
+
+			$temp                  = '';
+			substr($lexeme, -1, 1) = '' if (substr($lexeme, -1, 1) eq ';');
 
 			if (substr($lexeme, -1, 1) eq ']')
 			{
-				$bracket               = ']';
+				$temp                  = ']';
 				substr($lexeme, -1, 1) = '';
 			}
 
@@ -758,10 +746,10 @@ sub _process
 
 			@fields = ();
 
-			if ($bracket)
+			if ($temp)
 			{
-				$self -> log(debug => sprintf($format, 'close_bracket', $start, 1, $pos, ']') );
-				$self -> _process_bracket(']');
+				$self -> log(debug => sprintf($format, 'close_bracket', $start, 1, $pos, $temp) );
+				$self -> _process_bracket($temp);
 			}
 		}
 		elsif ($event_name eq 'close_brace')
@@ -770,6 +758,11 @@ sub _process
 		}
 		elsif ($event_name eq 'close_bracket')
 		{
+			# Special case.
+
+			substr($lexeme, -1, 1) = '' if (substr($lexeme, -1, 1) eq ';');
+
+			$self -> log(debug => "Closing bracket $lexeme");
 			$self -> _process_bracket($lexeme);
 		}
 		elsif ($event_name eq 'directed_edge')
@@ -785,6 +778,10 @@ sub _process
 		}
 		elsif ($event_name eq 'node_name')
 		{
+			# Special case.
+
+			next if ($lexeme eq ';');
+
 			$lexeme = $self -> clean_after($lexeme);
 			$type   = $class{$lexeme} ? $class{$lexeme} : 'node_id';
 
@@ -809,11 +806,12 @@ sub _process
 
 		$last_event = $event_name;
 
-		#$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
+		#$self -> log(debug => join("\n", @{$self -> tree -> tree2string}) );
     }
 
 	if (my $ambiguous_status = $self -> recce -> ambiguous)
 	{
+		$self -> log(notice => 'Terminals expected: ' . join(', ', @{$self -> recce -> terminals_expected}) );
 		$self -> log(notice => "Parse is ambiguous. Status: $ambiguous_status");
 	}
 
@@ -837,8 +835,6 @@ sub _process_brace
 		my($stack) = $self -> stack;
 
 		pop @$stack;
-
-		$self -> _dump_stack('_process_brace({)');
 
 		my(@daughters) = $self -> tree -> daughters;
 		my($index)     = 1; # 0 => prolog, 1 => graph.
@@ -865,8 +861,6 @@ sub _process_brace
 	else
 	{
 		pop @$stack;
-
-		$self -> _dump_stack('_process_brace(})');
 
 		$self -> stack($stack);
 		$self -> _add_daughter('literal', {value => $name});
@@ -900,8 +894,6 @@ sub _process_bracket
 
 		pop @$stack;
 
-		$self -> _dump_stack('_process_bracket()');
-
 		$self -> stack($stack);
 	}
 
@@ -921,8 +913,6 @@ sub _process_digraph_graph
 	my($stack) = $self -> stack;
 
 	pop @$stack;
-
-	$self -> _dump_stack('_process_digraph_graph()');
 
 	my(@daughters) = $self -> tree -> daughters;
 	my($index)     = 1; # 0 => prolog, 1 => graph.
@@ -1071,17 +1061,18 @@ sub _validate_event
 	{
 		my(%special_case) =
 		(
-			'}' => 'close_brace',
-			']' => 'close_bracket',
-			'{' => 'open_brace',
-			'[' => 'open_bracket',
+			'}'  => 'close_brace',
+			']'  => 'close_bracket',
+			'];' => 'close_bracket',
+			'{'  => 'open_brace',
+			'['  => 'open_bracket',
 		);
 
 		if ($special_case{$lexeme})
 		{
 			$event_name = $special_case{$lexeme};
 
-			$self -> log(debug => "Disambiguated lexeme |$lexeme| as '$event_name'");
+			$self -> log(debug => "Disambiguated lexeme (1 of 2) |$lexeme| as '$event_name'");
 		}
 		elsif ($event_count == 2)
 		{
