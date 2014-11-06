@@ -612,15 +612,9 @@ sub _identify_lexeme
 	my($literal) = $1;
 	my($type)    = ($literal eq '=') ? 'attribute_name' : 'node_name';
 
-	if (substr($lexeme, 0, 1) eq '[')
-	{
-		$type = 'open_brace';
-		$span = 1;
-	}
-
 	$self -> log(debug => "Disambiguated lexeme |$lexeme| as '$type'");
 
-	return ($type, $span);
+	return $type;
 
 } # End of _identify_lexeme.
 
@@ -700,7 +694,7 @@ sub _process
 	$self -> log(debug => "Length of input: $length");
 	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
 
-	my(@event_data);
+	my($event_name);
 	my(@fields);
 	my($lexeme);
 	my($node_name);
@@ -717,100 +711,90 @@ sub _process
 	)
 	{
 		($start, $span) = $self -> recce -> pause_span;
-		@event_data     = $self -> _validate_event($string, $start, $span);
+		$event_name     = $self -> _validate_event($string, $start, $span);
+		$pos            = $self -> recce -> lexeme_read($event_name);
+		$lexeme         = $self -> recce -> literal($start, $span);
 
-		$self -> log(debug => "Original span: $span. real_span: $event_data[2]. Events: |$event_data[0]| & |$event_data[1]|. pos: $pos");
+		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
 
-		$pos            = $self -> recce -> lexeme_read($event_data[0]);
-
-		$self -> log(debug => "Original span: $span. real_span: $event_data[2]. Events: |$event_data[0]| & |$event_data[1]|. pos: $pos");
-
-		# If _validate_event() fiddled the span, it's because the 1st char is a lexeme.
-		# In this case, we reset $pos so the next read() starts just after that char.
-
-		if ($event_data[2] != $span)
+		if ($event_name eq 'attribute_name')
 		{
-			$span = $event_data[2];
-			$pos  = $start + $span;
+			if (substr($lexeme, 0, 1) eq '[')
+			{
+				$self -> log(debug => sprintf($format, 'open_bracket', $start, 1, $pos, '[') );
+				$self -> _process_bracket($lexeme);
 
-			$self -> log(debug => "Adjust span. start: $start. real_span: $event_data[2]. pos: $pos");
-		}
+				substr($lexeme, 0, 1) = '';
+			}
 
-		$lexeme  = $self -> recce -> literal($start, $span);
-
-		# If the attribute_value ends with ']', we reset $pos to read the ']' again.
-
-		$self -> log(debug => "Adjust pos. Span: $span. Last char: " . substr($lexeme, -1, 1));
-
-		if ( ($event_data[1] eq 'attribute_value') && ($span > 1) && (substr($lexeme, -1, 1) eq ']') )
-		{
-			$self -> log(debug => "Adjust pos: $pos");
-
-			$pos--;
-
-			substr($lexeme, -1, 1) = '';
-
-			$self -> log(debug => "Adjust pos: $pos");
-		}
-
-		$self -> log(debug => sprintf($format, $event_data[1], $start, $span, $pos || 'N/A', $lexeme) );
-
-		if ($event_data[1] eq 'attribute_name')
-		{
 			$fields[0] = $self -> clean_after($lexeme);
 		}
-		elsif ($event_data[1] eq 'attribute_value')
+		elsif ($event_name eq 'attribute_value')
 		{
+			my($bracket);
+
+			if (substr($lexeme, -1, 1) eq ']')
+			{
+				$bracket               = ']';
+				substr($lexeme, -1, 1) = '';
+			}
+
 			$lexeme = $self -> clean_after($lexeme);
 
 			$self -> _add_daughter('attribute', {name => $fields[0], value => $lexeme});
 
 			@fields = ();
+
+			if ($bracket)
+			{
+				$self -> log(debug => sprintf($format, 'close_bracket', $start, 1, $pos, ']') );
+				$self -> _process_bracket(']');
+			}
 		}
-		elsif ($event_data[1] eq 'close_brace')
+		elsif ($event_name eq 'close_brace')
 		{
 			$self -> _process_brace($lexeme);
 		}
-		elsif ($event_data[1] eq 'close_bracket')
+		elsif ($event_name eq 'close_bracket')
 		{
 			$self -> _process_bracket($lexeme);
 		}
-		elsif ($event_data[1] eq 'directed_edge')
+		elsif ($event_name eq 'directed_edge')
 		{
 			$self -> _add_daughter('edge_id', {value => $self -> clean_after($lexeme)});
 		}
-		elsif ($event_data[1] =~ $literal_token)
+		elsif ($event_name =~ $literal_token)
 		{
-			$node_name = ($event_data[1] eq 'edge_literal')
+			$node_name = ($event_name eq 'edge_literal')
 							? 'edge'
 							: 'literal';
 			$self -> _add_daughter($node_name, {value => $lexeme});
 		}
-		elsif ($event_data[1] eq 'node_name')
+		elsif ($event_name eq 'node_name')
 		{
 			$lexeme = $self -> clean_after($lexeme);
 			$type   = $class{$lexeme} ? $class{$lexeme} : 'node_id';
 
 			$self -> _add_daughter($type, {value => $lexeme});
 		}
-		elsif ($event_data[1] eq 'open_brace')
+		elsif ($event_name eq 'open_brace')
 		{
 			$self -> _process_brace($lexeme);
 		}
-		elsif ($event_data[1] eq 'open_bracket')
+		elsif ($event_name eq 'open_bracket')
 		{
 			$self -> _process_bracket($lexeme);
 		}
-		elsif ($event_data[1] =~ $prolog_token)
+		elsif ($event_name =~ $prolog_token)
 		{
-			$self -> _process_digraph_graph($event_data[1], $lexeme);
+			$self -> _process_digraph_graph($event_name, $lexeme);
 		}
-		elsif ($event_data[1] eq 'undirected_edge')
+		elsif ($event_name eq 'undirected_edge')
 		{
 			$self -> _add_daughter('edge_id', {value => $self -> clean_after($lexeme)});
 		}
 
-		$last_event = $event_data[1];
+		$last_event = $event_name;
     }
 
 	if ($self -> recce -> ambiguity_metric > 1)
@@ -1053,7 +1037,6 @@ sub _validate_event
 	my($event_count)   = scalar @event;
 	my(@event_name)    = sort map{$$_[0]} @event;
 	my($event_name)    = $event_name[0]; # Default.
-	my($real_event)    = $event_name;
 	my($lexeme)        = substr($string, $start, $span);
 	my($line, $column) = $self -> recce -> line_column($start);
 	my($literal)       = substr($string, $start + $span, 20);
@@ -1076,24 +1059,17 @@ sub _validate_event
 
 	if ($event_count > 1)
 	{
-		# Because of the sort above, we don't know where in the list the special case actually is.
-
 		my(%special_case) =
 		(
 			'}' => 'close_brace',
-			']' => 'close_bracket',
 			'{' => 'open_brace',
-			'[' => 'open_bracket',
 		);
 
 		if ($special_case{$lexeme})
 		{
-			# Ignore other events.
+			$event_name = $special_case{$lexeme};
 
-			$real_event = $special_case{$lexeme};
-			$span       = 1;
-
-			$self -> log(debug => "Disambiguated lexeme |$lexeme| as '$real_event'");
+			$self -> log(debug => "Disambiguated lexeme |$lexeme| as '$event_name'");
 		}
 		elsif ($event_count == 2)
 		{
@@ -1101,12 +1077,12 @@ sub _validate_event
 			# 'attribute_name' is followed by '=', and 'node_name' is followed by anything else.
 			# In fact, 'node_name' may be folowed by '[' to indicate the start of its attributes.
 
-			$real_event   = undef;
+			$event_name   = undef;
 			my($expected) = "$event_name[0]!$event_name[1]";
 
 			if ($expected eq 'attribute_name!node_name')
 			{
-				($real_event, $span) = $self -> _identify_lexeme($string, $start, $span, $lexeme);
+				$event_name = $self -> _identify_lexeme($string, $start, $span, $lexeme);
 			}
 
 			if (! defined $event_name)
@@ -1121,7 +1097,7 @@ sub _validate_event
 		}
 	}
 
-	return ($event_name, $real_event, $span);
+	return $event_name;
 
 } # End of _validate_event.
 
