@@ -302,7 +302,7 @@ graph_literal			~ 'graph':i
 
 html_quoted_char_set	~ html_quoted_char+
 html_quoted_char		~ escaped_char
-							| [^\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]
+							| [^\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]
 
 :lexeme					~ node_name				pause => before		event => node_name
 node_name				~ unquoted_char_set
@@ -335,7 +335,7 @@ undirected_edge			~ '--'
 
 unquoted_char_set		~ unquoted_char+
 unquoted_char			~ escaped_char
-							| [^\s\[\]]
+							| [^\s\[\]=]
 
 # Boilerplate.
 

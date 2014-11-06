@@ -1,5 +1,5 @@
 digraph graph_10
 {
 	edge ["color" = "green"];
-	node [shape = rpromoter]
+	node [shape=rpromoter]
 }
