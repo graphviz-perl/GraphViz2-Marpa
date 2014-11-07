@@ -85,7 +85,7 @@ sub format_node
 	my($name)           = $node -> name;
 	my($attributes)     = $node -> attributes;
 	my($attr_string)    = $self -> tree -> hashref2string($attributes);
-	my($type)           = $$attributes{type} || '';
+	my($type)           = $$attributes{name} || '';
 	my($value)          = $$attributes{value} || '';
 	my($depth)          = $$opts{_depth};
 	my($previous_name)  = ${$$opts{previous_name} };
@@ -128,18 +128,18 @@ sub format_node
 	}
 	elsif ($name =~ /(?:node_id|string)/)
 	{
-		$indent                    = ($previous_value eq '=') ? '' : "\t" x ($depth - 2);
-		$indent                    = '' if ($previous_name eq 'subgraph');
-		$value                     = '' if ($value eq '""');
-		$value                     = qq("$value") if ($name eq 'string');
-		$dot_input                 .= "$indent$value";
-		$dot_input                 .= ($previous_value eq '=') ? "\n" : ' ';
-		${$$opts{previous_name} }  = $name;
+		$indent                   = ($previous_value eq '=') ? '' : "\t" x ($depth - 2);
+		$indent                   = '' if ($previous_name eq 'subgraph');
+		$value                    = '' if ($value eq '""');
+		$value                    = qq("$value") if ($name eq 'string');
+		$dot_input                .= "$indent$value";
+		$dot_input                .= ($previous_value eq '=') ? "\n" : ' ';
+		${$$opts{previous_name} } = $name;
 	}
 	elsif ($name eq 'attribute')
 	{
 		$indent    = "\t" x ($depth - 2);
-		$value     = qq("$value") if ($type eq 'label');
+		$value     = qq("$value") if ($value !~ /^</);
 		$dot_input .= "\n$indent$type = $value";
 	}
 	elsif ($name eq 'class')

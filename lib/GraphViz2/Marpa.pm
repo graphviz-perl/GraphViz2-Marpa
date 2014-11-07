@@ -813,7 +813,7 @@ sub _process
 
 		$last_event = $event_name;
 
-		$self -> log(debug => join("\n", @{$self -> tree -> tree2string}) );
+		#$self -> log(debug => join("\n", @{$self -> tree -> tree2string}) );
     }
 
 	if (my $ambiguous_status = $self -> recce -> ambiguous)
@@ -988,11 +988,7 @@ sub run
 		$self -> log(error => "Parse failed. Error: $_");
 	};
 
-	$self -> log(info => "Parse result: $result (0 is success)");
-
-=pod
-
-	# TODO.
+	$self -> log(info => "Parse result:  $result (0 is success)");
 
 	if ($result == 0)
 	{
@@ -1003,14 +999,13 @@ sub run
 		pop @$stack;
 
 		$self -> stack($stack);
-		$self -> log(debug => 'Brace count:  ' . $self -> brace_count . ' (0 expected)');
-		$self -> log(debug => 'Stack size:   ' . $#{$self -> stack} . ' (0 expected)');
+		$self -> log(debug => 'Brace count:   ' . $self -> brace_count . ' (0 is success)');
+		$self -> log(debug => 'Stack size:    ' . $#{$self -> stack} . ' (0 is success)');
 
 		my($output_file) = $self -> output_file;
 
 		if ($output_file)
 		{
-			$self -> log(debug => "Rendering to $output_file");
 			$self -> renderer
 			(
 				GraphViz2::Marpa::Renderer::Graphviz -> new
@@ -1024,10 +1019,9 @@ sub run
 			) if (! $self -> renderer);
 
 			$self -> renderer -> run;
+			$self -> log(info => "Rendered file: $output_file");
 		}
 	}
-
-=cut
 
 	# Return 0 for success and 1 for failure.
 

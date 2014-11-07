@@ -9,4 +9,4 @@ then
 	echo Note: $1.gv takes 7 seconds
 fi
 
-scripts/g2m.sh data/$1.gv $2 $3 $4 $5
+scripts/g2m.sh data/$1.gv $2 $3 $4 $5 $6 $7 $8 $9
