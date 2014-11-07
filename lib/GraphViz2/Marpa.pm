@@ -1254,10 +1254,6 @@ Runs scripts/g2m.pl on all files data/*.gv, and then runs generate.index.pl.
 After that it copies html/*.html and html/*.svg to my web server's doc root,
 $DR/Perl-modules/html/graphviz2.marpa/ (which is a RAMdisk directory under Debian).
 
-=item o generate.index.pl
-
-Generates html/index.html from data/*.gv and html/*.svg.
-
 =item o pod2html.sh
 
 Converts all *.pm files to *.html, and copies them in my web server's dir structure (in Debian's
