@@ -31,6 +31,7 @@ my($count)         = 0;
 my(@diff, $diff_count);
 my($exit);
 my($in_file);
+my($message);
 my($new_svg);
 my($out_file, $old_svg);
 my($stdout, $stderr);
@@ -68,28 +69,17 @@ for my $file_name (GraphViz2::Marpa::Utils -> new -> get_files($data_dir_name, $
 	$out_file                 = File::Spec -> catfile($temp_dir_name, "$file_name.$out_suffix");
 	($stdout, $stderr, $exit) = capture{system $^X, '-Ilib', 'scripts/g2m.pl', '-input_file', $in_file, '-output_file', $out_file};
 
-	if ($exit == 0)
-	{
-		$out_file                  = File::Spec -> catfile($html_dir_name, "$file_name.$svg_suffix");
-		($old_svg, $stderr, $exit) = capture{system 'dot', '-Tsvg', $in_file};
-		$out_file                  = File::Spec -> catfile($html_dir_name, "$file_name.$svg_suffix");
-		($old_svg, $stderr, $exit) = capture{system 'dot', '-Tsvg', $out_file};
-		@diff                      = diff([split(/\n/, $old_svg)], [split(/\n/, $old_svg)]);
-		$diff_count                = scalar @diff;
+	$out_file                  = File::Spec -> catfile($html_dir_name, "$file_name.$svg_suffix");
+	($old_svg, $stderr, $exit) = capture{system 'dot', '-Tsvg', $in_file};
+	$out_file                  = File::Spec -> catfile($html_dir_name, "$file_name.$svg_suffix");
+	($old_svg, $stderr, $exit) = capture{system 'dot', '-Tsvg', $out_file};
+	@diff                      = diff([split(/\n/, $old_svg)], [split(/\n/, $old_svg)]);
+	$diff_count                = scalar @diff;
+	$message                   = ($will_fail{$file_name})
+									? "Known and expected failure : $in_file"
+									: "Tests shipped and generated: $in_file";
 
-		if ($will_fail{$file_name})
-		{
-			ok($diff_count != 0, "Known and expected fail: $in_file");
-		}
-		else
-		{
-			ok($diff_count == 0, "Compare shipped and generated: $in_file");
-		}
-	}
-	else
-	{
-		ok(0, "Can't run scripts/g2m.pl");
-	}
+	ok($diff_count == 0, $message);
 }
 
 print "# Internal test count: $count. \n";
