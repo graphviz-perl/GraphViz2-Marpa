@@ -305,7 +305,7 @@ html_quoted_char		~ escaped_char
 							| [^\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]
 
 :lexeme					~ node_name				pause => before		event => node_name
-node_name				~ unquoted_char_set
+node_name				~ string
 
 :lexeme					~ open_brace			pause => before		event => open_brace
 open_brace				~ '{'
@@ -315,16 +315,19 @@ open_bracket			~ '['
 
 semicolon_literal		~ ';'
 
-single_quoted_char_set	~ single_quoted_char+
-single_quoted_char		~ escaped_char
-							[^\'\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]
+#single_quoted_char_set	~ single_quoted_char+
+#single_quoted_char		~ escaped_char
+#							[^\'\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]
 
 :lexeme					~ strict_literal		pause => before		event => strict_literal
 strict_literal			~ 'strict':i
 
+# Single-quoted strings will work, but they are not supported in the
+# DOT language. See http://www.graphviz.org/content/dot-language.
+
 string					~ [\"]	double_quoted_char_set	[\"]
 string					~ [<]	html_quoted_char_set	[>]
-string					~ [\']	single_quoted_char_set	[\']
+#string					~ [\']	single_quoted_char_set	[\']
 string					~ unquoted_char_set
 
 :lexeme					~ subgraph_literal		pause => before		event => subgraph_literal
@@ -332,6 +335,8 @@ subgraph_literal		~ 'subgraph':i
 
 :lexeme					~ undirected_edge		pause => before		event => undirected_edge
 undirected_edge			~ '--'
+
+# The '=' is necessary for cases like: 'name=value' in node_1 [name=value].
 
 unquoted_char_set		~ unquoted_char+
 unquoted_char			~ escaped_char
