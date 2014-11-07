@@ -1154,8 +1154,22 @@ Demo output: L<http://savage.net.au/Perl-modules/html/graphviz2.marpa/index.html
 
 L<Marpa's homepage|http://savage.net.au/Marpa.html>.
 
-L<An article|http://savage.net.au/Ron/html/A.New.Marpa-based.Parser.for.GraphViz.html>  on this
-module. The article contains the TODO list.
+Articles:
+
+=over 4
+
+=item o Overview
+
+L<Announcing this module|http://savage.net.au/Ron/html/A.New.Marpa-based.Parser.for.GraphViz.html>
+
+=item o Building the Grammar
+
+L<Conditional preservation of whitespace|http://savage.net.au/Ron/html/Conditional.preservation.of.whitespace.html>
+
+This module will be re-written, again, now that its BNF has been incorporated into GraphViz2::Marpa,
+and patched along the way.
+
+=back
 
 =head1 Modules
 
@@ -1169,7 +1183,8 @@ It can, optionally, use the default renderer L<GraphViz2::Marpa::Renderer::Graph
 
 Accepts a L<Graphviz|http://www.graphviz.org/> graph definition and builds a corresponding
 data structure representing the parsed graph. It can pass that data to the default renderer,
-L<GraphViz2::Marpa::Renderer::Graphviz>, which can then render it to a text file.
+L<GraphViz2::Marpa::Renderer::Graphviz>, which can then render it to a text file ready to be
+input to C<dot>.
 
 See scripts/g2m.pl and scripts/test.utf8.sh.
 
