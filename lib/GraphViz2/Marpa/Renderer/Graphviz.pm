@@ -49,7 +49,7 @@ has tree =>
 	default  => sub{return ''},
 	is       => 'rw',
 	isa      => Any,
-	required => 0,
+	required => 1,
 );
 
 
@@ -307,7 +307,7 @@ This option is mandatory.
 
 The tree is output from L<GraphViz2::Marpa>.
 
-Default: [].
+Default: ''.
 
 =back
 
