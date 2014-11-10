@@ -833,7 +833,7 @@ sub _process_prolog_token
 {
 	my($self, $event_name, $value) = @_;
 
-	$self -> _add_daughter('literal', {type => $event_name, value => $value});
+	$self -> _add_daughter('literal', {type => $event_name, value => lc $value});
 
 	# When 'digraph' or 'graph' is encountered, the 'graph' daughter of the root
 	# becomes the parent of all other tree nodes, replacing the 'prolog' daughter.
@@ -1622,7 +1622,7 @@ Output:
 	Parse result:  0 (0 is success)
 
 You can see from this output that words special to Graphviz (e.g. STRICT) are accepted no matter
-what case they are in.
+what case they are in. Such tokens are stored in lower-case.
 
 A more detailed analysis follows.
 
