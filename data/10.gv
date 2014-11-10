@@ -2,4 +2,7 @@ digraph graph_10
 {
 	edge ["color" = "green"];
 	node [shape=rpromoter]
+	output [label = "", shape = terminator;];
+
+	input -> output [label = Transformer]
 }
