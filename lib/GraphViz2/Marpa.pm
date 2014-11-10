@@ -381,9 +381,9 @@ whitespace				~ [\s]+
 
 <hash comment body>					~ <hash comment char>*
 
-<vertical space char>				~ [\x{A}\x{B}\x{C}\x{D}\x{2028}\x{2029}]
+<vertical space char>				~ [\x{0A}\x{0B}\x{0C}\x{0D}\x{2028}\x{2029}]
 
-<hash comment char>					~ [^\x{A}\x{B}\x{C}\x{D}\x{2028}\x{2029}]
+<hash comment char>					~ [^\x{0A}\x{0B}\x{0C}\x{0D}\x{2028}\x{2029}]
 
 END_OF_GRAMMAR
 	);
@@ -455,48 +455,6 @@ sub _add_daughter
 
 # ------------------------------------------------
 
-sub _adjust_edge_attributes
-{
-	my($self, $mothers) = @_;
-
-	my(@attribute_nodes);
-	my(@daughters);
-	my($mother);
-	my($name);
-	my($subtree);
-
-	for my $uid (keys %$mothers)
-	{
-		$mother    = $$mothers{$uid};
-		@daughters = $mother -> daughters;
-
-		# Does the last daughter have attributes?
-		# If so, move them onto all edges within this mother.
-
-		@attribute_nodes = $daughters[$#daughters] -> daughters;
-
-		next if ($#attribute_nodes < 0);
-
-		$daughters[$#daughters] -> clear_daughters;
-
-		for my $i (0 .. $#daughters)
-		{
-			# Find each edge.
-
-			$name = $daughters[$i] -> name;
-
-			next if ($name ne 'edge_id');
-
-			$subtree = $self -> copy_nodes(\@attribute_nodes);
-
-			$daughters[$i] -> set_daughters(@$subtree);
-		}
-	}
-
-} # End of _adjust_edge_attributes.
-
-# ------------------------------------------------
-
 sub clean_after
 {
 	my($self, $s) = @_;
@@ -536,36 +494,6 @@ sub clean_before
 	return $s;
 
 } # End of clean_before.
-
-# ------------------------------------------------
-
-sub copy_nodes
-{
-	my($self, $attributes_nodes) = @_;
-	my(@copy);
-
-	my($attributes);
-	my($new);
-
-	for my $old (@$attributes_nodes)
-	{
-		# Warning, double warning and triple warning:
-		# The code elsewhere will fail if you use:
-		#	$attributes = $old -> attributes;
-		# because then $attributes is an alias of the attributes, it is not a new variable.
-		# So, subsequent calls to this method will overwrite the attributes of all nodes
-		# minted during previous calls to the method.
-
-		$attributes       = {%{$old -> attributes} };
-		$$attributes{uid} = $self -> uid($self -> uid + 1);
-		$new              = Tree::DAG_Node -> new({name => $old -> name, attributes => $attributes});
-
-		push @copy, $new;
-	}
-
-	return [@copy]	;
-
-} # End of copy_nodes.
 
 # ------------------------------------------------
 
@@ -628,13 +556,12 @@ sub _post_process
 {
 	my($self) = @_;
 
-	# Walk the tree, find the edges, and then stockpile their mothers.
+	# Walk the tree, find the edges, and stockpile uids of interest.
 	# The Tree::DAG_Node docs warn against modifying the tree during a walk,
-	# so we use a hash to track all the mothers found, and post-process them.
+	# so we use a hash to track uids found, and post-process them.
 
 	my($attributes);
-	my(%mothers);
-	my($uid);
+	my($uid, %uid);
 
 	$self -> tree -> walk_down
 	({
@@ -643,13 +570,13 @@ sub _post_process
 			my($node) = @_;
 			my($name) = $node -> name;
 
-			# Stash mother uids, for later processing.
+			# Stash uids for later processing.
 
 			if ($name eq 'edge_id')
 			{
-				$attributes    = $node -> mother -> attributes;
-				$uid           = $$attributes{uid};
-				$mothers{$uid} = $node -> mother if (! $mothers{$uid});
+				$attributes  = $node -> mother -> attributes;
+				$uid         = $$attributes{uid};
+				$uid{$uid}   = $node;
 			}
 
 			# Keep walking.
@@ -658,11 +585,6 @@ sub _post_process
 		},
 		_depth => 0,
 	});
-
-	# Now look for attributes hanging off the edge's head node/subgraph,
-	# and move them back to belong to all edges in the path.
-
-	$self -> _adjust_edge_attributes(\%mothers);
 
 } # End of _post_process.
 
@@ -675,8 +597,7 @@ sub _process
 	my($length)        = length $string;
 	my($format)        = '%-20s    %5s    %5s    %5s    %-s';
 	my($last_event)    = '';
-	my($literal_token) = qr/(?:colon|edge_literal|strict_literal|subgraph_literal)/;
-	my($prolog_token)  = qr/(?:digraph_literal|graph_literal)/;
+	my($prolog_token)  = qr/(?:digraph_literal|graph_literal|strict_literal)/;
 	my($pos)           = 0;
 	my(%class)         =
 	(
@@ -721,10 +642,11 @@ sub _process
 
 			if (substr($lexeme, 0, 1) eq '[')
 			{
-				$temp = '[';
+				$event_name = 'open_bracket';
+				$temp       = '[';
 
-				$self -> log(debug => sprintf($format, 'open_bracket', $start, 1, $pos, $temp) );
-				$self -> _process_bracket($temp);
+				$self -> log(debug => sprintf($format, $event_name, $start, 1, $pos, $temp) );
+				$self -> _process_bracket($temp, $event_name);
 
 				substr($lexeme, 0, 1) = '';
 				$fields[0]            = $self -> clean_after($lexeme);
@@ -750,19 +672,21 @@ sub _process
 
 			$lexeme = $self -> clean_after($lexeme);
 
-			$self -> _add_daughter('attribute', {name => $fields[0], value => $lexeme});
+			$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
 
 			@fields = ();
 
 			if ($temp)
 			{
-				$self -> log(debug => sprintf($format, 'close_bracket', $start, 1, $pos, $temp) );
-				$self -> _process_bracket($temp);
+				$event_name = 'close_bracket';
+
+				$self -> log(debug => sprintf($format, $event_name, $start, 1, $pos, $temp) );
+				$self -> _process_bracket($temp, $event_name);
 			}
 		}
 		elsif ($event_name eq 'close_brace')
 		{
-			$self -> _process_brace($lexeme);
+			$self -> _process_brace($lexeme, $event_name);
 		}
 		elsif ($event_name eq 'close_bracket')
 		{
@@ -770,18 +694,11 @@ sub _process
 
 			substr($lexeme, -1, 1) = '' if (substr($lexeme, -1, 1) eq ';');
 
-			$self -> _process_bracket($lexeme);
+			$self -> _process_bracket($lexeme, $event_name);
 		}
 		elsif ($event_name eq 'directed_edge')
 		{
-			$self -> _add_daughter('edge_id', {value => $self -> clean_after($lexeme)});
-		}
-		elsif ($event_name =~ $literal_token)
-		{
-			$node_name = ($event_name eq 'edge_literal')
-							? 'edge'
-							: 'literal';
-			$self -> _add_daughter($node_name, {value => $lexeme});
+			$self -> _process_token('edge_id', $event_name, $lexeme);
 		}
 		elsif ($event_name eq 'node_name')
 		{
@@ -796,19 +713,23 @@ sub _process
 		}
 		elsif ($event_name eq 'open_brace')
 		{
-			$self -> _process_brace($lexeme);
+			$self -> _process_brace($lexeme, $event_name);
 		}
 		elsif ($event_name eq 'open_bracket')
 		{
-			$self -> _process_bracket($lexeme);
+			$self -> _process_bracket($lexeme, $event_name);
 		}
 		elsif ($event_name =~ $prolog_token)
 		{
-			$self -> _process_digraph_graph($event_name, $lexeme);
+			$self -> _process_prolog_token($event_name, $lexeme);
+		}
+		elsif ($event_name =~ 'subgraph_literal')
+		{
+			$self -> _process_token('literal', $event_name, $lexeme);
 		}
 		elsif ($event_name eq 'undirected_edge')
 		{
-			$self -> _add_daughter('edge_id', {value => $self -> clean_after($lexeme)});
+			$self -> _process_token('edge_id', $event_name, $lexeme);
 		}
 
 		$last_event = $event_name;
@@ -832,7 +753,7 @@ sub _process
 
 sub _process_brace
 {
-	my($self, $name) = @_;
+	my($self, $name, $event_name) = @_;
 
 	# When the 1st '{' is encountered, the 'Graph' daughter of the root
 	# becomes the parent of all other tree nodes, replacing the prolog' daughter.
@@ -859,7 +780,7 @@ sub _process_brace
 	if ($name eq '{')
 	{
 		$self -> brace_count($self -> brace_count + 1);
-		$self -> _add_daughter('literal', {value => $name});
+		$self -> _add_daughter('literal', {type => $event_name, value => $name});
 
 		my(@daughters) = $$stack[$#$stack] -> daughters;
 
@@ -870,7 +791,7 @@ sub _process_brace
 		pop @$stack;
 
 		$self -> stack($stack);
-		$self -> _add_daughter('literal', {value => $name});
+		$self -> _add_daughter('literal', {type => $event_name, value => $name});
 		$self -> brace_count($self -> brace_count - 1);
 	}
 
@@ -880,7 +801,7 @@ sub _process_brace
 
 sub _process_bracket
 {
-	my($self, $name) = @_;
+	my($self, $name, $event_name) = @_;
 
 	# When a '[' is encountered, the last thing pushed becomes it's parent.
 	# Likewise, if ']' is encountered, we pop the stack.
@@ -893,11 +814,11 @@ sub _process_bracket
 
 		push @$stack, $daughters[$#daughters];
 
-		$self -> _process_token('literal', $name);
+		$self -> _process_token('literal', $event_name, $name);
 	}
 	else
 	{
-		$self -> _process_token('literal', $name);
+		$self -> _process_token('literal', $event_name, $name);
 
 		pop @$stack;
 
@@ -908,35 +829,38 @@ sub _process_bracket
 
 # ------------------------------------------------
 
-sub _process_digraph_graph
+sub _process_prolog_token
 {
-	my($self, $name, $value) = @_;
+	my($self, $event_name, $value) = @_;
 
-	$self -> _add_daughter('literal', {value => $value});
+	$self -> _add_daughter('literal', {type => $event_name, value => $value});
 
-	# When 'digraph' or 'graph' is encountered, the 'Graph' daughter of the root
+	# When 'digraph' or 'graph' is encountered, the 'graph' daughter of the root
 	# becomes the parent of all other tree nodes, replacing the 'prolog' daughter.
 
-	my($stack) = $self -> stack;
+	if ($event_name ne 'strict_literal')
+	{
+		my($stack) = $self -> stack;
 
-	pop @$stack;
+		pop @$stack;
 
-	my(@daughters) = $self -> tree -> daughters;
-	my($index)     = 1; # 0 => prolog, 1 => graph.
+		my(@daughters) = $self -> tree -> daughters;
+		my($index)     = 1; # 0 => prolog, 1 => graph.
 
-	push @$stack, $daughters[$index];
+		push @$stack, $daughters[$index];
 
-	$self -> stack($stack);
+		$self -> stack($stack);
+	}
 
-} # End of _process_digraph_graph.
+} # End of _process_prolog_token.
 
 # ------------------------------------------------
 
 sub _process_token
 {
-	my($self, $name, $value) = @_;
+	my($self, $name, $event_name, $value) = @_;
 
-	$self -> _add_daughter($name, {value => $value});
+	$self -> _add_daughter($name, {type => $event_name, value => $value});
 
 } # End of _process_token.
 
@@ -971,7 +895,9 @@ sub run
 	{
 		if (defined (my $value = $self -> _process) )
 		{
-			$self -> _post_process;
+			# At this stage, _post_process() does nothing.
+
+			#$self -> _post_process;
 			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
 		}
 		else
@@ -1184,7 +1110,7 @@ It can, optionally, use the default renderer L<GraphViz2::Marpa::Renderer::Graph
 Accepts a L<Graphviz|http://www.graphviz.org/> graph definition and builds a corresponding
 data structure representing the parsed graph. It can pass that data to the default renderer,
 L<GraphViz2::Marpa::Renderer::Graphviz>, which can then render it to a text file ready to be
-input to C<dot>.
+input to C<dot>. Such 'round-tripping', as it's called, is the best way to test a renderer.
 
 See scripts/g2m.pl and scripts/test.utf8.sh.
 
@@ -1210,9 +1136,11 @@ Auxiliary code, used to help generate the demo page.
 
 These are valid L<Graphviz|http://www.graphviz.org/> graph definition files.
 
-Some data/*.gv files may contain I<slight> deliberate mistakes, which do not stop production
-of output files. They do, however, cause various warning messages to be printed by C<dot> when
-certain scripts are run.
+Some data/*.gv files may contain deliberate mistakes, which may or may not stop production
+of output files. They may cause various warning messages to be printed by C<dot> when
+being rendered.
+
+See L<the demo page|http://savage.net.au/Perl-modules/html/graphviz2.marpa/index.html> for details.
 
 =item o Output files: html/*.svg
 
@@ -1221,13 +1149,6 @@ by scripts/generate.demo.sh.
 
 The round trip shows that the lex/parse process does not lose information along the way, but
 comments are discarded..
-
-=item o Input files: fail/*.gv
-
-These are faulty L<Graphviz|http://www.graphviz.org/> graph definition files.
-
-That is, they contain syntax errors (I<serious> deliberate mistakes from the point of view of
-L<Graphviz|http://www.graphviz.org/>), but they helped with writing the code.
 
 =back
 
@@ -1527,25 +1448,183 @@ This is the input:
 	digraph graph_10
 	{
 		edge ["color" = "green",]
+		node [shape=rpromoter]
 	}
 
 And this is the output:
 
 	root. Attributes: {uid => "0"}
-	   |---prolog. Attributes: {uid => "1"}
-	   |   |---literal. Attributes: {uid => "3", value => "digraph"}
-	   |---graph. Attributes: {uid => "2"}
-	       |---node_id. Attributes: {uid => "4", value => "graph_10"}
-	       |---literal. Attributes: {uid => "5", value => "{"}
-	       |   |---class. Attributes: {uid => "6", value => "edge"}
-	       |       |---literal. Attributes: {uid => "7", value => "["}
-	       |       |---attribute. Attributes: {type => "color", uid => "8", value => "green"}
-	       |       |---literal. Attributes: {uid => "9", value => "]"}
-	       |---literal. Attributes: {uid => "10", value => "}"}
+	   |--- prolog. Attributes: {uid => "1"}
+	   |   |--- literal. Attributes: {uid => "3", value => "digraph"}
+	   |--- graph. Attributes: {uid => "2"}
+	       |--- node_id. Attributes: {uid => "4", value => "graph_10"}
+	       |--- literal. Attributes: {uid => "5", value => "{"}
+	       |   |--- class. Attributes: {uid => "6", value => "edge"}
+	       |   |   |--- literal. Attributes: {uid => "7", value => "["}
+	       |   |   |--- attribute. Attributes: {name => "color", uid => "8", value => "green"}
+	       |   |   |--- literal. Attributes: {uid => "9", value => "]"}
+	       |   |--- class. Attributes: {uid => "10", value => "node"}
+	       |       |--- literal. Attributes: {uid => "11", value => "["}
+	       |       |--- attribute. Attributes: {name => "shape", uid => "12", value => "rpromoter"}
+	       |       |--- literal. Attributes: {uid => "13", value => "]"}
+	       |--- literal. Attributes: {uid => "14", value => "}"}
+	Parse result:  0 (0 is success)
+
+If that worked, proceed.
 
 To follow along with this discussion, run:
 
 	perl -Ilib scripts/g2m.pl -input_file data/16.gv -max info
+
+Input:
+
+	/* C comment. */
+
+	// C++ comment.
+
+	# Hash comment.
+
+	STRICT digraph graph_16
+	{
+		fontsize = 16.0
+		label    = "\"Standard\"\rSyntax\lTest"
+		size     = "5,6"
+
+		node
+		[
+			shape = "record",
+		];
+
+		edge
+		[
+			color = "red"
+			penwidth = 3,
+		];
+
+		node_16_1
+		[
+			label    = "<p11> left|<p12> middle|<p13> right"
+			pencolor = blue
+		]
+
+		node_16_2
+		[
+			pencolor = green
+			label    = "<p21> one|<p22> two"
+		]
+
+		node_16_1:p11 -> node_16_2:p22:s
+		[
+			arrowhead = "odiamond";
+			arrowtail = "odot",
+			color     = red
+			dir       = both;
+		];
+
+		subgraph subgraph_16_1
+		{
+			node [shape = square]
+
+			label = ""
+
+			node_16_3 -> { node [shape = circle] node_16_4 }
+			[
+				arrowhead = "empty",
+				arrowtail = "halfopen"
+				color     = green
+				dir       = "both",
+			]
+
+			node_16_5 -> node_16_6
+			[
+				arrowhead = "halfopen",
+				arrowtail = "empty"
+				color     = blue
+				dir       = "both",
+			]
+		}
+	}
+
+Output:
+
+	root. Attributes: {uid => "0"}
+	   |--- prolog. Attributes: {uid => "1"}
+	   |   |--- literal. Attributes: {uid => "3", value => "STRICT"}
+	   |   |--- literal. Attributes: {uid => "4", value => "digraph"}
+	   |--- graph. Attributes: {uid => "2"}
+	       |--- node_id. Attributes: {uid => "5", value => "graph_16"}
+	       |--- literal. Attributes: {uid => "6", value => "{"}
+	       |   |--- attribute. Attributes: {name => "fontsize", uid => "7", value => "16.0"}
+	       |   |--- attribute. Attributes: {name => "label", uid => "8", value => "\"Standard\"\rSyntax\lTest"}
+	       |   |--- attribute. Attributes: {name => "size", uid => "9", value => "5,6"}
+	       |   |--- class. Attributes: {uid => "10", value => "node"}
+	       |   |   |--- literal. Attributes: {uid => "11", value => "["}
+	       |   |   |--- attribute. Attributes: {name => "shape", uid => "12", value => "record"}
+	       |   |   |--- literal. Attributes: {uid => "13", value => "]"}
+	       |   |--- class. Attributes: {uid => "14", value => "edge"}
+	       |   |   |--- literal. Attributes: {uid => "15", value => "["}
+	       |   |   |--- attribute. Attributes: {name => "color", uid => "16", value => "red"}
+	       |   |   |--- attribute. Attributes: {name => "penwidth", uid => "17", value => "3"}
+	       |   |   |--- literal. Attributes: {uid => "18", value => "]"}
+	       |   |--- node_id. Attributes: {uid => "19", value => "node_16_1"}
+	       |   |   |--- literal. Attributes: {uid => "20", value => "["}
+	       |   |   |--- attribute. Attributes: {name => "label", uid => "21", value => "<p11> left|<p12> middle|<p13> right"}
+	       |   |   |--- attribute. Attributes: {name => "pencolor", uid => "22", value => "blue"}
+	       |   |   |--- literal. Attributes: {uid => "23", value => "]"}
+	       |   |--- node_id. Attributes: {uid => "24", value => "node_16_2"}
+	       |   |   |--- literal. Attributes: {uid => "25", value => "["}
+	       |   |   |--- attribute. Attributes: {name => "pencolor", uid => "26", value => "green"}
+	       |   |   |--- attribute. Attributes: {name => "label", uid => "27", value => "<p21> one|<p22> two"}
+	       |   |   |--- literal. Attributes: {uid => "28", value => "]"}
+	       |   |--- node_id. Attributes: {uid => "29", value => "node_16_1:p11"}
+	       |   |--- edge_id. Attributes: {uid => "30", value => "->"}
+	       |   |--- node_id. Attributes: {uid => "31", value => "node_16_2:p22:s"}
+	       |   |   |--- literal. Attributes: {uid => "32", value => "["}
+	       |   |   |--- attribute. Attributes: {name => "arrowhead", uid => "33", value => "odiamond"}
+	       |   |   |--- attribute. Attributes: {name => "arrowtail", uid => "34", value => "odot"}
+	       |   |   |--- attribute. Attributes: {name => "color", uid => "35", value => "red"}
+	       |   |   |--- attribute. Attributes: {name => "dir", uid => "36", value => "both"}
+	       |   |   |--- literal. Attributes: {uid => "37", value => "]"}
+	       |   |--- literal. Attributes: {uid => "38", value => "subgraph"}
+	       |   |--- node_id. Attributes: {uid => "39", value => "subgraph_16_1"}
+	       |   |--- literal. Attributes: {uid => "40", value => "{"}
+	       |   |   |--- class. Attributes: {uid => "41", value => "node"}
+	       |   |   |   |--- literal. Attributes: {uid => "42", value => "["}
+	       |   |   |   |--- attribute. Attributes: {name => "shape", uid => "43", value => "square"}
+	       |   |   |   |--- literal. Attributes: {uid => "44", value => "]"}
+	       |   |   |--- attribute. Attributes: {name => "label", uid => "45", value => ""}
+	       |   |   |--- node_id. Attributes: {uid => "46", value => "node_16_3"}
+	       |   |   |--- edge_id. Attributes: {uid => "47", value => "->"}
+	       |   |   |--- literal. Attributes: {uid => "48", value => "{"}
+	       |   |   |   |--- class. Attributes: {uid => "49", value => "node"}
+	       |   |   |   |   |--- literal. Attributes: {uid => "50", value => "["}
+	       |   |   |   |   |--- attribute. Attributes: {name => "shape", uid => "51", value => "circle"}
+	       |   |   |   |   |--- literal. Attributes: {uid => "52", value => "]"}
+	       |   |   |   |--- node_id. Attributes: {uid => "53", value => "node_16_4"}
+	       |   |   |--- literal. Attributes: {uid => "54", value => "}"}
+	       |   |   |   |--- literal. Attributes: {uid => "55", value => "["}
+	       |   |   |   |--- attribute. Attributes: {name => "arrowhead", uid => "56", value => "empty"}
+	       |   |   |   |--- attribute. Attributes: {name => "arrowtail", uid => "57", value => "halfopen"}
+	       |   |   |   |--- attribute. Attributes: {name => "color", uid => "58", value => "green"}
+	       |   |   |   |--- attribute. Attributes: {name => "dir", uid => "59", value => "both"}
+	       |   |   |   |--- literal. Attributes: {uid => "60", value => "]"}
+	       |   |   |--- node_id. Attributes: {uid => "61", value => "node_16_5"}
+	       |   |   |--- edge_id. Attributes: {uid => "62", value => "->"}
+	       |   |   |--- node_id. Attributes: {uid => "63", value => "node_16_6"}
+	       |   |       |--- literal. Attributes: {uid => "64", value => "["}
+	       |   |       |--- attribute. Attributes: {name => "arrowhead", uid => "65", value => "halfopen"}
+	       |   |       |--- attribute. Attributes: {name => "arrowtail", uid => "66", value => "empty"}
+	       |   |       |--- attribute. Attributes: {name => "color", uid => "67", value => "blue"}
+	       |   |       |--- attribute. Attributes: {name => "dir", uid => "68", value => "both"}
+	       |   |       |--- literal. Attributes: {uid => "69", value => "]"}
+	       |   |--- literal. Attributes: {uid => "70", value => "}"}
+	       |--- literal. Attributes: {uid => "71", value => "}"}
+	Parse result:  0 (0 is success)
+
+You can see from this output that words special to Graphviz (e.g. STRICT) are accepted no matter
+what case they are in.
+
+A more detailed analysis follows.
 
 The 'root' node has 2 daughters:
 
@@ -1553,44 +1632,46 @@ The 'root' node has 2 daughters:
 
 =item o The 'prolog' sub-tree
 
-This daughter is the root of a sub-tree holding everything before the graph's ID, if any.
+The 'prolog' node is the root of a sub-tree holding everything before the graph's ID, if any.
 
-The node is called 'prolog', and its hashref of attributes is C<< {uid => 1} >>.
+The node is called 'prolog', and its hashref of attributes is C<< {uid => "1"} >>.
 
 It has 1 or 2 daughters. The possibilities are:
 
 =over 4
 
-=item o Input 'digraph ...'
+=item o Input: 'digraph ...'
 
-The 1 daughter is named 'literal', and its attributes are C<< {uid => 3, value => 'digraph'} >>.
+The 1 daughter is named 'literal', and its attributes are C<< {uid => "3", value => "digraph"} >>.
 
-=item o Input 'graph ...'
+=item o Input: 'graph ...'
 
-The 1 daughter is named 'literal', and its attributes are C<< {uid => 3, value => 'graph'} >>.
+The 1 daughter is named 'literal', and its attributes are C<< {uid => "3", value => "graph"} >>.
 
-=item o Input 'strict digraph ...'
-
-The 2 daughters are named 'literal', and their attributes are, respectively,
-C<< {uid => 3, value => 'strict'} >> and C<< {uid => 4, value => 'digraph'} >>.
-
-=item o Input 'strict graph ...'
+=item o Input: 'strict digraph ...'
 
 The 2 daughters are named 'literal', and their attributes are, respectively,
-C<< {uid => 3, value => 'strict'} >> and C<< {uid => 4, value => 'graph'} >>.
+C<< {uid => "3", value => "strict"} >> and C<< {uid => "4", value => "digraph"} >>.
+
+=item o Input: 'strict graph ...'
+
+The 2 daughters are named 'literal', and their attributes are, respectively,
+C<< {uid => "3", value => "strict"'} >> and C<< {uid => "4", value => "graph"} >>.
 
 =back
 
-And yes, the graph ID, if any, is under the 'Graph' node.
+And yes, the graph ID, if any, is under the 'graph' node. The reason for this is that with any
+subgraphs within the graph, the same structure applies: First the (sub)graph ID, then a literal
+'{', then that (sub)graph's details, and finally a literal '}'.
 
 =item o The 'graph' sub-tree
 
-This daughter is the root of a sub-tree holding everything about the graph, including the graph's
+The 'graph' node is the root of a sub-tree holding everything about the graph, including the graph's
 ID, if any.
 
-The node is called 'graph', and its hashref of attributes is C<< {uid => 2} >>.
+The node is called 'graph', and its hashref of attributes is C<< {uid => "2"} >>.
 
-The 'Graph' node has as many daughters, with their own daughters, as is necessary to hold the
+The 'graph' node has as many daughters, with their own daughters, as is necessary to hold the
 output of parsing the remainder of the input.
 
 In particular, if the input graph has an ID, i.e. the input is of the form 'digraph my_id ...'
@@ -1619,11 +1700,11 @@ E.g., the output from:
 
 contains:
 
-	literal. Attributes: {uid => "47", value => "subgraph"}
+	literal. Attributes: {uid => "38", value => "subgraph"}
 
 followed by
 
-	node_id. Attributes: {uid => "48", value => "subgraph_16_1"}
+	node_id. Attributes: {uid => "39", value => "subgraph_16_1"}
 
 =back
 
@@ -1634,43 +1715,11 @@ the node's attributes to determine the exact nature of the node.
 
 =over 4
 
-=item o $attribute_name
+=item o attribute
 
-This indicates an attribute for a class (see next point), an edge, a node or a (sub)graph.
-
-Here's part of the log from processing data/16.gv:
-
-	|   |---fontsize. Attributes: {type => "float", uid => "7", value => "16.0"}
-	|   |---label. Attributes: {type => "string", uid => "10", value => "\"Standard\"\rSyntax\lTest"}
-	|   |---size. Attributes: {type => "string", uid => "13", value => "5,6"}
-	...
-	|   |---class. Attributes: {uid => "20", value => "edge"}
-	|   |   |---literal. Attributes: {uid => "21", value => "["}
-	|   |   |---color. Attributes: {uid => "22", value => "red"}
-	|   |   |---penwidth. Attributes: {uid => "23", value => "3"}
-	|   |   |---literal. Attributes: {uid => "24", value => "]"}
-	|   |---node_id. Attributes: {uid => "25", value => "node_16_1"}
-	|   |   |---literal. Attributes: {uid => "26", value => "["}
-	|   |   |---label. Attributes: {uid => "27", value => "<p11> left|<p12> middle|<p13> right"}
-	|   |   |---pencolor. Attributes: {uid => "28", value => "blue"}
-	|   |   |---literal. Attributes: {uid => "29", value => "]"}
-	...
-	|   |---node_id. Attributes: {uid => "35", value => "node_16_1:p11"}
-	|   |---edge. Attributes: {uid => "38", value => "->"}
-	|   |   |---literal. Attributes: {uid => "44", value => "["}
-	|   |   |---arrowhead. Attributes: {uid => "45", value => "odiamond"}
-	|   |   |---arrowtail. Attributes: {uid => "46", value => "odot"}
-	|   |   |---color. Attributes: {uid => "47", value => "red"}
-	|   |   |---dir. Attributes: {uid => "48", value => "both"}
-	|   |   |---literal. Attributes: {uid => "49", value => "]"}
-	|   |---node_id. Attributes: {uid => "39", value => "node_16_2:p22:s"}
-
-Futher, in some cases, the code can identify the type of the 'value' as one of 'integer', 'float' or
-'string.
-
-Lastly notice that for classes, edges and node, the attributes are surrounded by 2 nodes called
-'literal', with 'value's of '[' and ']'. However, for attributes specified as 'fontsize = 16.0',
-this is not the case.
+In this case, the node's attributes contain a hashref like
+{name => "arrowhead", uid => "33", value => "odiamond"}, meaning the 'name' field holds the name
+of the attribute, and the 'value' field holds the value of the attribute.
 
 =item o class
 
@@ -1678,23 +1727,10 @@ This is used when any of 'edge', 'graph', or 'node' appear at the start of the (
 is the mother of the attributes attached to the class. The 'value' of the attribute will be 'edge',
 'graph, or 'node'.
 
-The 1st and last daughters will be literals whose attribute values are '[' and ']' respectively.
+The 1st and last daughters will be literals whose attribute values are '[' and ']' respectively,
+and the middle daughter(s) will be nodes of type 'attribute' (as just discussed).
 
-Input contains this fragment of data/16.gv:
-
-	node
-	[
-		shape = "record",
-	];
-
-And the output log contains:
-
-	|   |---class. Attributes: {uid => "13", value => "node"}
-	|   |   |---literal. Attributes: {uid => "14", value => "["}
-	|   |   |---shape. Attributes: {uid => "15", value => "record"}
-	|   |   |---literal. Attributes: {uid => "16", value => "]"}
-
-=item o edge
+=item o edge_id
 
 The 'value' of the attribute will be either '--' or '->'.
 
@@ -1706,47 +1742,9 @@ Samples are:
 	n1 -> {n2}
 	{n1} -> n2
 
-Note: Post-processing of the tree moves edge attributes off the head daughter (node or subgraph),
-and attaches them to all intermediary edges. Why? Because I think it's a good idea that at the
-instant code processing the tree finds an edge, it should have access to all that edge's attributes.
-
-Thus:
-
-	n1 -> n2 [penwidth = 5]
-
-is stored as though the input were:
-
-	n1 -> [penwidth = 5] n2
-
-This means that at the time of encountering the edge, its attributes are immediately available.
-
-However:
-
-	n1 -> n2 -> n3 [penwidth = 5]
-
-is stored as:
-
-	n1 -> n2 -> [penwidth = 5] n3
-
-Ideally, post-processing will be extended to make that read:
-
-	n1 -> [penwidth = 5] n2 -> [penwidth = 5] n3
-
-=item o equals
-
-The 'value' of the attribute will be '='.
-
-Thus the 'attribute name' will be the previous daughter and the 'attribute value' will be the next.
-
-Input contains this fragment of data/16.gv:
-
-	label = "\"Standard\"\rSyntax\lTest"
-
-And theoutput log contains:
-
-	|   |---node_id. Attributes: {uid => "7", value => "label"}
-	|   |---equals. Attributes: {uid => "8", value => "="}
-	|   |---node_id. Attributes: {uid => "9", value => "\"Standard\"\rSyntax\lTest"}
+In a L<daisy chain|https://en.wikipedia.org/wiki/Garland#Daisy_chain> of nodes, the last node in
+the chain will have daughters that are the attributes of each edge in the chain. This is how
+Graphviz syntax specifies all edge attributes.
 
 =item o literal
 
@@ -1761,7 +1759,7 @@ values:
 
 =item o [
 
-This indicate the start of a set of attributes for a specific class, edge or node.
+This indicates the start of a set of attributes for a specific class, edge or node.
 
 The 1st and last daughters will be literals whose attribute 'value' keys are '[' and ']'
 respectively.
@@ -1787,23 +1785,13 @@ See the previous point.
 
 The 'value' of the attributes is just the (graph) node's name.
 
-See the next point for details about ports and compass points.
-
 Note: A node name can appear more than once in succession, either as a declaration of the node's
-existance and then as the tail of an edge, or, as in this fragment of data/56.gv:
+existence and then as the tail of an edge, or, as in this fragment of data/56.gv:
 
 	node [shape=rpromoter colorscheme=rdbu5 color=1 style=filled fontcolor=3]; Hef1a; TRE; UAS; Hef1aLacOid;
 	Hef1aLacOid [label="Hef1a-LacOid"];
 
-And the output log contains:
-
-	|   |---node_id. Attributes: {uid => "20", value => "Hef1aLacOid"}
-	|   |---node_id. Attributes: {uid => "21", value => "Hef1aLacOid"}
-	|   |   |---literal. Attributes: {uid => "22", value => "["}
-	|   |   |---label. Attributes: {uid => "23", value => "Hef1a-LacOid"}
-	|   |   |---literal. Attributes: {uid => "24", value => "]"}
-
-This is a case where tree compression could be done, but isn't (yet).
+This is a case where tree compression could be done, but isn't done yet.
 
 =back
 
@@ -1821,30 +1809,11 @@ Input contains this fragment of data/16.gv:
 
 And the output log contains:
 
-	|   |---node_id. Attributes: {uid => "32", value => "node_16_1:p11"}
-	|   |---edge. Attributes: {uid => "35", value => "->"}
-	|   |   |---literal. Attributes: {uid => "41", value => "["}
-	|   |   |---arrowhead. Attributes: {uid => "42", value => "odiamond"}
-	|   |   |---arrowtail. Attributes: {uid => "43", value => "odot"}
-	|   |   |---color. Attributes: {uid => "44", value => "red"}
-	|   |   |---dir. Attributes: {uid => "45", value => "both"}
-	|   |   |---literal. Attributes: {uid => "46", value => "]"}
-	|   |---node_id. Attributes: {uid => "36", value => "node_16_2:p22:s"}
+	|   |--- node_id. Attributes: {uid => "29", value => "node_16_1:p11"}
+	|   |--- edge_id. Attributes: {uid => "30", value => "->"}
+	|   |--- node_id. Attributes: {uid => "31", value => "node_16_2:p22:s"}
 
 You can see the ports and compass points have been incorporated into the 'value' attribute.
-
-=head2 Why are some uids missing?
-
-Uids are unique integers.
-
-When subtrees are moved around, they might be given new uids.
-
-If moving does not involve duplication, then new uids are not needed.
-
-But moving can involve duplication, which is when new uids are generated. And duplication happens
-when a sequence of 2 or more edges (a path) are all given a copy of the attributes attached to the
-head node or subgraph of the path. The original set of nodes in the tree, the attributes of the
-head, are deleted, and that leaves holes in the sequence of uids.
 
 =head2 How are comments stored in the tree?
 
@@ -1895,14 +1864,15 @@ See data/utf8.*.gv and scripts/test.utf8.sh. In particular, see data/utf8.01.gv.
 
 =head2 How can I switch from Marpa::XS to Marpa::PP?
 
-Don't. Use L<Marpa::R2>.
+Don't use either of them. Use L<Marpa::R2>.
 
 =head2 If I input x.old.gv and output x.new.gv, should these 2 files be identical?
 
 Yes - at least in the sense that running C<dot> on them will produce the same output files.
 This is assuming the default renderer is used.
 
-Since comments in input files are discarded, they can never be in the output file.
+As mentioned just above, comments in input files are discarded, so they can never be in the output
+file.
 
 =head2 How are custom graph attributes handled?
 
@@ -1915,15 +1885,13 @@ See data/32.gv.
 
 See scripts/generate.demo.sh.
 
-=head2 What files are in fail/?
-
-They are Graphviz files with deliberate syntax errors. Errors here means from the point of view of
-Graphviz itself. They help me test the code.
-
 =head1 See Also
 
 L<Marpa::Demo::StringParser>. The significance of this module is that during the re-write of
 GraphViz2::Marpa, the string-handling code was perfected in L<Marpa::Demo::StringParser>.
+
+Later, that code was improved within this module, and will be back-ported into
+Marpa::Demo::StringParser
 
 =head1 Machine-Readable Change Log
 

@@ -95,9 +95,11 @@ sub format_node
 	my($indent);
 	my($offset);
 
+=pod
+
 	if ($name eq 'literal')
 	{
-		if ($value =~ /^(?:digraph|graph|strict|=)$/)
+		if ($value =~ /^(?:digraph|graph|strict)$/)
 		{
 			$dot_input .= "$value ";
 		}
@@ -148,6 +150,8 @@ sub format_node
 		$dot_input                 .= "\n$indent$value";
 		${$$opts{previous_name} }  = $name;
 	}
+
+=cut
 
 	${$$opts{dot_input} }      .= $dot_input;
 	${$$opts{previous_value} } = $value;
