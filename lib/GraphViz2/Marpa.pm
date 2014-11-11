@@ -1689,7 +1689,7 @@ Indicates the end of a (sub)graph.
 This indicates the start of a set of attributes for a specific class, edge or node, or the
 edge attributes at the end of a path.
 
-The 1st and last daughters will be literals whose attribute 'value' keys are '[' and ']'
+The 1st and last daughters will be literals whose attribute C<value> keys are '[' and ']'
 respectively.
 
 Between these 2 nodes will be 1 node for each attribute, as seen above with
@@ -1727,8 +1727,8 @@ The C<value> of the attributes is the name of the graph, a node, or a subgraph.
 Note: A node name can appear more than once in succession, either as a declaration of the node's
 existence and then as the tail of an edge, or, as in this fragment of data/56.gv:
 
-	node [shape=rpromoter colorscheme=rdbu5 color=1 style=filled fontcolor=3]; Hef1a; TRE; UAS; Hef1aLacOid;
-	Hef1aLacOid [label="Hef1a-LacOid"];
+	node [shape=rpromoter colorscheme=rdbu5 color=1 style=filled fontcolor=3]; Hef1a; TRE; UAS;
+	Hef1aLacOid; Hef1aLacOid [label="Hef1a-LacOid"];
 
 This is a case where tree compression could be done, but isn't done yet.
 
@@ -1754,7 +1754,7 @@ Input contains this fragment of data/16.gv:
 		dir       = both;
 	];
 
-And the output log contains:
+The output log contains:
 
 	|   |--- node_id. Attributes: {type => "node_id", uid => "29", value => "node_16_1:p11"}
 	|   |--- edge_id. Attributes: {name => "directed_edge", uid => "30", value => "->"}

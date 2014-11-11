@@ -82,18 +82,64 @@ sub BUILD
 sub format_node
 {
 	my($self, $node, $opts) = @_;
-	my($name)           = $node -> name;
-	my($attributes)     = $node -> attributes;
-	my($attr_string)    = $self -> tree -> hashref2string($attributes);
-	my($type)           = $$attributes{name} || '';
-	my($value)          = $$attributes{value} || '';
-	my($depth)          = $$opts{_depth};
-	my($previous_name)  = ${$$opts{previous_name} };
-	my($previous_value) = ${$$opts{previous_value} };
-	my($dot_input)      = '';
+	my($name)            = $node -> name;
+	my($attributes)      = $node -> attributes;
+	my($attr_string)     = $self -> tree -> hashref2string($attributes);
+	my($type)            = $$attributes{type} || '';
+	my($value)           = $$attributes{value} || '';
+	my($depth)           = $$opts{_depth};
+	my($attribute_count) = ${$$opts{attribute_count} };
+	my($previous_name)   = ${$$opts{previous_name} };
+	my($previous_value)  = ${$$opts{previous_value} };
+	my($dot_input)       = '';
 
 	my($indent);
 	my($offset);
+
+	if ($name eq 'attribute')
+	{
+		$attribute_count++;
+
+		$indent    = "\t" x ($depth - 2);
+		$value     = qq("$value")	if ($value !~ /^</);
+		$dot_input .= "\n"			if ($attribute_count > 1);
+		$dot_input .= "$indent$type = $value";
+	}
+	elsif ($name eq 'class')
+	{
+		$indent                    = "\t" x ($depth - 2);
+		$dot_input                 .= "$indent$value\n";
+		${$$opts{previous_name} }  = $name;
+	}
+	elsif ($name eq 'edge_id')
+	{
+		$indent    = "\t" x ($depth - 2);
+		$dot_input .= "$indent$value\n";
+	}
+	elsif ($name eq 'literal')
+	{
+		if ($value =~ /[{}]/)
+		{
+			$indent    = "\t" x ($depth - 2);
+			$dot_input .= "$indent$value\n";
+		}
+		elsif ($value =~ /[\[\]]/)
+		{
+			$attribute_count = 0 if ($value eq '[');
+
+			$indent    = "\t" x ($depth - 3);
+			$dot_input .= "\n" if ($value eq ']');
+			$dot_input .= "$indent$value\n";
+			$dot_input .= "\n" if ($value eq ']');
+		}
+	}
+	elsif ($name eq 'node_id')
+	{
+		$value                    = '' if ($value eq '""');
+		$indent                   = "\t" x ($depth - 2);
+		$dot_input                .= "$indent$value\n";
+		${$$opts{previous_name} } = $name;
+	}
 
 =pod
 
@@ -153,8 +199,9 @@ sub format_node
 
 =cut
 
-	${$$opts{dot_input} }      .= $dot_input;
-	${$$opts{previous_value} } = $value;
+	${$$opts{attribute_count} } = $attribute_count;
+	${$$opts{dot_input} }       .= $dot_input;
+	${$$opts{previous_value} }  = $value;
 
 } # End of format_node.
 
@@ -172,14 +219,16 @@ sub log
 
 sub run
 {
-	my($self)           = @_;
-	my($dot_input)      = '';
-	my($previous_name)  = '';
-	my($previous_value) = '';
+	my($self)            = @_;
+	my($attribute_count) = 0;
+	my($dot_input)       = '';
+	my($previous_name)   = '';
+	my($previous_value)  = '';
 
 	$self -> tree -> walk_down
 	({
-		callback => sub
+		attribute_count => \$attribute_count,
+		callback        => sub
 		{
 			my($node, $opts) = @_;
 
