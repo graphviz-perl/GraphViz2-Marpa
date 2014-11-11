@@ -415,15 +415,15 @@ END_OF_GRAMMAR
 
 	$self -> known_events(\%event);
 
-	# Since $self -> tree has not been initialized yet,
-	# we can't call our _add_daughter() until after this statement.
+	# Since $self -> stack has not been initialized yet,
+	# we can't call _add_daughter() until after this statement.
 
-	$self -> tree(Tree::DAG_Node -> new({name => 'root', attributes => {uid => 0} }));
+	$self -> tree(Tree::DAG_Node -> new({name => 'root', attributes => {type => 'root_literal', uid => $self -> uid, value => 'root'} }));
 	$self -> stack([$self -> tree -> root]);
 
 	for my $name (qw/prolog graph/)
 	{
-		$self -> _add_daughter($name, {});
+		$self -> _add_daughter($name, {type => "${name}_literal", value => $name});
 	}
 
 	# The 'prolog' daughter is the parent of all items in the prolog,
@@ -450,6 +450,8 @@ sub _add_daughter
 	my($stack)        = $self -> stack;
 
 	$$stack[$#$stack] -> add_daughter($node);
+
+	#$self -> _dump_stack('End of _add_daughter()');
 
 } # End of _add_daughter.
 
@@ -503,9 +505,13 @@ sub _dump_stack
 
 	$self -> log(debug => "\tStack @ $caller");
 
+	my($attributes);
+
 	for my $item (@{$self -> stack})
 	{
-		$self -> log(debug => "\tName: " . $item -> name);
+		$attributes = $item -> attributes;
+
+		$self -> log(debug => "\tUid: $$attributes{uid}. Name: " . $item -> name);
 	}
 
 	$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
@@ -698,7 +704,7 @@ sub _process
 		}
 		elsif ($event_name eq 'directed_edge')
 		{
-			$self -> _process_token('edge_id', $event_name, $lexeme);
+			$self -> _add_daughter('edge_id', {name => $event_name, value => $lexeme});
 		}
 		elsif ($event_name eq 'node_name')
 		{
@@ -707,9 +713,18 @@ sub _process
 			next if ($lexeme eq ';');
 
 			$lexeme = $self -> clean_after($lexeme);
-			$type   = $class{$lexeme} ? $class{$lexeme} : 'node_id';
 
-			$self -> _add_daughter($type, {value => $lexeme});
+			if ($class{lc $lexeme})
+			{
+				$lexeme = lc $lexeme;
+				$type   = $class{$lexeme};
+			}
+			else
+			{
+				$type = 'node_id';
+			}
+
+			$self -> _add_daughter($type, {type => $type, value => $lexeme});
 		}
 		elsif ($event_name eq 'open_brace')
 		{
@@ -725,11 +740,11 @@ sub _process
 		}
 		elsif ($event_name =~ 'subgraph_literal')
 		{
-			$self -> _process_token('literal', $event_name, $lexeme);
+			$self -> _add_daughter('literal', {type => $event_name, value => $event_name});
 		}
 		elsif ($event_name eq 'undirected_edge')
 		{
-			$self -> _process_token('edge_id', $event_name, $lexeme);
+			$self -> _add_daughter('edge_id', {name => $event_name, value => $lexeme});
 		}
 
 		$last_event = $event_name;
@@ -755,8 +770,9 @@ sub _process_brace
 {
 	my($self, $name, $event_name) = @_;
 
-	# When the 1st '{' is encountered, the 'Graph' daughter of the root
-	# becomes the parent of all other tree nodes, replacing the prolog' daughter.
+	# When the 1st '{' is encountered, the 'graph' daughter of the root
+	# becomes the parent of all other tree nodes, replacing the 'prolog' daughter,
+	# which has been the parent of 'strict' and 'digraph' or graph' up to now.
 
 	if ($self -> brace_count == 0)
 	{
@@ -785,6 +801,10 @@ sub _process_brace
 		my(@daughters) = $$stack[$#$stack] -> daughters;
 
 		push @$stack, $daughters[$#daughters];
+
+		$self -> stack($stack);
+
+		#$self -> _dump_stack('End of _process_brace({)');
 	}
 	else
 	{
@@ -814,11 +834,11 @@ sub _process_bracket
 
 		push @$stack, $daughters[$#daughters];
 
-		$self -> _process_token('literal', $event_name, $name);
+		$self -> _add_daughter('literal', {type => $event_name, value => $name});
 	}
 	else
 	{
-		$self -> _process_token('literal', $event_name, $name);
+		$self -> _add_daughter('literal', {type => $event_name, value => $name});
 
 		pop @$stack;
 
@@ -853,16 +873,6 @@ sub _process_prolog_token
 	}
 
 } # End of _process_prolog_token.
-
-# ------------------------------------------------
-
-sub _process_token
-{
-	my($self, $name, $event_name, $value) = @_;
-
-	$self -> _add_daughter($name, {type => $event_name, value => $value});
-
-} # End of _process_token.
 
 # ------------------------------------------------
 
@@ -1435,7 +1445,7 @@ Returns 0 for success and 1 for failure.
 
 The parsed output is held in a tree managed by L<Tree::DAG_Node>.
 
-Here, the word 'node' (usually) refers to nodes in this tree, not Graphviz-style nodes.
+In this FAQ, the word 'node' (usually) refers to nodes in this tree, not Graphviz-style nodes.
 
 =head2 Can you explain this tree in more detail?
 
@@ -1459,11 +1469,11 @@ This is the input:
 
 And this is the output:
 
-	root. Attributes: {uid => "0"}
-	   |--- prolog. Attributes: {uid => "1"}
-	   |   |--- literal. Attributes: {type => "strict_literal", uid => "3", value => "strict"}
-	   |   |--- literal. Attributes: {type => "digraph_literal", uid => "4", value => "digraph"}
-	   |--- graph. Attributes: {uid => "2"}
+root. Attributes: {type => "root", uid => "0"}
+   |--- prolog. Attributes: {type => "prolog", uid => "1"}
+   |   |--- literal. Attributes: {type => "strict_literal", uid => "3", value => "strict"}
+   |   |--- literal. Attributes: {type => "digraph_literal", uid => "4", value => "digraph"}
+   |--- graph. Attributes: {type => "graph", uid => "2"}
 	       |--- node_id. Attributes: {uid => "5", value => "graph_10"}
 	       |--- literal. Attributes: {type => "open_brace", uid => "6", value => "{"}
 	       |   |--- class. Attributes: {uid => "7", value => "edge"}

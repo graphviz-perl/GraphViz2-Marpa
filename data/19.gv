@@ -2,8 +2,8 @@ digraph graph_19
 {
 	subgraph subgraph_19_1
 	{
-		subgraph subgraph_19_2
-		{
-		}
+#		subgraph subgraph_19_2
+#		{
+#		}
 	}
 }
