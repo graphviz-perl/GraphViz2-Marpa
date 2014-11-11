@@ -1695,6 +1695,17 @@ respectively.
 Between these 2 nodes will be 1 node for each attribute, as seen above with
 C<< edge ["color" = "green",] >>.
 
+Note: Graphviz allows an abbreviated syntax for setting the attributes of a (sub)graph. So, instead
+of needing:
+
+	graph [rankdir = LR]
+
+You can just use:
+
+	rankdir = LR
+
+In such cases, these attributes are not surrounded by '[' and ']'.
+
 =item o ]
 
 See the previous point.
