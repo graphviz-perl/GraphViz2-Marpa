@@ -503,7 +503,7 @@ sub _dump_stack
 {
 	my($self, $caller) = @_;
 
-	$self -> log(debug => "\tStack @ $caller");
+	$self -> log(info => "\tStack @ $caller XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
 	my($attributes);
 
@@ -511,10 +511,10 @@ sub _dump_stack
 	{
 		$attributes = $item -> attributes;
 
-		$self -> log(debug => "\tUid: $$attributes{uid}. Name: " . $item -> name);
+		$self -> log(info => "\tUid: $$attributes{uid}. Name: " . $item -> name);
 	}
 
-	$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
+	$self -> log(debug => join("\n", @{$self -> tree -> tree2string}) );
 
 } # End of _dump_stack.
 
@@ -603,14 +603,13 @@ sub _process
 	my($length)        = length $string;
 	my($format)        = '%-20s    %5s    %5s    %5s    %-s';
 	my($last_event)    = '';
-	my($prolog_token)  = qr/(?:digraph_literal|graph_literal|strict_literal)/;
+	my($prolog_token)  = qr/^(?:digraph|graph|strict)_literal$/;
 	my($pos)           = 0;
 	my(%class)         =
 	(
-		edge     => 'class',
-		graph    => 'class',
-		node     => 'class',
-		subgraph => 'literal',
+		edge  => 'class',
+		graph => 'class',
+		node  => 'class',
 	);
 
 	$self -> log(debug => "Length of input: $length");
@@ -638,7 +637,7 @@ sub _process
 		$lexeme         = $self -> recce -> literal($start, $span);
 		$pos            = $self -> recce -> lexeme_read($event_name);
 
-		die "lexeme_read() rejected lexeme |$lexeme|\n" if (! defined $pos);
+		die "lexeme_read($event_name) rejected lexeme |$lexeme|\n" if (! defined $pos);
 
 		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
 
@@ -738,9 +737,9 @@ sub _process
 		{
 			$self -> _process_prolog_token($event_name, $lexeme);
 		}
-		elsif ($event_name =~ 'subgraph_literal')
+		elsif ($event_name eq 'subgraph_literal')
 		{
-			$self -> _add_daughter('literal', {type => $event_name, value => $event_name});
+			$self -> _add_daughter('literal', {type => $event_name, value => 'subgraph'});
 		}
 		elsif ($event_name eq 'undirected_edge')
 		{
@@ -748,8 +747,6 @@ sub _process
 		}
 
 		$last_event = $event_name;
-
-		#$self -> log(debug => join("\n", @{$self -> tree -> tree2string}) );
     }
 
 	if (my $ambiguous_status = $self -> recce -> ambiguous)
