@@ -639,6 +639,18 @@ sub _process
 
 		die "lexeme_read($event_name) rejected lexeme |$lexeme|\n" if (! defined $pos);
 
+		# Special case.
+		# This 'if' matches the start of the big 'if' just below.
+		# It's here so that the log(debug) code is in the right order.
+
+		if ( ($event_name eq 'attribute_name') && (substr($lexeme, 0, 1) eq '[') )
+		{
+			$temp = '[';
+
+			$self -> log(debug => sprintf($format, 'open_bracket', $start, 1, $pos, $temp) );
+			$self -> _process_bracket($temp, 'open_bracket');
+		}
+
 		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
 
 		if ($event_name eq 'attribute_name')
@@ -647,19 +659,11 @@ sub _process
 
 			if (substr($lexeme, 0, 1) eq '[')
 			{
-				$event_name = 'open_bracket';
-				$temp       = '[';
-
-				$self -> log(debug => sprintf($format, $event_name, $start, 1, $pos, $temp) );
-				$self -> _process_bracket($temp, $event_name);
-
+				$event_name           = 'open_bracket'; # Sets $last_event at the end of the loop.
 				substr($lexeme, 0, 1) = '';
-				$fields[0]            = $self -> clean_after($lexeme);
 			}
-			else
-			{
-				$fields[0] = $self -> clean_after($lexeme);
-			}
+
+			$fields[0] = $self -> clean_after($lexeme);
 		}
 		elsif ($event_name eq 'attribute_value')
 		{
@@ -683,7 +687,7 @@ sub _process
 
 			if ($temp)
 			{
-				$event_name = 'close_bracket';
+				$event_name = 'close_bracket'; # Sets $last_event at the end of the loop.
 
 				$self -> log(debug => sprintf($format, $event_name, $start, 1, $pos, $temp) );
 				$self -> _process_bracket($temp, $event_name);
@@ -1442,7 +1446,46 @@ Returns 0 for success and 1 for failure.
 
 The parsed output is held in a tree managed by L<Tree::DAG_Node>.
 
-In this FAQ, the word 'node' (usually) refers to nodes in this tree, not Graphviz-style nodes.
+Here and below, the word 'node' (usually) refers to nodes in this tree, not Graphviz-style nodes.
+
+The root node always looks like this when printed by Tree::DAG_Node's tree2string() method:
+
+	root. Attributes: {type => "root_literal", uid => "0", value => "root"}
+
+Interpretation:
+
+=over 4
+
+=item o The node name
+
+Here, 'root'.
+
+=item o The node's attributes
+
+Key fields:
+
+=over 4
+
+=item o type
+
+Here, 'root_literal'.
+
+The type (or name) of the value. The word 'name' is not used to avoid confusion with the name of the
+node.
+
+=item o uid
+
+A unique integer assigned to each node. Counts up from 0. Not used.
+
+=item o value
+
+The value of the node.
+
+Here, 'root'.
+
+=back
+
+=back
 
 =head2 Can you explain this tree in more detail?
 
@@ -1459,36 +1502,38 @@ This is the input:
 	{
 		edge ["color" = "green"];
 		node [shape=rpromoter]
-		output [label = "", shape = terminator;];
+		terminator [label = "\nterminator" shape = terminator;];
 
-		input -> output [label = Transformer]
+		rpromoter -> terminator [label = Transformer]
 	}
+
+As an L<svg|http://savage.net.au/Perl-modules/html/graphviz2.marpa/10.svg>.
 
 And this is the output:
 
-root. Attributes: {type => "root", uid => "0"}
-   |--- prolog. Attributes: {type => "prolog", uid => "1"}
-   |   |--- literal. Attributes: {type => "strict_literal", uid => "3", value => "strict"}
-   |   |--- literal. Attributes: {type => "digraph_literal", uid => "4", value => "digraph"}
-   |--- graph. Attributes: {type => "graph", uid => "2"}
-	       |--- node_id. Attributes: {uid => "5", value => "graph_10"}
+	root. Attributes: {type => "root_literal", uid => "0", value => "root"}
+	   |--- prolog. Attributes: {type => "prolog_literal", uid => "1", value => "prolog"}
+	   |   |--- literal. Attributes: {type => "strict_literal", uid => "3", value => "strict"}
+	   |   |--- literal. Attributes: {type => "digraph_literal", uid => "4", value => "digraph"}
+	   |--- graph. Attributes: {type => "graph_literal", uid => "2", value => "graph"}
+	       |--- node_id. Attributes: {type => "node_id", uid => "5", value => "graph_10"}
 	       |--- literal. Attributes: {type => "open_brace", uid => "6", value => "{"}
-	       |   |--- class. Attributes: {uid => "7", value => "edge"}
+	       |   |--- class. Attributes: {type => "class", uid => "7", value => "edge"}
 	       |   |   |--- literal. Attributes: {type => "open_bracket", uid => "8", value => "["}
 	       |   |   |--- attribute. Attributes: {type => "color", uid => "9", value => "green"}
 	       |   |   |--- literal. Attributes: {type => "close_bracket", uid => "10", value => "]"}
-	       |   |--- class. Attributes: {uid => "11", value => "node"}
+	       |   |--- class. Attributes: {type => "class", uid => "11", value => "node"}
 	       |   |   |--- literal. Attributes: {type => "open_bracket", uid => "12", value => "["}
 	       |   |   |--- attribute. Attributes: {type => "shape", uid => "13", value => "rpromoter"}
 	       |   |   |--- literal. Attributes: {type => "close_bracket", uid => "14", value => "]"}
-	       |   |--- node_id. Attributes: {uid => "15", value => "output"}
+	       |   |--- node_id. Attributes: {type => "node_id", uid => "15", value => "terminator"}
 	       |   |   |--- literal. Attributes: {type => "open_bracket", uid => "16", value => "["}
-	       |   |   |--- attribute. Attributes: {type => "label", uid => "17", value => ""}
+	       |   |   |--- attribute. Attributes: {type => "label", uid => "17", value => "\nterminator"}
 	       |   |   |--- attribute. Attributes: {type => "shape", uid => "18", value => "terminator"}
 	       |   |   |--- literal. Attributes: {type => "close_bracket", uid => "19", value => "]"}
-	       |   |--- node_id. Attributes: {uid => "20", value => "input"}
-	       |   |--- edge_id. Attributes: {type => "directed_edge", uid => "21", value => "->"}
-	       |   |--- node_id. Attributes: {uid => "22", value => "output"}
+	       |   |--- node_id. Attributes: {type => "node_id", uid => "20", value => "rpromoter"}
+	       |   |--- edge_id. Attributes: {name => "directed_edge", uid => "21", value => "->"}
+	       |   |--- node_id. Attributes: {type => "node_id", uid => "22", value => "terminator"}
 	       |       |--- literal. Attributes: {type => "open_bracket", uid => "23", value => "["}
 	       |       |--- attribute. Attributes: {type => "label", uid => "24", value => "Transformer"}
 	       |       |--- literal. Attributes: {type => "close_bracket", uid => "25", value => "]"}
@@ -1592,8 +1637,8 @@ the node's attributes to determine the exact nature of the node.
 =item o attribute
 
 In this case, the node's attributes contain a hashref like
-{name => "arrowhead", uid => "33", value => "odiamond"}, meaning the 'name' field holds the name
-of the attribute, and the 'value' field holds the value of the attribute.
+{type => "arrowhead", uid => "33", value => "odiamond"}, meaning the 'type' field holds the type
+(i.e. name) of the attribute, and the 'value' field holds the value of the attribute.
 
 =item o class
 

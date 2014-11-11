@@ -113,16 +113,19 @@ Output file 9: html/09.svg (578 bytes)
 </tr>
 <tr>
   <td>
-	Input file 10: data/10.gv (72 bytes):<br />digraph graph_10
+	Input file 10: data/10.gv (185 bytes):<br />STRICT digraph graph_10
 <br />{
 <br />	edge [&quot;color&quot; = &quot;green&quot;];
 <br />	node [shape=rpromoter]
+<br />	terminator [label = &quot;\nterminator&quot; shape = terminator;];
+<br />
+<br />	rpromoter -&gt; terminator [label = Transformer]
 <br />}
 
   </td>
   <td>
 <object data = "./10.svg"></object><br />
-Output file 10: html/10.svg (578 bytes)
+Output file 10: html/10.svg (1716 bytes)
   </td>
 </tr>
 <tr>
@@ -141,13 +144,13 @@ Output file 11: html/11.svg (578 bytes)
 </tr>
 <tr>
   <td>
-	Input file 12: data/12.gv (98 bytes):<br /># Prefix comment.
+	Input file 12: data/12.gv (129 bytes):<br /># Prefix comment.
 <br />
 <br />graph graph_12
 <br />{
 <br />	size = &quot;6,7&quot;
 <br />
-<br />	node_12 [shape = square]
+<br />	node_12 [shape = square, color = red; fillcolor = blue]
 <br />}
 <br />
 <br /># Suffix comment.
@@ -155,7 +158,7 @@ Output file 11: html/11.svg (578 bytes)
   </td>
   <td>
 <object data = "./12.svg"></object><br />
-Output file 12: html/12.svg (842 bytes)
+Output file 12: html/12.svg (840 bytes)
   </td>
 </tr>
 <tr>
@@ -409,20 +412,40 @@ Output file 18: html/18.svg (6892 bytes)
 </tr>
 <tr>
   <td>
-	Input file 19: data/19.gv (84 bytes):<br />digraph graph_19
+	Input file 19: data/19.gv (369 bytes):<br />digraph graph_19
 <br />{
-<br />	subgraph subgraph_19_1
+<br />	size = &quot;6,6&quot;
+<br />
+<br />	node [shape = square]
+<br />	edge [color = red]
+<br />
+<br />	node_19_1 -&gt; node_19_2
+<br />
+<br />	subgraph subgraph_19_3
 <br />	{
-<br />		subgraph subgraph_19_2
+<br />		node [shape = star]
+<br />		edge [color = green]
+<br />
+<br />		node_19_4 -&gt; node_19_5
+<br />
+<br />		subgraph subgraph_19_6
 <br />		{
+<br />			node [shape = circle]
+<br />			edge [color = blue]
+<br />
+<br />			node_19_7 -&gt; node_19_8
 <br />		}
+<br />
+<br />		node_19_9 -&gt; node_19_10
 <br />	}
+<br />
+<br />	node_19_11 -&gt; node_19_12
 <br />}
 
   </td>
   <td>
 <object data = "./19.svg"></object><br />
-Output file 19: html/19.svg (578 bytes)
+Output file 19: html/19.svg (5577 bytes)
   </td>
 </tr>
 <tr>
@@ -1867,7 +1890,7 @@ Date
 <!-- Right -->
 <td>
 <div class="odd_right">
-2014-11-07
+2014-11-11
 </div>
 </td>
 </tr>
