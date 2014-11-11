@@ -1,8 +1,8 @@
-digraph graph_10
+STRICT digraph graph_10
 {
 	edge ["color" = "green"];
 	node [shape=rpromoter]
-	output [label = "", shape = terminator;];
+	terminator [label = "\nterminator" shape = terminator;];
 
-	input -> output [label = Transformer]
+	rpromoter -> terminator [label = Transformer]
 }

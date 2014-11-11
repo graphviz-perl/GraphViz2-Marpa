@@ -1433,192 +1433,59 @@ Returns 0 for success and 1 for failure.
 
 =head2 How is the parsed data held in RAM?
 
-It's held in a tree managed by L<Tree::DAG_Node>.
+The parsed output is held in a tree managed by L<Tree::DAG_Node>.
 
-Note: In this section the word 'node' refers to nodes in this tree, not Graphviz-style nodes.
+Here, the word 'node' (usually) refers to nodes in this tree, not Graphviz-style nodes.
 
-Frstly, we examine a sample graph, assuming the module's pre-reqs are installed.
+=head2 Can you explain this tree in more detail?
 
-Run:
+Sure.  Firstly, we examine a sample graph, assuming the module's pre-reqs are installed.
 
+Run one of these:
+
+	scripts/g2m.sh data/10.gv -max info
 	perl -Ilib scripts/g2m.pl -input_file data/10.gv -max info
 
 This is the input:
 
-	digraph graph_10
+	STRICT digraph graph_10
 	{
-		edge ["color" = "green",]
+		edge ["color" = "green"];
 		node [shape=rpromoter]
+		output [label = "", shape = terminator;];
+
+		input -> output [label = Transformer]
 	}
 
 And this is the output:
 
 	root. Attributes: {uid => "0"}
 	   |--- prolog. Attributes: {uid => "1"}
-	   |   |--- literal. Attributes: {uid => "3", value => "digraph"}
+	   |   |--- literal. Attributes: {type => "strict_literal", uid => "3", value => "strict"}
+	   |   |--- literal. Attributes: {type => "digraph_literal", uid => "4", value => "digraph"}
 	   |--- graph. Attributes: {uid => "2"}
-	       |--- node_id. Attributes: {uid => "4", value => "graph_10"}
-	       |--- literal. Attributes: {uid => "5", value => "{"}
-	       |   |--- class. Attributes: {uid => "6", value => "edge"}
-	       |   |   |--- literal. Attributes: {uid => "7", value => "["}
-	       |   |   |--- attribute. Attributes: {name => "color", uid => "8", value => "green"}
-	       |   |   |--- literal. Attributes: {uid => "9", value => "]"}
-	       |   |--- class. Attributes: {uid => "10", value => "node"}
-	       |       |--- literal. Attributes: {uid => "11", value => "["}
-	       |       |--- attribute. Attributes: {name => "shape", uid => "12", value => "rpromoter"}
-	       |       |--- literal. Attributes: {uid => "13", value => "]"}
-	       |--- literal. Attributes: {uid => "14", value => "}"}
-	Parse result:  0 (0 is success)
-
-If that worked, proceed.
-
-To follow along with this discussion, run:
-
-	perl -Ilib scripts/g2m.pl -input_file data/16.gv -max info
-
-Input:
-
-	/* C comment. */
-
-	// C++ comment.
-
-	# Hash comment.
-
-	STRICT digraph graph_16
-	{
-		fontsize = 16.0
-		label    = "\"Standard\"\rSyntax\lTest"
-		size     = "5,6"
-
-		node
-		[
-			shape = "record",
-		];
-
-		edge
-		[
-			color = "red"
-			penwidth = 3,
-		];
-
-		node_16_1
-		[
-			label    = "<p11> left|<p12> middle|<p13> right"
-			pencolor = blue
-		]
-
-		node_16_2
-		[
-			pencolor = green
-			label    = "<p21> one|<p22> two"
-		]
-
-		node_16_1:p11 -> node_16_2:p22:s
-		[
-			arrowhead = "odiamond";
-			arrowtail = "odot",
-			color     = red
-			dir       = both;
-		];
-
-		subgraph subgraph_16_1
-		{
-			node [shape = square]
-
-			label = ""
-
-			node_16_3 -> { node [shape = circle] node_16_4 }
-			[
-				arrowhead = "empty",
-				arrowtail = "halfopen"
-				color     = green
-				dir       = "both",
-			]
-
-			node_16_5 -> node_16_6
-			[
-				arrowhead = "halfopen",
-				arrowtail = "empty"
-				color     = blue
-				dir       = "both",
-			]
-		}
-	}
-
-Output:
-
-	root. Attributes: {uid => "0"}
-	   |--- prolog. Attributes: {uid => "1"}
-	   |   |--- literal. Attributes: {uid => "3", value => "STRICT"}
-	   |   |--- literal. Attributes: {uid => "4", value => "digraph"}
-	   |--- graph. Attributes: {uid => "2"}
-	       |--- node_id. Attributes: {uid => "5", value => "graph_16"}
-	       |--- literal. Attributes: {uid => "6", value => "{"}
-	       |   |--- attribute. Attributes: {name => "fontsize", uid => "7", value => "16.0"}
-	       |   |--- attribute. Attributes: {name => "label", uid => "8", value => "\"Standard\"\rSyntax\lTest"}
-	       |   |--- attribute. Attributes: {name => "size", uid => "9", value => "5,6"}
-	       |   |--- class. Attributes: {uid => "10", value => "node"}
-	       |   |   |--- literal. Attributes: {uid => "11", value => "["}
-	       |   |   |--- attribute. Attributes: {name => "shape", uid => "12", value => "record"}
-	       |   |   |--- literal. Attributes: {uid => "13", value => "]"}
-	       |   |--- class. Attributes: {uid => "14", value => "edge"}
-	       |   |   |--- literal. Attributes: {uid => "15", value => "["}
-	       |   |   |--- attribute. Attributes: {name => "color", uid => "16", value => "red"}
-	       |   |   |--- attribute. Attributes: {name => "penwidth", uid => "17", value => "3"}
-	       |   |   |--- literal. Attributes: {uid => "18", value => "]"}
-	       |   |--- node_id. Attributes: {uid => "19", value => "node_16_1"}
-	       |   |   |--- literal. Attributes: {uid => "20", value => "["}
-	       |   |   |--- attribute. Attributes: {name => "label", uid => "21", value => "<p11> left|<p12> middle|<p13> right"}
-	       |   |   |--- attribute. Attributes: {name => "pencolor", uid => "22", value => "blue"}
-	       |   |   |--- literal. Attributes: {uid => "23", value => "]"}
-	       |   |--- node_id. Attributes: {uid => "24", value => "node_16_2"}
-	       |   |   |--- literal. Attributes: {uid => "25", value => "["}
-	       |   |   |--- attribute. Attributes: {name => "pencolor", uid => "26", value => "green"}
-	       |   |   |--- attribute. Attributes: {name => "label", uid => "27", value => "<p21> one|<p22> two"}
-	       |   |   |--- literal. Attributes: {uid => "28", value => "]"}
-	       |   |--- node_id. Attributes: {uid => "29", value => "node_16_1:p11"}
-	       |   |--- edge_id. Attributes: {uid => "30", value => "->"}
-	       |   |--- node_id. Attributes: {uid => "31", value => "node_16_2:p22:s"}
-	       |   |   |--- literal. Attributes: {uid => "32", value => "["}
-	       |   |   |--- attribute. Attributes: {name => "arrowhead", uid => "33", value => "odiamond"}
-	       |   |   |--- attribute. Attributes: {name => "arrowtail", uid => "34", value => "odot"}
-	       |   |   |--- attribute. Attributes: {name => "color", uid => "35", value => "red"}
-	       |   |   |--- attribute. Attributes: {name => "dir", uid => "36", value => "both"}
-	       |   |   |--- literal. Attributes: {uid => "37", value => "]"}
-	       |   |--- literal. Attributes: {uid => "38", value => "subgraph"}
-	       |   |--- node_id. Attributes: {uid => "39", value => "subgraph_16_1"}
-	       |   |--- literal. Attributes: {uid => "40", value => "{"}
-	       |   |   |--- class. Attributes: {uid => "41", value => "node"}
-	       |   |   |   |--- literal. Attributes: {uid => "42", value => "["}
-	       |   |   |   |--- attribute. Attributes: {name => "shape", uid => "43", value => "square"}
-	       |   |   |   |--- literal. Attributes: {uid => "44", value => "]"}
-	       |   |   |--- attribute. Attributes: {name => "label", uid => "45", value => ""}
-	       |   |   |--- node_id. Attributes: {uid => "46", value => "node_16_3"}
-	       |   |   |--- edge_id. Attributes: {uid => "47", value => "->"}
-	       |   |   |--- literal. Attributes: {uid => "48", value => "{"}
-	       |   |   |   |--- class. Attributes: {uid => "49", value => "node"}
-	       |   |   |   |   |--- literal. Attributes: {uid => "50", value => "["}
-	       |   |   |   |   |--- attribute. Attributes: {name => "shape", uid => "51", value => "circle"}
-	       |   |   |   |   |--- literal. Attributes: {uid => "52", value => "]"}
-	       |   |   |   |--- node_id. Attributes: {uid => "53", value => "node_16_4"}
-	       |   |   |--- literal. Attributes: {uid => "54", value => "}"}
-	       |   |   |   |--- literal. Attributes: {uid => "55", value => "["}
-	       |   |   |   |--- attribute. Attributes: {name => "arrowhead", uid => "56", value => "empty"}
-	       |   |   |   |--- attribute. Attributes: {name => "arrowtail", uid => "57", value => "halfopen"}
-	       |   |   |   |--- attribute. Attributes: {name => "color", uid => "58", value => "green"}
-	       |   |   |   |--- attribute. Attributes: {name => "dir", uid => "59", value => "both"}
-	       |   |   |   |--- literal. Attributes: {uid => "60", value => "]"}
-	       |   |   |--- node_id. Attributes: {uid => "61", value => "node_16_5"}
-	       |   |   |--- edge_id. Attributes: {uid => "62", value => "->"}
-	       |   |   |--- node_id. Attributes: {uid => "63", value => "node_16_6"}
-	       |   |       |--- literal. Attributes: {uid => "64", value => "["}
-	       |   |       |--- attribute. Attributes: {name => "arrowhead", uid => "65", value => "halfopen"}
-	       |   |       |--- attribute. Attributes: {name => "arrowtail", uid => "66", value => "empty"}
-	       |   |       |--- attribute. Attributes: {name => "color", uid => "67", value => "blue"}
-	       |   |       |--- attribute. Attributes: {name => "dir", uid => "68", value => "both"}
-	       |   |       |--- literal. Attributes: {uid => "69", value => "]"}
-	       |   |--- literal. Attributes: {uid => "70", value => "}"}
-	       |--- literal. Attributes: {uid => "71", value => "}"}
+	       |--- node_id. Attributes: {uid => "5", value => "graph_10"}
+	       |--- literal. Attributes: {type => "open_brace", uid => "6", value => "{"}
+	       |   |--- class. Attributes: {uid => "7", value => "edge"}
+	       |   |   |--- literal. Attributes: {type => "open_bracket", uid => "8", value => "["}
+	       |   |   |--- attribute. Attributes: {type => "color", uid => "9", value => "green"}
+	       |   |   |--- literal. Attributes: {type => "close_bracket", uid => "10", value => "]"}
+	       |   |--- class. Attributes: {uid => "11", value => "node"}
+	       |   |   |--- literal. Attributes: {type => "open_bracket", uid => "12", value => "["}
+	       |   |   |--- attribute. Attributes: {type => "shape", uid => "13", value => "rpromoter"}
+	       |   |   |--- literal. Attributes: {type => "close_bracket", uid => "14", value => "]"}
+	       |   |--- node_id. Attributes: {uid => "15", value => "output"}
+	       |   |   |--- literal. Attributes: {type => "open_bracket", uid => "16", value => "["}
+	       |   |   |--- attribute. Attributes: {type => "label", uid => "17", value => ""}
+	       |   |   |--- attribute. Attributes: {type => "shape", uid => "18", value => "terminator"}
+	       |   |   |--- literal. Attributes: {type => "close_bracket", uid => "19", value => "]"}
+	       |   |--- node_id. Attributes: {uid => "20", value => "input"}
+	       |   |--- edge_id. Attributes: {type => "directed_edge", uid => "21", value => "->"}
+	       |   |--- node_id. Attributes: {uid => "22", value => "output"}
+	       |       |--- literal. Attributes: {type => "open_bracket", uid => "23", value => "["}
+	       |       |--- attribute. Attributes: {type => "label", uid => "24", value => "Transformer"}
+	       |       |--- literal. Attributes: {type => "close_bracket", uid => "25", value => "]"}
+	       |--- literal. Attributes: {type => "close_brace", uid => "26", value => "}"}
 	Parse result:  0 (0 is success)
 
 You can see from this output that words special to Graphviz (e.g. STRICT) are accepted no matter
