@@ -1446,7 +1446,7 @@ Returns 0 for success and 1 for failure.
 
 The parsed output is held in a tree managed by L<Tree::DAG_Node>.
 
-Here and below, the word 'node' (usually) refers to nodes in this tree, not Graphviz-style nodes.
+Here and below, the word C<node> (usually) refers to nodes in this tree, not Graphviz-style nodes.
 
 The root node always looks like this when printed by Tree::DAG_Node's tree2string() method:
 
@@ -1458,7 +1458,7 @@ Interpretation:
 
 =item o The node name
 
-Here, 'root'.
+Here, C<root>.
 
 =item o The node's attributes
 
@@ -1468,7 +1468,7 @@ Key fields:
 
 =item o type
 
-Here, 'root_literal'.
+Here, C<root_literal>.
 
 The type (or name) of the value. The word 'name' is not used to avoid confusion with the name of the
 node.
@@ -1481,7 +1481,7 @@ A unique integer assigned to each node. Counts up from 0. Not used.
 
 The value of the node.
 
-Here, 'root'.
+Here, C<root>.
 
 =back
 
@@ -1490,11 +1490,17 @@ Here, 'root'.
 =head2 Can you explain this tree in more detail?
 
 Sure.  Firstly, we examine a sample graph, assuming the module's pre-reqs are installed.
+Let's use data/10.gv. Here it is as an
+L<svg|http://savage.net.au/Perl-modules/html/graphviz2.marpa/10.svg>.
 
 Run one of these:
 
 	scripts/g2m.sh data/10.gv -max info
 	perl -Ilib scripts/g2m.pl -input_file data/10.gv -max info
+
+The former echos the input file to STDOUT before running the latter.
+
+Using C<-max notice>, which is the default, produces no output from C<g2m.pl>.
 
 This is the input:
 
@@ -1506,8 +1512,6 @@ This is the input:
 
 		rpromoter -> terminator [label = Transformer]
 	}
-
-As an L<svg|http://savage.net.au/Perl-modules/html/graphviz2.marpa/10.svg>.
 
 And this is the output:
 
@@ -1545,15 +1549,16 @@ what case they are in. Such tokens are stored in lower-case.
 
 A more detailed analysis follows.
 
-The 'root' node has 2 daughters:
+The C<root> node has 2 daughters:
 
 =over 4
 
-=item o The 'prolog' sub-tree
+=item o The C<prolog> sub-tree
 
-The 'prolog' node is the root of a sub-tree holding everything before the graph's ID, if any.
+The C<prolog> node is the root of a sub-tree holding everything before the graph's ID, if any.
 
-The node is called 'prolog', and its hashref of attributes is C<< {uid => "1"} >>.
+The node is called C<prolog>, and its hashref of attributes is
+C<< {type => "prolog_literal", uid => "1", value => "prolog"} >>.
 
 It has 1 or 2 daughters. The possibilities are:
 
@@ -1561,75 +1566,69 @@ It has 1 or 2 daughters. The possibilities are:
 
 =item o Input: 'digraph ...'
 
-The 1 daughter is named 'literal', and its attributes are C<< {uid => "3", value => "digraph"} >>.
+The 1 daughter is named C<literal>, and its attributes are
+C<< {type => "digraph_literal", uid => "3", value => "digraph"} >>.
 
 =item o Input: 'graph ...'
 
-The 1 daughter is named 'literal', and its attributes are C<< {uid => "3", value => "graph"} >>.
+The 1 daughter is named C<literal>, and its attributes are
+C<< {type => "graph_literal", uid => "3", value => "graph"} >>.
 
 =item o Input: 'strict digraph ...'
 
-The 2 daughters are named 'literal', and their attributes are, respectively,
-C<< {uid => "3", value => "strict"} >> and C<< {uid => "4", value => "digraph"} >>.
+The 2 daughters are named C<literal>, and their attributes are, respectively,
+C<< {type => "strict_literal", uid => "3", value => "strict"} >> and
+C<< {type => "digraph_literal", uid => "4", value => "digraph"} >>.
 
 =item o Input: 'strict graph ...'
 
-The 2 daughters are named 'literal', and their attributes are, respectively,
-C<< {uid => "3", value => "strict"'} >> and C<< {uid => "4", value => "graph"} >>.
+The 2 daughters are named C<literal>, and their attributes are, respectively,
+C<< {type => "strict_literal", uid => "3", value => "strict"'} >> and
+C<< {type => "graph_literal", uid => "4", value => "graph"} >>.
 
 =back
 
-And yes, the graph ID, if any, is under the 'graph' node. The reason for this is that with any
-subgraphs within the graph, the same structure applies: First the (sub)graph ID, then a literal
+And yes, the graph ID, if any, is under the C<graph> node. The reason for this is that for every
+subgraph within the graph, the same structure applies: First the (sub)graph ID, then a literal
 '{', then that (sub)graph's details, and finally a literal '}'.
 
 =item o The 'graph' sub-tree
 
-The 'graph' node is the root of a sub-tree holding everything about the graph, including the graph's
+The C<graph> node is the root of a sub-tree holding everything about the graph, including the graph's
 ID, if any.
 
-The node is called 'graph', and its hashref of attributes is C<< {uid => "2"} >>.
+The node is called C<graph>, and its hashref of attributes is
+C<< {type => "graph_literal", uid => "2", value => "graph"} >>.
 
-The 'graph' node has as many daughters, with their own daughters, as is necessary to hold the
+The C<graph> node has as many daughters, with their own daughters, as is necessary to hold the
 output of parsing the remainder of the input.
 
 In particular, if the input graph has an ID, i.e. the input is of the form 'digraph my_id ...'
-(or various versions thereof) then the 1st daughter will be called 'node_id', and its attributes
-will be C<< {uid => "5", value => "my_id"} >>.
+(or various versions thereof) then the 1st daughter will be called C<node_id>, and its attributes
+will be C<< {type => "node_id", uid => "5", value => "my_id"} >>.
 
-Futher, the 2nd daughter will be called 'literal', and its attributes will be
-C<< {uid => "6", value => "{"} >>. A subsequent daughter (for a syntax-free input file, of
-course), will also be called 'literal', and its attributes will be
-C<< {uid => "#", value => "}"} >>.
+Futher, the 2nd daughter will be called C<literal>, and its attributes will be
+C<< {ype => "open_brace", uid => "6", value => "{"} >>. A subsequent daughter will eventually (for a
+syntax-free input file, of course) also be called C<literal>, and its attributes will be
+C<< {type => "close_brace", uid => "#", value => "}"} >>.
 
-Of course, if the input lacks the 'my_id' token, then the uids will differ slightly.
+Naturally, if the graph has no ID (i.e. input lacks the 'my_id' token) then the uids will differ
+slightly.
 
-Lastly, this pattern, of optional (sub)graph id followed by a matching pair of '{', '}' nodes,
+As mentioned, this pattern of optional (sub)graph id followed by a matching pair of '{', '}' nodes,
 is used for all graphs and subgraphs.
 
-In the case the input contains an explicit 'subgraph', then just before the node representing
-'my_id' or '{', there will be another node representing the 'subgraph' token.
+In the case the input contains an explicit C<subgraph>, then just before the node representing
+'my_id' or '{', there will be another node representing the C<subgraph> token.
 
-It's name will be 'literal', and its attributes will be
-C<< {uid => "#", value => "subgraph"} >>.
-
-E.g., the output from:
-
-	shell> perl scripts/g2m.pl -input_file data/16.gv -max info | grep sub
-
-contains:
-
-	literal. Attributes: {uid => "38", value => "subgraph"}
-
-followed by
-
-	node_id. Attributes: {uid => "39", value => "subgraph_16_1"}
+It's name will be C<literal>, and its attributes will be
+C<< {type => "subgraph_literal", uid => "#", value => "subgraph"} >>.
 
 =back
 
 =head2 How many different names can these nodes have?
 
-The list of possible node names follows. In many cases, you have to examine the 'value' key of
+The list of possible node names follows. You should always examine the C<type> and C<value> keys of
 the node's attributes to determine the exact nature of the node.
 
 =over 4
@@ -1637,23 +1636,24 @@ the node's attributes to determine the exact nature of the node.
 =item o attribute
 
 In this case, the node's attributes contain a hashref like
-{type => "arrowhead", uid => "33", value => "odiamond"}, meaning the 'type' field holds the type
+{type => "arrowhead", uid => "33", value => "odiamond"}, meaning the C<type> field holds the type
 (i.e. name) of the attribute, and the 'value' field holds the value of the attribute.
 
 =item o class
 
-This is used when any of 'edge', 'graph', or 'node' appear at the start of the (sub)graph, and
-is the mother of the attributes attached to the class. The 'value' of the attribute will be 'edge',
-'graph, or 'node'.
+This is used when any of C<edge>, C<graph>, or C<node> appear at the start of the (sub)graph, and
+is the mother of the attributes attached to the class. The C<value> of the attribute will be
+C<edge>, C<graph>, or C<node>.
 
 The 1st and last daughters will be literals whose attribute values are '[' and ']' respectively,
-and the middle daughter(s) will be nodes of type 'attribute' (as just discussed).
+and the middle daughter(s) will be nodes of type C<attribute> (as just discussed).
 
 =item o edge_id
 
-The 'value' of the attribute will be either '--' or '->'.
+The C<value> of the attribute will be either '--' or '->'.
 
-Thus the 'tail' will be the previous daughter (node or subgraph), and the 'head' will be the next.
+Thus the C<tail> of the edge will be the previous daughter (node or subgraph), and the C<head> of
+the edge will be the next.
 
 Samples are:
 
@@ -1662,23 +1662,32 @@ Samples are:
 	{n1} -> n2
 
 In a L<daisy chain|https://en.wikipedia.org/wiki/Garland#Daisy_chain> of nodes, the last node in
-the chain will have daughters that are the attributes of each edge in the chain. This is how
-Graphviz syntax specifies all edge attributes.
+the chain may have daughters that are the attributes of each edge in the chain. This is how
+Graphviz syntax attaches edge attributes to a path. The class 'edge' can also be used.
+
+=item o graph
+
+There is only ever 1 node called C<graph>.
 
 =item o literal
 
-'literal' is the name of some nodes, with the 'value' key in the attributes having one of these
+C<literal> is the name of some nodes, with the C<value> key in the attributes having one of these
 values:
 
 =over 4
 
 =item o {
 
+Indicates the start of a (sub)graph.
+
 =item o }
+
+Indicates the end of a (sub)graph.
 
 =item o [
 
-This indicates the start of a set of attributes for a specific class, edge or node.
+This indicates the start of a set of attributes for a specific class, edge or node, or the
+edge attributes at the end of a path.
 
 The 1st and last daughters will be literals whose attribute 'value' keys are '[' and ']'
 respectively.
@@ -1690,19 +1699,19 @@ C<< edge ["color" = "green",] >>.
 
 See the previous point.
 
-=item o digraph
+=item o digraph_literal
 
-=item o graph
+=item o graph_literal
 
-=item o strict
+=item o strict_literal
 
-=item o subgraph
+=item o subgraph_literal
 
 =back
 
 =item o node_id
 
-The 'value' of the attributes is just the (graph) node's name.
+The C<value> of the attributes is the name of the graph, a node, or a subgraph.
 
 Note: A node name can appear more than once in succession, either as a declaration of the node's
 existence and then as the tail of an edge, or, as in this fragment of data/56.gv:
@@ -1711,6 +1720,14 @@ existence and then as the tail of an edge, or, as in this fragment of data/56.gv
 	Hef1aLacOid [label="Hef1a-LacOid"];
 
 This is a case where tree compression could be done, but isn't done yet.
+
+=item o prolog
+
+There is only ever 1 node called C<prolog>.
+
+=item o root
+
+There is only ever 1 node called C<root>.
 
 =back
 
@@ -1728,11 +1745,11 @@ Input contains this fragment of data/16.gv:
 
 And the output log contains:
 
-	|   |--- node_id. Attributes: {uid => "29", value => "node_16_1:p11"}
-	|   |--- edge_id. Attributes: {uid => "30", value => "->"}
-	|   |--- node_id. Attributes: {uid => "31", value => "node_16_2:p22:s"}
+	|   |--- node_id. Attributes: {type => "node_id", uid => "29", value => "node_16_1:p11"}
+	|   |--- edge_id. Attributes: {name => "directed_edge", uid => "30", value => "->"}
+	|   |--- node_id. Attributes: {type => "node_id", uid => "31", value => "node_16_2:p22:s"}
 
-You can see the ports and compass points have been incorporated into the 'value' attribute.
+You can see the ports and compass points have been incorporated into the C<value> attribute.
 
 =head2 How are comments stored in the tree?
 
@@ -1776,8 +1793,8 @@ for details.
 
 Yes.
 
-But node names with utf8 glyphs should always be enclosed in double-quotes, even though this is
-not always necessary.
+But you are I<strongly encouraged> to put node names using utf8 glyphs in double-quotes, even though
+it is not always necessary.
 
 See data/utf8.*.gv and scripts/test.utf8.sh. In particular, see data/utf8.01.gv.
 
@@ -1810,7 +1827,7 @@ L<Marpa::Demo::StringParser>. The significance of this module is that during the
 GraphViz2::Marpa, the string-handling code was perfected in L<Marpa::Demo::StringParser>.
 
 Later, that code was improved within this module, and will be back-ported into
-Marpa::Demo::StringParser
+Marpa::Demo::StringParser.
 
 =head1 Machine-Readable Change Log
 
