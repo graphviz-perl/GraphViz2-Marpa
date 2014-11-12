@@ -82,34 +82,36 @@ sub BUILD
 sub format_node
 {
 	my($self, $node, $opts) = @_;
-	my($name)            = $node -> name;
-	my($attributes)      = $node -> attributes;
-	my($attr_string)     = $self -> tree -> hashref2string($attributes);
-	my($type)            = $$attributes{type} || '';
-	my($value)           = $$attributes{value} || '';
-	my($depth)           = $$opts{_depth};
-	my($attribute_count) = ${$$opts{attribute_count} };
-	my($previous_name)   = ${$$opts{previous_name} };
-	my($previous_value)  = ${$$opts{previous_value} };
-	my($dot_input)       = '';
+	my($name)        = $node -> name;
+	my($attributes)  = $node -> attributes;
+	my($attr_string) = $self -> tree -> hashref2string($attributes);
+	my($type)        = $$attributes{type} || '';
+	my($value)       = $$attributes{value} || '';
+	my($dot_input)   = $$opts{status}{dot_input};
+	my($depth)       = $$opts{_depth};
+	my(%ignore)      = (graph => 1, prolog => 1, root => 1);
+	my($message)     = "name: $name. type: $type. value: $value. depth: $depth\n";
 
 	my($indent);
 	my($offset);
 
+	$self -> log(debug => "Rendering. $message");
+	#$dot_input .= "\nRendering. $message";
+
 	if ($name eq 'attribute')
 	{
-		$attribute_count++;
+		$$opts{status}{attribute_count}++;
 
 		$indent    = "\t" x ($depth - 2);
-		$value     = qq("$value")	if ($value !~ /^</);
-		$dot_input .= "\n"			if ($attribute_count > 1);
+		$value     = qq("$value")	if ($value !~ /^<.+>$/);
+		$dot_input .= "\n"			if ($$opts{status}{attribute_count} > 1);
 		$dot_input .= "$indent$type = $value";
 	}
 	elsif ($name eq 'class')
 	{
-		$indent                    = "\t" x ($depth - 2);
-		$dot_input                 .= "$indent$value\n";
-		${$$opts{previous_name} }  = $name;
+		$indent    = "\t" x ($depth - 2);
+		$dot_input .= "\n\n" if ($$opts{status}{name} =~ /(?:attribute|class)/);
+		$dot_input .= "$indent$value\n";
 	}
 	elsif ($name eq 'edge_id')
 	{
@@ -125,83 +127,44 @@ sub format_node
 		}
 		elsif ($value =~ /[\[\]]/)
 		{
-			$attribute_count = 0 if ($value eq '[');
+			$$opts{status}{attribute_count} = 0 if ($value eq '[');
 
 			$indent    = "\t" x ($depth - 3);
 			$dot_input .= "\n" if ($value eq ']');
 			$dot_input .= "$indent$value\n";
 			$dot_input .= "\n" if ($value eq ']');
 		}
-	}
-	elsif ($name eq 'node_id')
-	{
-		$value                    = '' if ($value eq '""');
-		$indent                   = "\t" x ($depth - 2);
-		$dot_input                .= "$indent$value\n";
-		${$$opts{previous_name} } = $name;
-	}
-
-=pod
-
-	if ($name eq 'literal')
-	{
-		if ($value =~ /^(?:digraph|graph|strict)$/)
+		elsif ($type =~ /^(?:digraph|graph|strict)_literal$/) # Must not match 'subgraph'!
 		{
 			$dot_input .= "$value ";
 		}
-		elsif ($value =~ /(?:\{|\[|--|->)/)
+		elsif ($type eq 'subgraph_literal')
 		{
-			$offset    = ($previous_name =~ /(?:class|node_id|string)/) ? 3 : 2;
-			$offset    = 2 if ( ($value ne '[') && ($depth > 2) ); # Not the 1st '{'.
-			$offset    = 2 if ($value =~ /(?:--|->)/);
-			$indent    = "\t" x ($depth - $offset);
-			$dot_input .= "\n$indent$value";
-			$dot_input .= "\n" if ($depth == 2); # The very first '{'.
-			$dot_input .= "\n" if ($value =~ /(?:--|->)/);
+			$indent    = "\t" x ($depth - 2);
+			$dot_input .= "$indent$value ";
 		}
-		elsif ($value =~ /(?:}|])/)
+		else
 		{
-			$offset    = 3; # ($previous_name =~ /(?:class|node_id|string)/) ? 3 : 2;
-			$offset    = 2 if ( ($value ne ']') && ($depth > 2) ); # Not the 1st '}'.
-			$indent    = "\t" x ($depth - $offset);
-			$dot_input .= "\n$indent$value\n\n";
-		}
-		elsif ($value eq 'subgraph')
-		{
-			$offset                    = 2;
-			$indent                    = "\t" x ($depth - $offset);
-			$dot_input                 .= "$indent$value ";
-			${$$opts{previous_name} }  = $value;
+			die "Rendering error: Unknown literal. $message";
 		}
 	}
-	elsif ($name =~ /(?:node_id|string)/)
+	elsif ($name eq 'node_id')
 	{
-		$indent                   = ($previous_value eq '=') ? '' : "\t" x ($depth - 2);
-		$indent                   = '' if ($previous_name eq 'subgraph');
-		$value                    = '' if ($value eq '""');
-		$value                    = qq("$value") if ($name eq 'string');
-		$dot_input                .= "$indent$value";
-		$dot_input                .= ($previous_value eq '=') ? "\n" : ' ';
-		${$$opts{previous_name} } = $name;
-	}
-	elsif ($name eq 'attribute')
-	{
+		$value     = '' if ($value eq '""');
 		$indent    = "\t" x ($depth - 2);
-		$value     = qq("$value") if ($value !~ /^</);
-		$dot_input .= "\n$indent$type = $value";
+		$indent    = '' if ($$opts{status}{type} eq 'subgraph_literal');
+		$dot_input .= "\n\n" if ($$opts{status}{name} =~ /(?:attribute|class)/);
+		$dot_input .= "$indent$value\n";
 	}
-	elsif ($name eq 'class')
+	elsif (! $ignore{$name})
 	{
-		$indent                    = "\t" x ($depth - 2);
-		$dot_input                 .= "\n$indent$value";
-		${$$opts{previous_name} }  = $name;
+		die "Rendering error: Unknown name. $message";
 	}
 
-=cut
-
-	${$$opts{attribute_count} } = $attribute_count;
-	${$$opts{dot_input} }       .= $dot_input;
-	${$$opts{previous_value} }  = $value;
+	$$opts{status}{dot_input} = $dot_input;
+	$$opts{status}{name}      = $name;
+	$$opts{status}{type}      = $type;
+	$$opts{status}{value}     = $value;
 
 } # End of format_node.
 
@@ -219,16 +182,19 @@ sub log
 
 sub run
 {
-	my($self)            = @_;
-	my($attribute_count) = 0;
-	my($dot_input)       = '';
-	my($previous_name)   = '';
-	my($previous_value)  = '';
+	my($self)   = @_;
+	my($status) =
+	{
+		attribute_count => 0,
+		dot_input       => '',
+		name            => '',
+		type            => '',
+		value           => '',
+	};
 
 	$self -> tree -> walk_down
 	({
-		attribute_count => \$attribute_count,
-		callback        => sub
+		callback => sub
 		{
 			my($node, $opts) = @_;
 
@@ -240,10 +206,8 @@ sub run
 
 			return 1;
 		},
-		_depth         => 0,
-		dot_input      => \$dot_input,
-		previous_name  => \$previous_name,
-		previous_value => \$previous_value,
+		_depth => 0,
+		status => $status,
 	});
 
 	my($output_file) = $self -> output_file;
@@ -251,7 +215,7 @@ sub run
 	if ($output_file)
 	{
 		open(my $fh, '> :encoding(utf-8)', $output_file) || die "Can't open(> $output_file): $!";
-		print $fh $dot_input;
+		print $fh $$status{dot_input};
 		close $fh;
 	}
 
