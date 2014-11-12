@@ -62,28 +62,27 @@ for my $file_name ($utils -> get_files($data_dir_name, $in_suffix) )
 
 		if(! $diff -> Items(2) )
 		{
-			printf "# %d,%dd%d\n", $diff -> Get(qw(Min1 Max1 Max2) );
+			diag sprintf "%d,%dd%d\n", $diff -> Get(qw(Min1 Max1 Max2) );
 		}
 		elsif (! $diff -> Items(1) )
 		{
-			printf "# %da%d,%d\n", $diff -> Get(qw(Max1 Min2 Max2) );
+			diag sprintf "%da%d,%d\n", $diff -> Get(qw(Max1 Min2 Max2) );
 		}
 		else
 		{
 			$sep = "---\n";
 
-			printf "# %d,%dc%d,%d\n", $diff -> Get(qw(Min1 Max1 Min2 Max2) );
+			diag sprintf "%d,%dc%d,%d\n", $diff -> Get(qw(Min1 Max1 Min2 Max2) );
 		}
 
-        print "# < $_" for $diff -> Items(1);
-        print "# $sep";
-        print "# > $_" for $diff -> Items(2);
+		diag sprintf "< $_" for $diff -> Items(1);
+		diag sprintf "$sep";
+		diag sprintf "> $_" for $diff -> Items(2);
     }
-#	diag "diff_count: $diff_count. message: $message";
 
 	ok($diff_count == 0, $message);
 }
 
-print "# Internal test count: $count. \n";
+diag "Internal test count: $count";
 
 done_testing($count);

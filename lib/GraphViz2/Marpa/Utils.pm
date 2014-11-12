@@ -166,16 +166,10 @@ sub generate_test_files
 	my($in_file)                 = File::Spec -> catfile($data_dir_name, "$file_name.$in_suffix");
 	my($out_file)                = File::Spec -> catfile($temp_dir_name, "$file_name.$out_suffix");
 	my($stdout, $stderr, $exit)  = capture{system $^X, '-Ilib', 'scripts/g2m.pl', '-input_file', $in_file, '-output_file', $out_file};
-
 	($old_svg, $stderr, $exit)   = capture{system 'dot', '-Tsvg', $in_file};
 	@old_svg                     = split(/\n/, $old_svg);
 	($new_svg, $stderr, $exit)   = capture{system 'dot', '-Tsvg', $out_file};
 	@new_svg                     = split(/\n/, $new_svg);
-	my($old_svg_file)            = File::Spec -> catfile($html_dir_name, "$file_name.$svg_suffix");
-	my($new_svg_file)            = File::Spec -> catfile($temp_dir_name, "$file_name.$svg_suffix");
-
-	#print "# File sizes: @{[-s $in_file]} and @{[-s $out_file]}\n";
-	#print "# Line counts: @{[scalar @old_svg]} and @{[scalar @new_svg]}\n";
 
 	return Algorithm::Diff -> new(\@old_svg, \@new_svg);
 
