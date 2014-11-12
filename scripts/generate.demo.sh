@@ -16,7 +16,8 @@ done
 
 perl -Ilib scripts/generate.demo.pl
 
-# $DR is my web server's doc root.
+# $DR is my web server's doc root (in Debian's RAM disk).
+# $PM is a directory path.
 
 PM=Perl-modules/html/graphviz2.marpa
 

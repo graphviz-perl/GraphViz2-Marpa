@@ -5,6 +5,7 @@
 #	16 means the input is data/16.gv, and the output is
 #	$DR/Perl-modules/html/graphviz2.marpa/16.svg.
 # 2+: Any parameters accepted by scripts/g2m.sh, i.e. scripts/g2m.pl.
+# $DR is my web server's doc root (in Debian's RAM disk).
 
 echo Contents of data/$1.gv:
 cat data/$1.gv

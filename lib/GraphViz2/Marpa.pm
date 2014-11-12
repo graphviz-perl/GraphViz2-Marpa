@@ -1196,23 +1196,34 @@ See generate.demo.sh.
 
 =item o generate.demo.sh
 
-Runs scripts/g2m.pl on all files data/*.gv, and then runs generate.index.pl.
+For use by the author. Actions:
 
-After that it copies html/*.html and html/*.svg to my web server's doc root,
-$DR/Perl-modules/html/graphviz2.marpa/ (which is a RAMdisk directory under Debian).
+=over
+
+=item o Runs dot on all data/*.gv files; outputs to html/*.svg
+
+=item o Runs scripts/generate.demo.pl; outputs to html/index.html
+
+=item o Copies html/* to various places
+
+=back
+
+=item o gv2svg.sh
+
+Converts one data/*.gv file into $DR/Perl-modules/html/graphviz2.marpa/*.svg.
 
 =item o pod2html.sh
 
 Converts all *.pm files to *.html, and copies them in my web server's dir structure (in Debian's
 RAM disk).
 
-=item o test.sh
+=item o test.1.sh
 
-Tests any subset of the data.
+Runs both the parser and C<dot> so I can compare the output.
 
 =item o test.utf8.sh
 
-Tests the utf8 subset of the data more thoroughly than test.sh does.
+Tests one data/utf8*.gv file more thoroughly than test.1.sh does.
 
 =back
 
