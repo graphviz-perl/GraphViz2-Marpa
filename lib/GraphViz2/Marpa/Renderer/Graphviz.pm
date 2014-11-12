@@ -87,7 +87,7 @@ sub format_node
 	my($attr_string) = $self -> tree -> hashref2string($attributes);
 	my($type)        = $$attributes{type} || '';
 	my($value)       = defined($$attributes{value}) ? $$attributes{value} : ''; # Allow for node '0'.
-	my($dot_input)   = $$opts{status}{dot_input};
+	my($dot_input)   = $$opts{previous}{dot_input};
 	my($depth)       = $$opts{_depth};
 	my(%ignore)      = (graph => 1, prolog => 1, root => 1);
 	my($message)     = "name: $name. type: $type. value: $value. depth: $depth\n";
@@ -100,26 +100,29 @@ sub format_node
 
 	if ($name eq 'attribute')
 	{
-		$$opts{status}{attribute_count}++;
+		$$opts{previous}{attribute_count}++;
 
 		$indent    = "\t" x ($depth - 2);
-		$value     = qq("$value")	if ($value !~ /^<.+>$/);
-		$dot_input .= "\n"			if ($$opts{status}{attribute_count} > 1); # Each attr on a new line.
+		$value     = qq("$value") if ($value !~ /^<.+>$/);
+		$dot_input .= "\n"        if ($$opts{previous}{attribute_count} > 1); # Each attr on a new line.
 		$dot_input .= "$indent$type = $value";
 	}
 	elsif ($name eq 'class')
 	{
 		$indent    = "\t" x ($depth - 2);
-		$dot_input .= "\n\n" if ($$opts{status}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
+		$dot_input .= "\n"   if ($$opts{previous}{name} eq 'node_id');             # Separate classes and nodes.
+		$dot_input .= "\n\n" if ($$opts{previous}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
 		$dot_input .= "$indent$value\n";
 	}
 	elsif ($name eq 'edge_id')
 	{
 		$indent    = "\t" x ($depth - 2);
-		$dot_input .= "$indent$value\n";
+		$dot_input .= " $value ";
 	}
 	elsif ($name eq 'literal')
 	{
+		$dot_input .= "\n" if ($$opts{previous}{name} eq 'node_id'); # Separate literals and nodes.
+
 		if ($value =~ /[{}]/)
 		{
 			$indent    = "\t" x ($depth - 2);
@@ -127,7 +130,7 @@ sub format_node
 		}
 		elsif ($value =~ /[\[\]]/)
 		{
-			$$opts{status}{attribute_count} = 0 if ($value eq '[');
+			$$opts{previous}{attribute_count} = 0 if ($value eq '[');
 
 			$indent    = "\t" x ($depth - 3);
 			$dot_input .= "\n" if ($value eq ']'); # Put ']' on a new line.
@@ -151,19 +154,20 @@ sub format_node
 	elsif ($name eq 'node_id')
 	{
 		$indent    = "\t" x ($depth - 2);
-		$indent    = '' if ($$opts{status}{type} eq 'subgraph_literal');         # Seperate 'subgraph' and its name.
-		$dot_input .= "\n\n" if ($$opts{status}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
-		$dot_input .= "$indent$value\n";
+		$indent    = '' if ($$opts{previous}{type} eq 'subgraph_literal');         # Seperate 'subgraph' and its name.
+		$dot_input .= "\n\n" if ($$opts{previous}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
+		$indent    = ''      if ($$opts{previous}{name} eq 'edge_id');             # Don't separate nodes and edges.
+		$dot_input .= "$indent$value";
 	}
 	elsif (! $ignore{$name})
 	{
 		die "Rendering error: Unknown name. $message";
 	}
 
-	$$opts{status}{dot_input} = $dot_input;
-	$$opts{status}{name}      = $name;
-	$$opts{status}{type}      = $type;
-	$$opts{status}{value}     = $value;
+	$$opts{previous}{dot_input} = $dot_input;
+	$$opts{previous}{name}      = $name;
+	$$opts{previous}{type}      = $type;
+	$$opts{previous}{value}     = $value;
 
 } # End of format_node.
 
@@ -181,8 +185,8 @@ sub log
 
 sub run
 {
-	my($self)   = @_;
-	my($status) =
+	my($self)     = @_;
+	my($previous) =
 	{
 		attribute_count => 0,
 		dot_input       => '',
@@ -205,8 +209,8 @@ sub run
 
 			return 1;
 		},
-		_depth => 0,
-		status => $status,
+		_depth   => 0,
+		previous => $previous,
 	});
 
 	my($output_file) = $self -> output_file;
@@ -214,7 +218,7 @@ sub run
 	if ($output_file)
 	{
 		open(my $fh, '> :encoding(utf-8)', $output_file) || die "Can't open(> $output_file): $!";
-		print $fh $$status{dot_input};
+		print $fh $$previous{dot_input};
 		close $fh;
 	}
 

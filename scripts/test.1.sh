@@ -20,3 +20,10 @@ dot -Tsvg data/$1.gv > $DR/Perl-modules/html/graphviz2.marpa/$1.new.svg
 echo Diff: $DR/Perl-modules/html/graphviz2.marpa/$1.svg $DR/Perl-modules/html/graphviz2.marpa/$1.new.svg
 
 diff $DR/Perl-modules/html/graphviz2.marpa/$1.svg $DR/Perl-modules/html/graphviz2.marpa/$1.new.svg
+
+if [ "$?" -eq "0" ]
+then
+	echo OK - No difference in SVGs
+else
+	echo Failed - Check $1.svg and $1.new.svg
+fi

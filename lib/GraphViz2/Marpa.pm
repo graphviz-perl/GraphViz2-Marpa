@@ -1208,6 +1208,12 @@ For use by the author. Actions:
 
 =back
 
+=item o generate.svg.sh
+
+Convert all data/*.svg into html/*.svg.
+
+Used by generate.demo.sh.
+
 =item o gv2svg.sh
 
 Converts one data/*.gv file into $DR/Perl-modules/html/graphviz2.marpa/*.svg.
