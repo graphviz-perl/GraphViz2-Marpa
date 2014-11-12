@@ -6,13 +6,18 @@ use warnings;
 use warnings  qw(FATAL utf8);    # Fatalize encoding glitches.
 use open      qw(:std :utf8);    # Undeclared streams in UTF-8.
 
+use Algorithm::Diff;
+
+use Capture::Tiny 'capture';
+
 use Config;
 
 use Date::Format; # For time2str().
 use Date::Simple;
 
-use File::Spec;
 use File::Slurp; # For read_dir() and read_file().
+use File::Spec;
+use File::Temp;
 
 use GraphViz2::Marpa;
 use GraphViz2::Marpa::Config;
@@ -138,6 +143,43 @@ sub generate_demo_index
 	return 0;
 
 } # End of generate_demo_index.
+
+# ------------------------------------------------
+
+sub generate_test_files
+{
+	my($self, $file_name) = @_;
+
+# The EXLOCK option is for BSD-based systems.
+
+	my($temp_dir)      = File::Temp -> newdir('temp.XXXX', CLEANUP => 1, EXLOCK => 0, TMPDIR => 1);
+	my($temp_dir_name) = $temp_dir -> dirname;
+	my($data_dir_name) = 'data';
+	my($html_dir_name) = $temp_dir_name;
+	my($in_suffix)     = 'gv';
+	my($out_suffix)    = 'gv';
+	my($svg_suffix)    = 'svg';
+
+	my(@new_svg, $new_svg);
+	my(@old_svg, $old_svg);
+
+	my($in_file)                 = File::Spec -> catfile($data_dir_name, "$file_name.$in_suffix");
+	my($out_file)                = File::Spec -> catfile($temp_dir_name, "$file_name.$out_suffix");
+	my($stdout, $stderr, $exit)  = capture{system $^X, '-Ilib', 'scripts/g2m.pl', '-input_file', $in_file, '-output_file', $out_file};
+
+	($old_svg, $stderr, $exit)   = capture{system 'dot', '-Tsvg', $in_file};
+	@old_svg                     = split(/\n/, $old_svg);
+	($new_svg, $stderr, $exit)   = capture{system 'dot', '-Tsvg', $out_file};
+	@new_svg                     = split(/\n/, $new_svg);
+	my($old_svg_file)            = File::Spec -> catfile($html_dir_name, "$file_name.$svg_suffix");
+	my($new_svg_file)            = File::Spec -> catfile($temp_dir_name, "$file_name.$svg_suffix");
+
+	#print "# File sizes: @{[-s $in_file]} and @{[-s $out_file]}\n";
+	#print "# Line counts: @{[scalar @old_svg]} and @{[scalar @new_svg]}\n";
+
+	return Algorithm::Diff -> new(\@old_svg, \@new_svg);
+
+} # End of generate_test_files.
 
 # ------------------------------------------------
 

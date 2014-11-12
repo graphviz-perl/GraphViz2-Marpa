@@ -86,7 +86,7 @@ sub format_node
 	my($attributes)  = $node -> attributes;
 	my($attr_string) = $self -> tree -> hashref2string($attributes);
 	my($type)        = $$attributes{type} || '';
-	my($value)       = $$attributes{value} || '';
+	my($value)       = defined($$attributes{value}) ? $$attributes{value} : ''; # Allow for node '0'.
 	my($dot_input)   = $$opts{status}{dot_input};
 	my($depth)       = $$opts{_depth};
 	my(%ignore)      = (graph => 1, prolog => 1, root => 1);
@@ -104,13 +104,13 @@ sub format_node
 
 		$indent    = "\t" x ($depth - 2);
 		$value     = qq("$value")	if ($value !~ /^<.+>$/);
-		$dot_input .= "\n"			if ($$opts{status}{attribute_count} > 1);
+		$dot_input .= "\n"			if ($$opts{status}{attribute_count} > 1); # Each attr on a new line.
 		$dot_input .= "$indent$type = $value";
 	}
 	elsif ($name eq 'class')
 	{
 		$indent    = "\t" x ($depth - 2);
-		$dot_input .= "\n\n" if ($$opts{status}{name} =~ /(?:attribute|class)/);
+		$dot_input .= "\n\n" if ($$opts{status}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
 		$dot_input .= "$indent$value\n";
 	}
 	elsif ($name eq 'edge_id')
@@ -130,9 +130,9 @@ sub format_node
 			$$opts{status}{attribute_count} = 0 if ($value eq '[');
 
 			$indent    = "\t" x ($depth - 3);
-			$dot_input .= "\n" if ($value eq ']');
+			$dot_input .= "\n" if ($value eq ']'); # Put ']' on a new line.
 			$dot_input .= "$indent$value\n";
-			$dot_input .= "\n" if ($value eq ']');
+			$dot_input .= "\n" if ($value eq ']'); # Separate attrs and other things.
 		}
 		elsif ($type =~ /^(?:digraph|graph|strict)_literal$/) # Must not match 'subgraph'!
 		{
@@ -150,10 +150,9 @@ sub format_node
 	}
 	elsif ($name eq 'node_id')
 	{
-		$value     = '' if ($value eq '""');
 		$indent    = "\t" x ($depth - 2);
-		$indent    = '' if ($$opts{status}{type} eq 'subgraph_literal');
-		$dot_input .= "\n\n" if ($$opts{status}{name} =~ /(?:attribute|class)/);
+		$indent    = '' if ($$opts{status}{type} eq 'subgraph_literal');         # Seperate 'subgraph' and its name.
+		$dot_input .= "\n\n" if ($$opts{status}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
 		$dot_input .= "$indent$value\n";
 	}
 	elsif (! $ignore{$name})
