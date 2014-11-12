@@ -713,7 +713,12 @@ sub _process
 		{
 			# Special case.
 
-			next if ($lexeme eq ';');
+			if (substr($lexeme, -1, 1) eq ';')
+			{
+				substr($lexeme, -1, 1) = '';
+
+				next if ($lexeme eq '');
+			}
 
 			$lexeme = $self -> clean_after($lexeme);
 

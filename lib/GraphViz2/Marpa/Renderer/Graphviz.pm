@@ -156,7 +156,7 @@ sub format_node
 		$indent    = "\t" x ($depth - 2);
 		$indent    = '' if ($$opts{previous}{type} eq 'subgraph_literal');         # Seperate 'subgraph' and its name.
 		$dot_input .= "\n\n" if ($$opts{previous}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
-		$indent    = ''      if ($$opts{previous}{name} eq 'edge_id');             # Don't separate nodes and edges.
+		$indent    = ($$opts{previous}{name} eq 'edge_id') ? '' : "\n$indent";     # Don't separate nodes and edges.
 		$dot_input .= "$indent$value";
 	}
 	elsif (! $ignore{$name})
