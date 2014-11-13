@@ -315,19 +315,11 @@ open_bracket			~ '['
 
 semicolon_literal		~ ';'
 
-#single_quoted_char_set	~ single_quoted_char+
-#single_quoted_char		~ escaped_char
-#							[^\'\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]
-
 :lexeme					~ strict_literal		pause => before		event => strict_literal
 strict_literal			~ 'strict':i
 
-# Single-quoted strings will work, but they are not supported in the
-# DOT language. See http://www.graphviz.org/content/dot-language.
-
 string					~ [\"]	double_quoted_char_set	[\"]
 string					~ [<]	html_quoted_char_set	[>]
-#string					~ [\']	single_quoted_char_set	[\']
 string					~ unquoted_char_set
 
 :lexeme					~ subgraph_literal		pause => before		event => subgraph_literal

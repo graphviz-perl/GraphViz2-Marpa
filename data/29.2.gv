@@ -1,10 +1,8 @@
-digraph graph_29
+digraph graph_29_2
 {
-	subgraph subgraph_29_1
+	subgraph_29_2_1
 	{
-		subgraph subgraph_29_2
-		{
-			node_29_1 -> node_29_2
-		}
+		node_29_2_2
+		node_29_2_3
 	}
 }
