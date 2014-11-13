@@ -699,7 +699,7 @@ sub _process
 			}
 
 			$lexeme         = $self -> clean_after($lexeme);
-			($lexeme, $pos) = $self -> check4embedded_comma($lexeme);
+			($lexeme, $pos) = $self -> check4embedded_comma($lexeme, $pos);
 
 			$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
 

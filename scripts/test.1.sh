@@ -33,6 +33,9 @@ fi
 echo Out: $1.gv and $1.log
 
 dot -Tsvg data/$1.gv > $DR/Perl-modules/html/graphviz2.marpa/$1.svg
+dot -Tsvg      $1.gv > $DR/Perl-modules/html/graphviz2.marpa/$1.new.svg
+
+ls -aFl $DR/Perl-modules/html/graphviz2.marpa/$1.svg $DR/Perl-modules/html/graphviz2.marpa/$1.new.svg
 
 echo Diff: $DR/Perl-modules/html/graphviz2.marpa/$1.svg $DR/Perl-modules/html/graphviz2.marpa/$1.new.svg
 
