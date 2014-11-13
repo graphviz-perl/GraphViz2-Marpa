@@ -6,6 +6,10 @@
 #	$DR/Perl-modules/html/graphviz2.marpa/16.svg.
 # $DR is my web server's doc root (in Debian's RAM disk).
 
-echo In: data/$1.gv. Out: $DR/Perl-modules/html/graphviz2.marpa/$1.svg
+echo In: data/$1.gv
 
-dot -Tsvg data/$1.gv > $DR/Perl-modules/html/graphviz2.marpa/$1.svg
+dot -Tsvg data/$1.gv > html/$1.svg
+
+cp html/$1.svg $DR/Perl-modules/html/graphviz2.marpa/$1.svg
+
+echo Out: html/$1.svg and $DR/Perl-modules/html/graphviz2.marpa/$1.svg

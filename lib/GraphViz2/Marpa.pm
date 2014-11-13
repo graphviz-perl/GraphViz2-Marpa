@@ -457,25 +457,39 @@ sub _add_daughter
 
 # ------------------------------------------------
 
+sub check4embedded_comma
+{
+	my($self, $lexeme, $pos) = @_;
+
+	# The grammar allows things like 'style=filled,color-white', so clean them up.
+
+	if ($lexeme !~ /^([\"\']).*\1/)
+	{
+		my($offset) = index($lexeme, ',');
+
+		if ($offset >= 0)
+		{
+			my($s)                   = $lexeme;
+			substr($lexeme, $offset) = '';
+			$pos                     = $pos - length($s) + $offset - 1;
+		}
+	}
+
+	return ($lexeme, $pos);
+
+} # End of check4embedded_comma.
+
+# ------------------------------------------------
+
 sub clean_after
 {
 	my($self, $s) = @_;
 
-	# The grammar allows things like '"xyz",', so clean them up.
-	# Note: You can't use (?:[\"\']) here!
+	# The grammar allows things like 'xyz,', so clean them up.
 
-	if ($s =~ /^([\"\'])(.*)\1,$/)
-	{
-		$s = $2;
-	}
-	elsif ($s =~ /^(.*),$/)
-	{
-		$s = $1;
-	}
-
-	$s =~ s/^\s+//;
-	$s =~ s/\s+$//;
-	$s =~ s/^([\"\'])(.*)\1$/$2/; # The backslashes are just for the UltraEdit syntax hiliter.
+	substr($s, -1, 1) = '' if (substr($s, -1, 1) eq ',');
+	$s                =~ s/^\s+//;
+	$s                =~ s/\s+$//;
 
 	return $s;
 
@@ -615,6 +629,7 @@ sub _process
 	$self -> log(debug => "Length of input: $length");
 	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
 
+	my($close_brace);
 	my($event_name);
 	my(@fields);
 	my($lexeme);
@@ -632,6 +647,10 @@ sub _process
 		$pos = $self -> recce -> resume($pos)
 	)
 	{
+		# $close_brace handles the special case of { .... node}, when the token 'node}'
+		# is taken by Marpa to be a node name. So, we chop off the '}', and move $pos back by 1.
+
+		$close_brace    = '';
 		($start, $span) = $self -> recce -> pause_span;
 		$event_name     = $self -> _validate_event($string, $start, $span);
 		$lexeme         = $self -> recce -> literal($start, $span);
@@ -679,7 +698,8 @@ sub _process
 				substr($lexeme, -1, 1) = '';
 			}
 
-			$lexeme = $self -> clean_after($lexeme);
+			$lexeme         = $self -> clean_after($lexeme);
+			($lexeme, $pos) = $self -> check4embedded_comma($lexeme);
 
 			$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
 
@@ -711,13 +731,19 @@ sub _process
 		}
 		elsif ($event_name eq 'node_name')
 		{
-			# Special case.
+			# Special cases.
 
 			if (substr($lexeme, -1, 1) eq ';')
 			{
 				substr($lexeme, -1, 1) = '';
 
 				next if ($lexeme eq '');
+			}
+
+			if (substr($lexeme, -1, 1) eq '}')
+			{
+				$close_brace           = '}';
+				substr($lexeme, -1, 1) = '';
 			}
 
 			$lexeme = $self -> clean_after($lexeme);
@@ -754,6 +780,8 @@ sub _process
 		{
 			$self -> _add_daughter('edge_id', {name => $event_name, value => $lexeme});
 		}
+
+		$pos -= 1 if ($close_brace);
 
 		$last_event = $event_name;
     }

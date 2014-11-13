@@ -6,15 +6,33 @@
 #	$DR/Perl-modules/html/graphviz2.marpa/16.svg.
 # $DR is my web server's doc root (in Debian's RAM disk).
 
+MAX=$2
+
+if [ -z "$MAX" ]
+then
+	MAX=info
+fi
+
+echo Using maxlevel $MAX
+
 echo Contents of data/$1.gv:
 cat data/$1.gv
 echo ----------------------------
 
 scripts/gv2svg.sh $1
 
-scripts/g2m.sh data/$1.gv -max info -out $1.gv > $1.log
+scripts/g2m.sh data/$1.gv -max $MAX -out $1.gv > $1.log
 
-dot -Tsvg data/$1.gv > $DR/Perl-modules/html/graphviz2.marpa/$1.new.svg
+if [ ! -e "$1.gv" ]
+then
+	echo Warning: $1.gv was not created
+
+	exit 1
+fi
+
+echo Out: $1.gv and $1.log
+
+dot -Tsvg data/$1.gv > $DR/Perl-modules/html/graphviz2.marpa/$1.svg
 
 echo Diff: $DR/Perl-modules/html/graphviz2.marpa/$1.svg $DR/Perl-modules/html/graphviz2.marpa/$1.new.svg
 

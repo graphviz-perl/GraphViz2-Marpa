@@ -44,7 +44,7 @@ for my $file_name ($utils -> get_files($data_dir_name, $in_suffix) )
 {
 	$count++;
 
-	$diff       = $utils -> generate_test_files($file_name);
+	$diff       = $utils -> perform_1_test($file_name);
 	$diff_count = 0;
 	$message    = $will_fail{$file_name}
 					? "Known and expected failure : data/$file_name.gv"
