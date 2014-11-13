@@ -615,7 +615,7 @@ sub _process
 	my($self)          = @_;
 	my($string)        = $self -> clean_before($self -> graph_text);
 	my($length)        = length $string;
-	my($format)        = '%-20s    %5s    %5s    %5s    %-s';
+	my($format)        = '%-20s    %5s    %5s    %5s    %-20s    %-20s';
 	my($last_event)    = '';
 	my($prolog_token)  = qr/^(?:digraph|graph|strict)_literal$/;
 	my($pos)           = 0;
@@ -627,13 +627,14 @@ sub _process
 	);
 
 	$self -> log(debug => "Length of input: $length");
-	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme') );
+	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme', 'Comment') );
 
 	my($close_brace);
 	my($event_name);
 	my(@fields);
 	my($lexeme);
 	my($node_name);
+	my($original_lexeme);
 	my($span, $start);
 	my($temp, $type);
 
@@ -650,11 +651,12 @@ sub _process
 		# $close_brace handles the special case of { .... node}, when the token 'node}'
 		# is taken by Marpa to be a node name. So, we chop off the '}', and move $pos back by 1.
 
-		$close_brace    = '';
-		($start, $span) = $self -> recce -> pause_span;
-		$event_name     = $self -> _validate_event($string, $start, $span);
-		$lexeme         = $self -> recce -> literal($start, $span);
-		$pos            = $self -> recce -> lexeme_read($event_name);
+		$close_brace     = '';
+		($start, $span)  = $self -> recce -> pause_span;
+		$event_name      = $self -> _validate_event($string, $start, $span);
+		$lexeme          = $self -> recce -> literal($start, $span);
+		$original_lexeme = $lexeme;
+		$pos             = $self -> recce -> lexeme_read($event_name);
 
 		die "lexeme_read($event_name) rejected lexeme |$lexeme|\n" if (! defined $pos);
 
@@ -670,7 +672,7 @@ sub _process
 			$self -> _process_bracket($temp, 'open_bracket');
 		}
 
-		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme) );
+		$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, '-') );
 
 		if ($event_name eq 'attribute_name')
 		{
@@ -700,6 +702,8 @@ sub _process
 
 			$lexeme         = $self -> clean_after($lexeme);
 			($lexeme, $pos) = $self -> check4embedded_comma($lexeme, $pos);
+
+			$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, 'Adjusted') ) if ($original_lexeme ne $lexeme);
 
 			$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
 
@@ -733,9 +737,25 @@ sub _process
 		{
 			# Special cases.
 
+			if (substr($lexeme, 0, 1) eq '{')
+			{
+				$pos        -= (length($lexeme) - 1);
+				$event_name = 'open_brace';
+				$lexeme     = '{';
+
+				$self -> _process_bracket($lexeme, $event_name);
+
+				$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, 'Adjusted') );
+
+				next;
+			}
+
+			# This 'if' is repeated just below.
+
 			if (substr($lexeme, -1, 1) eq ';')
 			{
 				substr($lexeme, -1, 1) = '';
+				$pos                   += 1;
 
 				next if ($lexeme eq '');
 			}
@@ -744,7 +764,20 @@ sub _process
 			{
 				$close_brace           = '}';
 				substr($lexeme, -1, 1) = '';
+				$pos                   -= 1;
 			}
+
+			# This 'if' is repeated just above.
+
+			if (substr($lexeme, -1, 1) eq ';')
+			{
+				substr($lexeme, -1, 1) = '';
+				$pos                   += 1;
+
+				next if ($lexeme eq '');
+			}
+
+			$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, 'Adjusted') ) if ($original_lexeme ne $lexeme);
 
 			$lexeme = $self -> clean_after($lexeme);
 
