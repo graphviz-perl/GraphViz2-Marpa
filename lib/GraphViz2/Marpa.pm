@@ -629,7 +629,6 @@ sub _process
 	$self -> log(debug => "Length of input: $length");
 	$self -> log(debug => sprintf($format, 'Event', 'Start', 'Span', 'Pos', 'Lexeme', 'Comment') );
 
-	my($close_brace);
 	my($event_name);
 	my(@fields);
 	my($lexeme);
@@ -648,10 +647,6 @@ sub _process
 		$pos = $self -> recce -> resume($pos)
 	)
 	{
-		# $close_brace handles the special case of { .... node}, when the token 'node}'
-		# is taken by Marpa to be a node name. So, we chop off the '}', and move $pos back by 1.
-
-		$close_brace     = '';
 		($start, $span)  = $self -> recce -> pause_span;
 		$event_name      = $self -> _validate_event($string, $start, $span);
 		$lexeme          = $self -> recce -> literal($start, $span);
@@ -755,14 +750,12 @@ sub _process
 			if (substr($lexeme, -1, 1) eq ';')
 			{
 				substr($lexeme, -1, 1) = '';
-				$pos                   += 1;
 
 				next if ($lexeme eq '');
 			}
 
 			if (substr($lexeme, -1, 1) eq '}')
 			{
-				$close_brace           = '}';
 				substr($lexeme, -1, 1) = '';
 				$pos                   -= 1;
 			}
@@ -772,7 +765,6 @@ sub _process
 			if (substr($lexeme, -1, 1) eq ';')
 			{
 				substr($lexeme, -1, 1) = '';
-				$pos                   += 1;
 
 				next if ($lexeme eq '');
 			}
@@ -813,8 +805,6 @@ sub _process
 		{
 			$self -> _add_daughter('edge_id', {name => $event_name, value => $lexeme});
 		}
-
-		$pos -= 1 if ($close_brace);
 
 		$last_event = $event_name;
     }
