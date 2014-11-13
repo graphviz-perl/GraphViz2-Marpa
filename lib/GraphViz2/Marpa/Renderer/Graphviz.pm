@@ -117,7 +117,7 @@ sub format_node
 	elsif ($name eq 'edge_id')
 	{
 		$indent    = "\t" x ($depth - 2);
-		$dot_input .= " $value ";
+		$dot_input .= " $value";
 	}
 	elsif ($name eq 'literal')
 	{
@@ -156,7 +156,20 @@ sub format_node
 		$indent    = "\t" x ($depth - 2);
 		$indent    = '' if ($$opts{previous}{type} eq 'subgraph_literal');         # Seperate 'subgraph' and its name.
 		$dot_input .= "\n\n" if ($$opts{previous}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
-		$indent    = ($$opts{previous}{name} eq 'edge_id') ? '' : "\n$indent";     # Don't separate nodes and edges.
+
+		if ($$opts{previous}{name} eq 'edge_id')
+		{
+			$indent = ' '; # Don't separate nodes and edges.
+		}
+		elsif ($$opts{previous}{type} =~ /(?:digraph|graph|subgraph)_literal/)
+		{
+			$indent = ''; # Don't separate nodes and 'digraph', 'graph' or 'subgraph'.
+		}
+		else
+		{
+			$indent = "\n$indent";
+		}
+
 		$dot_input .= "$indent$value";
 	}
 	elsif (! $ignore{$name})

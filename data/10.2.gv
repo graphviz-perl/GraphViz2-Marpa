@@ -1,0 +1,8 @@
+STRICT graph graph_10
+{
+	edge ["color" = "green"];
+	node [shape=rpromoter]
+	terminator [label = "\nterminator" shape = terminator;];
+
+	rpromoter -- terminator [label = Transformer]
+}
