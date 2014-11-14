@@ -40,7 +40,7 @@ requires:
   Getopt::Long: '2.38'
   HTML::Entities::Interpolate: '1.04'
   Log::Handler: '0.71'
-  Marpa::R2: '2.022'
+  Marpa::R2: '2.096'
   Moo: '1.006'
   Pod::Usage: '1.36'
   Text::Xslate: '1.4001'
@@ -53,6 +53,6 @@ requires:
   utf8: '0'
   warnings: '0'
 resources:
-  license: http://opensource.org/licenses/artistic-license-2.0.php
-  repository: https://github.com/dwimperl/GraphViz2-Marpa
+  license: http://www.perlfoundation.org/artistic_license_2_0
+  repository: https://github.com/ronsavage/GraphViz2-Marpa
 version: '2.00'
