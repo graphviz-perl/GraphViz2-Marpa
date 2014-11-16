@@ -83,6 +83,6 @@ for my $file_name ($utils -> get_files($data_dir_name, $in_suffix) )
 	ok($diff_count == 0, $message);
 }
 
-diag "Internal test count: $count";
+print "# Internal test count: $count\n";
 
 done_testing($count);
