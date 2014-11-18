@@ -194,7 +194,7 @@ lexeme default			=  latm => 1		# Longest Acceptable Token Match.
 
 graph_definition		::= prolog_tokens graph_statement
 
-prolog_tokens			::= strict_token graph_type global_id_type
+prolog_tokens			::= strict_token graph_type graph_id_token
 
 strict_token			::=
 strict_token			::= strict_literal
@@ -202,8 +202,8 @@ strict_token			::= strict_literal
 graph_type				::= digraph_literal
 							| graph_literal
 
-global_id_type			::=
-global_id_type			::= node_name
+graph_id_token			::=
+graph_id_token			::= node_name
 
 # Graph stuff.
 
