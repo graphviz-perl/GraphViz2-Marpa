@@ -215,18 +215,28 @@ statement_token			::= statement statement_terminator
 
 # Statement stuff.
 
-statement				::= node_statement
+statement				::= assignment_statement
+							| node_statement
 							| edge_statement
 							| subgraph_statement
 
 statement_terminator	::= semicolon_literal
 statement_terminator	::=
 
+# Assignment stuff.
+
+assignment_statements	::= assignment_statement*
+
+assignment_statement	::= attribute_name ('=') attribute_value
+
 # Node stuff
 
 node_statement			::= node_name
 							| node_name attribute_statement
-							| assignment_statement
+
+# Attribute stuff.
+
+attribute_statement		::= open_bracket assignment_statements close_bracket
 
 # Edge stuff
 
@@ -241,14 +251,6 @@ edge_rhs				::= edge_name edge_lhs
 
 edge_name				::= directed_edge
 							| undirected_edge
-
-# Attribute and Assignment stuff.
-
-attribute_statement		::= open_bracket assignment_statements close_bracket
-
-assignment_statements	::= assignment_statement*
-
-assignment_statement	::= attribute_name ('=') attribute_value
 
 # Subgraph stuff.
 # Subgraphs are handled by the statement type 'graph_statement_tokens'.
