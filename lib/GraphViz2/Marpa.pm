@@ -253,13 +253,6 @@ edge_name				::= directed_edge
 							| undirected_edge
 
 # Subgraph stuff.
-# Subgraphs are handled by the statement type 'graph_statement_tokens'.
-# Hence subgraph sub_1 {...} and subgraph {...} and sub_1 {...} and {...} are all output as:
-# o The optional literal 'subgraph', which is classified as a literal.
-# o The optional subgraph id, which is classified as a node_id.
-# o The literal '{'.
-# o The body of the subgraph.
-# o The literal '}'.
 
 subgraph_statement		::= subgraph_prefix subgraph_id_token graph_statement
 
