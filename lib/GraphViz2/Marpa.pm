@@ -192,17 +192,28 @@ lexeme default			=  latm => 1		# Longest Acceptable Token Match.
 
 :start					::= graph_definition
 
+# Input stuff.
+
 graph_definition		::= prolog_tokens graph_statement
 
-prolog_tokens			::= strict_token graph_type graph_id_token
+prolog_tokens			::= prolog_strict_id
+							| prolog_strict_no_id
+							| prolog_no_strict_id
+							| prolog_no_strict_no_id
 
-strict_token			::=
+prolog_strict_id		::= strict_token graph_type graph_id_token
+
+prolog_strict_no_id		::= strict_token graph_type
+
+prolog_no_strict_id		::= graph_type graph_id_token
+
+prolog_no_strict_no_id	::= graph_type
+
 strict_token			::= strict_literal
 
 graph_type				::= digraph_literal
 							| graph_literal
 
-graph_id_token			::=
 graph_id_token			::= node_name
 
 # Graph stuff.
@@ -243,7 +254,7 @@ attribute_statement		::= open_bracket assignment_statements close_bracket
 edge_statement			::= edge_lhs edge_rhs
 							| edge_lhs edge_rhs attribute_statement
 
-edge_lhs				::= node_name
+edge_lhs				::= node_statement
 							| subgraph_statement
 
 edge_rhs				::= edge_name edge_lhs
@@ -254,12 +265,21 @@ edge_name				::= directed_edge
 
 # Subgraph stuff.
 
-subgraph_statement		::= subgraph_prefix subgraph_id_token graph_statement
+subgraph_statement		::= subgraph_sequence
+							| subgraph_sequence attribute_statement
 
-subgraph_prefix			::=
+subgraph_sequence		::= subgraph_sub_and_id
+							| subgraph_sub_no_id
+							| subgraph_no_sub_no_id
+
+subgraph_sub_and_id		::= subgraph_prefix subgraph_id_token graph_statement
+
+subgraph_sub_no_id		::= subgraph_id_token graph_statement
+
+subgraph_no_sub_no_id	::=	subgraph_prefix graph_statement
+
 subgraph_prefix			::= subgraph_literal
 
-subgraph_id_token		::=
 subgraph_id_token		::= node_name
 
 # Lexemes in alphabetical order.
@@ -504,7 +524,7 @@ sub _dump_stack
 {
 	my($self, $caller) = @_;
 
-	$self -> log(info => "\tStack @ $caller XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+	$self -> log(info => "\tStack @ $caller");
 
 	my($attributes);
 
@@ -686,7 +706,6 @@ sub _process
 			($lexeme, $pos) = $self -> check4embedded_comma($lexeme, $pos);
 
 			$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, 'Adjusted') ) if ($original_lexeme ne $lexeme);
-
 			$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
 
 			@fields = ();
@@ -725,9 +744,8 @@ sub _process
 				$event_name = 'open_brace';
 				$lexeme     = '{';
 
-				$self -> _process_bracket($lexeme, $event_name);
-
 				$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, 'Adjusted') );
+				$self -> _process_brace($lexeme, $event_name);
 
 				next;
 			}
@@ -770,6 +788,7 @@ sub _process
 				$type = 'node_id';
 			}
 
+			$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, $type) );
 			$self -> _add_daughter($type, {type => $type, value => $lexeme});
 		}
 		elsif ($event_name eq 'open_brace')
@@ -848,7 +867,7 @@ sub _process_brace
 
 		$self -> stack($stack);
 
-		#$self -> _dump_stack('End of _process_brace({)');
+		$self -> _dump_stack('_process_brace({) pushed { onto stack');
 	}
 	else
 	{
@@ -1001,6 +1020,11 @@ sub run
 			$self -> renderer -> run;
 			$self -> log(info => "Rendered file: $output_file");
 		}
+	}
+	else
+	{
+		$self -> log(info => 'Tree so far...');
+		$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
 	}
 
 	# Return 0 for success and 1 for failure.
