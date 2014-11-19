@@ -190,22 +190,24 @@ sub BUILD
 
 lexeme default			=  latm => 1		# Longest Acceptable Token Match.
 
-:start					::= graph_definition
-
 # Input stuff.
+
+:start					::= graph_definition
 
 graph_definition		::= prolog_tokens graph_statement
 
-prolog_tokens			::= prolog_strict_id
+# Prolog stuff.
+
+prolog_tokens			::= prolog_strict_and_id
 							| prolog_strict_no_id
-							| prolog_no_strict_id
+							| prolog_no_strict_but_id
 							| prolog_no_strict_no_id
 
-prolog_strict_id		::= strict_token graph_type graph_id_token
+prolog_strict_and_id	::= strict_token graph_type graph_id_token
 
 prolog_strict_no_id		::= strict_token graph_type
 
-prolog_no_strict_id		::= graph_type graph_id_token
+prolog_no_strict_but_id	::= graph_type graph_id_token
 
 prolog_no_strict_no_id	::= graph_type
 
