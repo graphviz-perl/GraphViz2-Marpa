@@ -819,8 +819,11 @@ sub _process
 
 	if (my $ambiguous_status = $self -> recce -> ambiguous)
 	{
-		$self -> log(notice => 'Terminals expected: ' . join(', ', @{$self -> recce -> terminals_expected}) );
-		$self -> log(notice => "Parse is ambiguous. Status: $ambiguous_status");
+		my($terminals) = $self -> recce -> terminals_expected;
+		$terminals     = ['(None)'] if ($#$terminals < 0);
+
+		$self -> log(info => 'Terminals expected: ' . join(', ', @$terminals) );
+		$self -> log(info => "Parse is ambiguous. Status: $ambiguous_status");
 	}
 
 	# Return a defined value for success and undef for failure.
@@ -868,7 +871,6 @@ sub _process_brace
 		push @$stack, $daughters[$#daughters];
 
 		$self -> stack($stack);
-
 		$self -> _dump_stack('_process_brace({) pushed { onto stack');
 	}
 	else
@@ -1025,8 +1027,8 @@ sub run
 	}
 	else
 	{
-		$self -> log(info => 'Tree so far...');
-		$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
+		$self -> log(info => 'The stack and the tree when we died ...');
+		$self -> _dump_stack('_process_brace({) pushed { onto stack');
 	}
 
 	# Return 0 for success and 1 for failure.
