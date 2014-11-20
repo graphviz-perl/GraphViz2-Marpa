@@ -12,8 +12,8 @@ digraph graph_18
 
 		node [fillcolor = red]
 
-		node_18_1
 		node_18_2
+		node_18_3
 	}
 
 	->
@@ -22,13 +22,13 @@ digraph graph_18
 	{
 		node [fillcolor = green]
 
-		node_18_3
 		node_18_4
+		node_18_5
 	}
 
 	->
 
-	cluster_18_3
+	cluster_18_6
 
 	[
 		arrowhead = "empty",
@@ -43,14 +43,14 @@ digraph graph_18
 	# Subgraph 3.
 
 	{
-		node_18_5 [fillcolor = blue]
-		node_18_6 [fillcolor = blue]
+		node_18_7 [fillcolor = blue]
+		node_18_8 [fillcolor = blue]
 	}
 
 	->
 
 	{
-		node_18_7 [fillcolor = yellow]
+		node_18_9 [fillcolor = yellow]
 	}
 
 	[

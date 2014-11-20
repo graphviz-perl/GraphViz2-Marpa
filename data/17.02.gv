@@ -1,4 +1,4 @@
-STRICT digraph graph_16
+STRICT digraph graph_17_02
 {
 	fontsize = 16.0
 	label    = "\"Standard\"\rSyntax\lTest"
@@ -15,19 +15,19 @@ STRICT digraph graph_16
 		penwidth = 3,
 	];
 
-	node_16_1
+	node_17_02_1
 	[
 		label    = "<p11> left|<p12> middle|<p13> right"
 		pencolor = blue
 	]
 
-	node_16_2
+	node_17_02_2
 	[
 		pencolor = green
 		label    = "<p21> one|<p22> two"
 	]
 
-	node_16_1:p11 -> node_16_2:p22:s
+	node_17_02_1:p11 -> node_17_02_2:p22:s
 	[
 		arrowhead = "odiamond";
 		arrowtail = "odot",
@@ -35,13 +35,13 @@ STRICT digraph graph_16
 		dir       = both;
 	];
 
-	subgraph subgraph_16_1
+	subgraph subgraph_17_02_3
 	{
 		node [shape = square]
 
 		label = ""
 
-		node_16_3 -> { node [shape = circle] node_16_4 }
+		node_17_02_4 -> { node [shape = circle] node_17_02_5 }
 		[
 			arrowhead = "empty",
 			arrowtail = "halfopen"
@@ -49,7 +49,7 @@ STRICT digraph graph_16
 			dir       = "both",
 		]
 
-		node_16_5 -> node_16_6
+		node_17_02_6 -> node_17_02_7
 		[
 			arrowhead = "halfopen",
 			arrowtail = "empty"

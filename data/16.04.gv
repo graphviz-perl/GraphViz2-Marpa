@@ -1,8 +1,20 @@
-strict digraph graph_16
+strict digraph graph_16_04
 {
-	subgraph subgraph_16_1
+	subgraph subgraph_16_04_1
 	{
-		node_16_5 -> node_16_6
+		node [shape = square]
+
+		label = ""
+
+		node_16_04_2 -> { node [shape = circle] node_16_04_3 }
+		[
+			arrowhead = "empty",
+			arrowtail = "halfopen"
+			color     = green
+			dir       = "both",
+		]
+
+		node_16_04_4 -> node_16_04_5
 		[
 			arrowhead = "halfopen",
 			arrowtail = "empty"

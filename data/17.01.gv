@@ -1,4 +1,4 @@
-digraph graph_17
+digraph graph_17_01
 {
 	node
 	[
@@ -9,28 +9,28 @@ digraph graph_17
 		color = "blue"
 		penwidth = 1
 	]
-	node_17_1
+	node_17_01_1
 	[
 		label = "<p11> left|<p12> middle|<p13> right"
 	]
-	node_17_2
+	node_17_01_2
 	[
 		label = "<p21> one|<p22> two"
 	]
-	node_17_1:p12:n -> node_17_2:p22
+	node_17_01_1:p12:n -> node_17_01_2:p22
 	[
 		arrowtail = "empty"
 		arrowhead = "halfopen"
 		dir       = "both"
 	]
-	node_17_1:p13 -> node_17_2:p22:s
+	node_17_01_1:p13 -> node_17_01_2:p22:s
 	[
 		arrowtail = "invdot"
 		arrowhead = "dot"
 		color     = green
 		dir       = "both"
 	]
-	node_17_1:p13:ne -> node_17_2:p21:s
+	node_17_01_1:p13:ne -> node_17_01_2:p21:s
 	[
 		arrowtail = "crow"
 		arrowhead = "tee"

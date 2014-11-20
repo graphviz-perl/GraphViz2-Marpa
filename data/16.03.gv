@@ -1,13 +1,11 @@
-strict digraph graph_16
+strict digraph graph_16_03_1
 {
-	subgraph subgraph_16_1
+	node_16_03_2
 	{
-		node_16_5 -> node_16_6
-		[
-			arrowhead = "halfopen",
-			arrowtail = "empty"
-			color     = blue
-			dir       = "both",
-		]
+		node_16_03_3 -> node_16_03_4
 	}
+	[
+		color = blue
+		dir   = "both",
+	]
 }

@@ -96,7 +96,6 @@ sub format_node
 	my($offset);
 
 	$self -> log(debug => "Rendering. $message");
-	#$dot_input .= "\nRendering. $message";
 
 	if ($name eq 'attribute')
 	{
@@ -165,7 +164,7 @@ sub format_node
 		{
 			$indent = ''; # Don't separate nodes and 'digraph', 'graph' or 'subgraph'.
 		}
-		else
+		elsif ($$opts{previous}{name} ne 'literal')
 		{
 			$indent = "\n$indent";
 		}
