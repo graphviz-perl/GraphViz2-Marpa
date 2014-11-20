@@ -1,4 +1,7 @@
 strict digraph graph_10_1
 {
-	node_10_2 [fillcolor = red, style = filled]
+	node_10_1 [fillcolor = red, style = filled]
+	node_10_2 [fillcolor = green, style = filled]
+
+	node_10_1 -> node_10_2 [arrowtail = dot, arrowhead = odot]
 }

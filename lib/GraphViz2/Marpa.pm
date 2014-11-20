@@ -672,7 +672,7 @@ sub _process
 		{
 			$temp = '[';
 
-			$self -> log(debug => sprintf($format, 'open_bracket', $start, 1, $pos, $temp) );
+			$self -> log(debug => sprintf($format, 'open_bracket', $start, 1, $pos, $temp, '-') );
 			$self -> _process_bracket($temp, 'open_bracket');
 		}
 
@@ -707,7 +707,7 @@ sub _process
 			$lexeme         = $self -> clean_after($lexeme);
 			($lexeme, $pos) = $self -> check4embedded_comma($lexeme, $pos);
 
-			$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, 'Adjusted') ) if ($original_lexeme ne $lexeme);
+			$self -> log(debug => "Lexeme |$original_lexeme| corrected to be |$lexeme|. pos now $pos") if ($original_lexeme ne $lexeme);
 			$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
 
 			@fields = ();
@@ -716,7 +716,7 @@ sub _process
 			{
 				$event_name = 'close_bracket'; # Sets $last_event at the end of the loop.
 
-				$self -> log(debug => sprintf($format, $event_name, $start, 1, $pos, $temp) );
+				$self -> log(debug => sprintf($format, $event_name, $start, 1, $pos, $temp, 'Adjusted event_name') );
 				$self -> _process_bracket($temp, $event_name);
 			}
 		}
@@ -742,11 +742,11 @@ sub _process
 
 			if (substr($lexeme, 0, 1) eq '{')
 			{
-				$pos        -= (length($lexeme) - 1);
 				$event_name = 'open_brace';
+				$pos        -= (length($lexeme) - 1);
 				$lexeme     = '{';
 
-				$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, 'Adjusted') );
+				$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, 'Adjusted event_name, lexeme and pos') );
 				$self -> _process_brace($lexeme, $event_name);
 
 				next;
@@ -776,7 +776,7 @@ sub _process
 				next if ($lexeme eq '');
 			}
 
-			$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, 'Adjusted') ) if ($original_lexeme ne $lexeme);
+			$self -> log(debug => "Lexeme |$original_lexeme| corrected to be |$lexeme|") if ($original_lexeme ne $lexeme);
 
 			$lexeme = $self -> clean_after($lexeme);
 
@@ -790,7 +790,7 @@ sub _process
 				$type = 'node_id';
 			}
 
-			$self -> log(debug => sprintf($format, $event_name, $start, $span, $pos, $lexeme, $type) );
+			$self -> log(debug => "|$lexeme| classified as a $type") if ($original_lexeme ne $lexeme);
 			$self -> _add_daughter($type, {type => $type, value => $lexeme});
 		}
 		elsif ($event_name eq 'open_brace')
