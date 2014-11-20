@@ -244,17 +244,17 @@ assignment_statement	::= attribute_name ('=') attribute_value
 
 # Node stuff
 
-node_statement			::= node_name
-							| node_name attribute_statement
+node_statement			::= node_name attribute_statements
 
 # Attribute stuff.
+
+attribute_statements	::=  attribute_statement*
 
 attribute_statement		::= open_bracket assignment_statements close_bracket
 
 # Edge stuff
 
-edge_statement			::= edge_lhs edge_rhs
-							| edge_lhs edge_rhs attribute_statement
+edge_statement			::= edge_lhs edge_rhs attribute_statements
 
 edge_lhs				::= node_statement
 							| subgraph_statement
@@ -267,8 +267,7 @@ edge_name				::= directed_edge
 
 # Subgraph stuff.
 
-subgraph_statement		::= subgraph_sequence
-							| subgraph_sequence attribute_statement
+subgraph_statement		::= subgraph_sequence attribute_statements
 
 subgraph_sequence		::= subgraph_sub_and_id
 							| subgraph_sub_no_id
