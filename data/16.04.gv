@@ -8,18 +8,14 @@ strict digraph graph_16_04
 
 		node_16_04_2 -> { node [shape = circle] node_16_04_3 }
 		[
-			arrowhead = "empty",
-			arrowtail = "halfopen"
-			color     = green
-			dir       = "both",
+			color = green
+			dir   = "both",
 		]
 
 		node_16_04_4 -> node_16_04_5
 		[
-			arrowhead = "halfopen",
-			arrowtail = "empty"
-			color     = blue
-			dir       = "both",
+			color = blue
+			dir   = "both",
 		]
 	}
 }
