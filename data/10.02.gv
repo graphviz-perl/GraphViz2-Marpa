@@ -1,8 +1,4 @@
-STRICT graph graph_10
+strict digraph graph_10_2
 {
-	edge ["color" = "green"];
-	node [shape=rpromoter]
-	terminator [label = "\nterminator" shape = terminator;];
-
-	rpromoter -- terminator [label = Transformer]
+	node_10_2 [fillcolor = red, style = filled]
 }
