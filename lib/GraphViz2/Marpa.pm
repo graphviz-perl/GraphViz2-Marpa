@@ -470,12 +470,14 @@ sub check4embedded_comma
 	my($self, $lexeme, $pos) = @_;
 
 	# The grammar allows things like 'style=filled,color=white', so clean them up.
-	# Also clean up '24,fontname=...'.
+	# Also clean up '24,fontname=...' and 'shape=record,width=.1,height=.1'.
 
-	if ($lexeme =~ /^(".*"|\d+|[A-Za-z]+),/s)
+	my($numeric) = ($lexeme =~ /^(\d+|\d+\.\d*|\.\d+),/) ? $1 : undef;
+
+	if ($numeric || ($lexeme =~ /^(".*"|[A-Za-z]+),/s) )
 	{
 		my($s)  = $lexeme;
-		$lexeme = $1;
+		$lexeme = $numeric || $1;
 		$pos    = $pos - length($s) + length($lexeme) + 1;
 	}
 

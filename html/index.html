@@ -2884,7 +2884,449 @@ Output file 105: html/fsm.svg (9659 bytes)
 </tr>
 <tr>
   <td>
-	Input file 106: data/utf8.01.gv (113 bytes):<br />digraph utf8_01
+	Input file 106: data/grammar.gv (1302 bytes):<br />digraph L0 {
+<br />	size = &quot;8,8&quot;;
+<br />	ordering=out;
+<br />	node [shape = box];
+<br />
+<br />	n0 [label=&quot;E&quot;];
+<br />	n1 [label=&quot;T&quot;];
+<br />	n2 [label=&quot;F&quot;];
+<br />	n3 [label=&quot;IDENT : a &quot;];
+<br />	n4 [label=&quot;+&quot;];
+<br />	n5 [label=&quot;T&quot;];
+<br />	n6 [label=&quot;F&quot;];
+<br />	n7 [label=&quot;(&quot;];
+<br />	n8 [label=&quot;E&quot;];
+<br />	n9 [label=&quot;T&quot;];
+<br />	n10 [label=&quot;F&quot;];
+<br />	n11 [label=&quot;IDENT : b &quot;];
+<br />	n12 [label=&quot;*&quot;];
+<br />	n13 [label=&quot;F&quot;];
+<br />	n14 [label=&quot;IDENT : c &quot;];
+<br />	n15 [label=&quot;)&quot;];
+<br />	n16 [label=&quot;*&quot;];
+<br />	n17 [label=&quot;F&quot;];
+<br />	n18 [label=&quot;(&quot;];
+<br />	n19 [label=&quot;E&quot;];
+<br />	n20 [label=&quot;T&quot;];
+<br />	n21 [label=&quot;F&quot;];
+<br />	n22 [label=&quot;IDENT : d &quot;];
+<br />	n23 [label=&quot;*&quot;];
+<br />	n24 [label=&quot;F&quot;];
+<br />	n25 [label=&quot;IDENT : e &quot;];
+<br />	n26 [label=&quot;+&quot;];
+<br />	n27 [label=&quot;T&quot;];
+<br />	n28 [label=&quot;F&quot;];
+<br />	n29 [label=&quot;(&quot;];
+<br />	n30 [label=&quot;E&quot;];
+<br />	n31 [label=&quot;T&quot;];
+<br />	n32 [label=&quot;F&quot;];
+<br />	n33 [label=&quot;IDENT : a &quot;];
+<br />	n34 [label=&quot;*&quot;];
+<br />	n35 [label=&quot;F&quot;];
+<br />	n36 [label=&quot;IDENT : b &quot;];
+<br />	n37 [label=&quot;)&quot;];
+<br />	n38 [label=&quot;)&quot;];
+<br />	n39 [label=&quot;+&quot;];
+<br />	n40 [label=&quot;T&quot;];
+<br />	n41 [label=&quot;F&quot;];
+<br />	n42 [label=&quot;IDENT : q &quot;];
+<br />	n0 -&gt;	{ n1 n4 n5 n39 n40 };
+<br />	n1 -&gt;	n2 ;
+<br />	n2 -&gt;	n3 ;
+<br />	n5 -&gt;	{ n6 n16 n17 };
+<br />	n6 -&gt;	{ n7 n8 n15 };
+<br />	n8 -&gt;	n9 ;
+<br />	n9 -&gt;	{ n10 n12 n13 };
+<br />	n10 -&gt;	n11 ;
+<br />	n13 -&gt;	n14 ;
+<br />	n17 -&gt;	{ n18 n19 n38 };
+<br />	n19 -&gt;	{ n20 n26 n27 };
+<br />	n20 -&gt;	{ n21 n23 n24 };
+<br />	n21 -&gt;	n22 ;
+<br />	n24 -&gt;	n25 ;
+<br />	n27 -&gt;	n28 ;
+<br />	n28 -&gt;	{ n29 n30 n37 };
+<br />	n30 -&gt;	n31 ;
+<br />	n31 -&gt;	{ n32 n34 n35 };
+<br />	n32 -&gt;	n33 ;
+<br />	n35 -&gt;	n36 ;
+<br />	n40 -&gt;	n41 ;
+<br />	n41 -&gt;	n42 ;
+<br />}
+
+  </td>
+  <td>
+<object data = "./grammar.svg"></object><br />
+Output file 106: html/grammar.svg (24464 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 107: data/hashtable.gv (629 bytes):<br />digraph G {
+<br />	nodesep=.05;
+<br />	rankdir=LR;
+<br />	node [shape=record,width=.1,height=.1];
+<br />
+<br />	node0 [label = &quot;&lt;f0&gt; |&lt;f1&gt; |&lt;f2&gt; |&lt;f3&gt; |&lt;f4&gt; |&lt;f5&gt; |&lt;f6&gt; | &quot;,height=2.0];
+<br />	node [width = 1.5];
+<br />	node1 [label = &quot;{&lt;n&gt; n14 | 719 |&lt;p&gt; }&quot;];
+<br />	node2 [label = &quot;{&lt;n&gt; a1  | 805 |&lt;p&gt; }&quot;];
+<br />	node3 [label = &quot;{&lt;n&gt; i9  | 718 |&lt;p&gt; }&quot;];
+<br />	node4 [label = &quot;{&lt;n&gt; e5  | 989 |&lt;p&gt; }&quot;];
+<br />	node5 [label = &quot;{&lt;n&gt; t20 | 959 |&lt;p&gt; }&quot;] ;
+<br />	node6 [label = &quot;{&lt;n&gt; o15 | 794 |&lt;p&gt; }&quot;] ;
+<br />	node7 [label = &quot;{&lt;n&gt; s19 | 659 |&lt;p&gt; }&quot;] ;
+<br />
+<br />	node0:f0 -&gt; node1:n;
+<br />	node0:f1 -&gt; node2:n;
+<br />	node0:f2 -&gt; node3:n;
+<br />	node0:f5 -&gt; node4:n;
+<br />	node0:f6 -&gt; node5:n;
+<br />	node2:p -&gt; node6:n;
+<br />	node4:p -&gt; node7:n;
+<br />}
+
+  </td>
+  <td>
+<object data = "./hashtable.svg"></object><br />
+Output file 107: html/hashtable.svg (8159 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 108: data/honda-tokoro.gv (3090 bytes):<br />digraph &quot;Honda-Tokoro&quot; {
+<br />rankdir=&quot;LR&quot; ranksep=&quot;0.2&quot; edge[labelfontsize=&quot;8&quot; fontsize=&quot;8&quot; labeldistance=&quot;0.8&quot; arrowsize=&quot;0.9&quot; labelangle=&quot;-30&quot; dir=&quot;none&quot;] nodesep=&quot;0.2&quot; node[width=&quot;0&quot; height=&quot;0&quot; fontsize=&quot;10&quot;]
+<br />
+<br />/*Net net00*/
+<br />
+<br />n000 [label=&quot;z&quot;]
+<br />n001-&gt;n000 [headlabel=&quot;:s:&quot; arrowhead=&quot;invdot&quot;]
+<br />n001 [label=&quot;m&quot;]
+<br />n002-&gt;n001 [samehead=&quot;m002&quot; headlabel=&quot;:r:&quot; samearrowhead=&quot;1&quot; arrowhead=&quot;invdot&quot; arrowtail=&quot;inv&quot;]
+<br />n002 [label=&quot;p1&quot;]
+<br />n003-&gt;n002 [headlabel=&quot;:s:&quot; arrowhead=&quot;dot&quot;]
+<br />n003 [label=&quot;b&quot;]
+<br />n004-&gt;n003 
+<br />n004 [label=&quot;x1&quot;]
+<br />n022-&gt;n004 [weight=&quot;0&quot; headlabel=&quot;:s/r:&quot; fontsize=&quot;8&quot; arrowhead=&quot;invdot&quot;]
+<br />n003-&gt;n002 [samehead=&quot;m000&quot; fontsize=&quot;8&quot; samearrowhead=&quot;1&quot; arrowtail=&quot;inv&quot;]
+<br />n005-&gt;n002 [samehead=&quot;m000&quot; headlabel=&quot;:u:&quot; fontsize=&quot;8&quot; samearrowhead=&quot;1&quot; arrowhead=&quot;dot&quot; arrowtail=&quot;inv&quot;]
+<br />n005-&gt;n001 [samehead=&quot;m002&quot; samearrowhead=&quot;1&quot;]
+<br />n005 [label=&quot;b&quot;]
+<br />n006-&gt;n005 [arrowtail=&quot;inv&quot;]
+<br />n006 [label=&quot;p2&quot;]
+<br />n007-&gt;n006 [headlabel=&quot;:s:&quot; arrowhead=&quot;dot&quot;]
+<br />n007 [label=&quot;b&quot;]
+<br />n008-&gt;n007 
+<br />n008 [label=&quot;x2&quot;]
+<br />n022-&gt;n008 [weight=&quot;0&quot; headlabel=&quot;:s/r:&quot; fontsize=&quot;8&quot; arrowhead=&quot;invdot&quot;]
+<br />n007-&gt;n006 [samehead=&quot;m001&quot; headlabel=&quot;:u:&quot; fontsize=&quot;8&quot; samearrowhead=&quot;1&quot; arrowhead=&quot;dot&quot; arrowtail=&quot;inv&quot;]
+<br />n009-&gt;n006 [samehead=&quot;m001&quot; samearrowhead=&quot;1&quot; arrowtail=&quot;inv&quot;]
+<br />n009 [label=&quot;b2&quot;]
+<br />n022-&gt;n009 [fontsize=&quot;8&quot;]
+<br />n022-&gt;n009 [fontsize=&quot;8&quot;]
+<br />n010-&gt;n006 [samehead=&quot;m001&quot; samearrowhead=&quot;1&quot; arrowtail=&quot;inv&quot;]
+<br />n010 [label=&quot;b2&quot;]
+<br />n022-&gt;n010 [fontsize=&quot;8&quot;]
+<br />n022-&gt;n010 [fontsize=&quot;8&quot;]
+<br />n011-&gt;n000 [headlabel=&quot;:r:&quot; arrowhead=&quot;invdot&quot; arrowtail=&quot;inv&quot;]
+<br />n011 [label=&quot;n&quot;]
+<br />n012-&gt;n011 [samehead=&quot;m005&quot; headlabel=&quot;:s:&quot; samearrowhead=&quot;1&quot; arrowhead=&quot;dot&quot;]
+<br />n012 [label=&quot;b&quot;]
+<br />n013-&gt;n012 
+<br />n013 [label=&quot;c1&quot;]
+<br />n014-&gt;n013 [headlabel=&quot;:r:&quot; arrowhead=&quot;invdot&quot;]
+<br />n014 [label=&quot;b&quot;]
+<br />n015-&gt;n014 [arrowtail=&quot;inv&quot;]
+<br />n015 [label=&quot;y1&quot;]
+<br />n023-&gt;n015 [weight=&quot;0&quot; headlabel=&quot;:s/r:&quot; fontsize=&quot;8&quot; arrowhead=&quot;dot&quot;]
+<br />n016-&gt;n015 [samehead=&quot;m003&quot; headlabel=&quot;:u:&quot; fontsize=&quot;8&quot; samearrowhead=&quot;1&quot; arrowhead=&quot;dot&quot; arrowtail=&quot;inv&quot;]
+<br />n018-&gt;n015 [samehead=&quot;m003&quot; fontsize=&quot;8&quot; samearrowhead=&quot;1&quot; arrowtail=&quot;inv&quot;]
+<br />n014-&gt;n011 [samehead=&quot;m006&quot; headlabel=&quot;:u:&quot; fontsize=&quot;8&quot; samearrowhead=&quot;1&quot; arrowhead=&quot;dot&quot; arrowtail=&quot;inv&quot;]
+<br />n012-&gt;n011 [samehead=&quot;m006&quot; fontsize=&quot;8&quot; samearrowhead=&quot;1&quot; arrowtail=&quot;inv&quot;]
+<br />n016-&gt;n011 [samehead=&quot;m005&quot; samearrowhead=&quot;1&quot;]
+<br />n016 [label=&quot;b&quot;]
+<br />n017-&gt;n016 
+<br />n017 [label=&quot;c2&quot;]
+<br />n018-&gt;n017 [headlabel=&quot;:r:&quot; arrowhead=&quot;invdot&quot;]
+<br />n018 [label=&quot;b&quot;]
+<br />n019-&gt;n018 [arrowtail=&quot;inv&quot;]
+<br />n019 [label=&quot;y2&quot;]
+<br />n023-&gt;n019 [weight=&quot;0&quot; headlabel=&quot;:s/r:&quot; fontsize=&quot;8&quot; arrowhead=&quot;dot&quot;]
+<br />n020-&gt;n019 [samehead=&quot;m004&quot; headlabel=&quot;:u:&quot; samearrowhead=&quot;1&quot; arrowhead=&quot;dot&quot; arrowtail=&quot;inv&quot;]
+<br />n020 [label=&quot;b2&quot;]
+<br />n023-&gt;n020 [fontsize=&quot;8&quot;]
+<br />n023-&gt;n020 [fontsize=&quot;8&quot;]
+<br />n021-&gt;n019 [samehead=&quot;m004&quot; samearrowhead=&quot;1&quot; arrowtail=&quot;inv&quot;]
+<br />n021 [label=&quot;b2&quot;]
+<br />n023-&gt;n021 [fontsize=&quot;8&quot;]
+<br />n023-&gt;n021 [fontsize=&quot;8&quot;]
+<br />n022 [width=&quot;0.5&quot; label=&quot;[P]&quot; shape=&quot;box&quot; style=&quot;dashed&quot; height=&quot;0.35&quot;]
+<br />n023 [width=&quot;0.5&quot; label=&quot;[Q]&quot; shape=&quot;box&quot; style=&quot;dashed&quot; height=&quot;0.35&quot;]
+<br />{/*L=x1*/rank=same n004 n015}
+<br />{/*L=p1*/rank=same n002 n013}
+<br />{/*L=b*/rank=same n009 n010 n020 n021}
+<br />{/*L=x2*/rank=same n008 n019}
+<br />{/*L=p2*/rank=same n006 n017}
+<br />{/*L=m*/rank=same n001 n011}
+<br />}
+
+  </td>
+  <td>
+<object data = "./honda-tokoro.svg"></object><br />
+Output file 108: html/honda-tokoro.svg (17398 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 109: data/japanese.gv (789 bytes):<br />digraph G {
+<br />  graph [label=&quot;&#x4E0B;&#x99C4;&#x914D;&#x5217;&#x306E;&#x6D3E;&#x751F;&#x56F3;&quot;]
+<br />
+<br />  getas [label = &quot;&#x4E0B;&#x99C4;&#x914D;&#x5217;&quot;];
+<br />  new_getas  [label = &quot;&#x65B0;&#x4E0B;&#x99C4;&#x914D;&#x5217;&quot;];
+<br />  getas_in_fine_weather [label = &quot;&#x65E5;&#x548C;&#x4E0B;&#x99C4;&#x914D;&#x5217;&quot;];
+<br />  black_lacquered_getas [label = &quot;&#x9ED2;&#x5857;&#x308A;&#x4E0B;&#x99C4;&#x914D;&#x5217;&quot;];
+<br />  black_lacquered_getas_made_of_paulownia [label = &quot;&#x9ED2;&#x5857;&#x308A;&#x6850;&#x4E0B;&#x99C4;&#x914D;&#x5217;&quot;];
+<br />  lacquered_getas [label = &quot;&#x5857;&#x308A;&#x4E0B;&#x99C4;&#x914D;&#x5217;&quot;];
+<br />  new_JIS_getas [label = &quot;&#x65B0;JIS&#x4E0B;&#x99C4;&#x914D;&#x5217;&quot;];
+<br />
+<br />  getas -&gt; {
+<br />    getas_in_fine_weather
+<br />    lacquered_getas
+<br />    new_JIS_getas new_getas
+<br />    lacquered_getas
+<br />  };
+<br />
+<br />  lacquered_getas -&gt; black_lacquered_getas;
+<br />  black_lacquered_getas -&gt; black_lacquered_getas_made_of_paulownia;
+<br />  black_lacquered_getas_made_of_paulownia -&gt; black_lacquered_getas;
+<br />
+<br />  black_lacquered_getas -&gt; getas_in_fine_weather [style = dotted];
+<br />}
+
+  </td>
+  <td>
+<object data = "./japanese.svg"></object><br />
+Output file 109: html/japanese.svg (5782 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 110: data/jcctree.gv (778 bytes):<br />digraph &quot;tree&quot; {
+<br />// The problem disappeared when I removed the &quot;ELEM3 -&gt; ID5;&quot; line!
+<br />//size=&quot;4,5&quot;;
+<br />ordering=out;
+<br />node [shape=plaintext];
+<br />SPEC -&gt; DEF2;
+<br />SPEC -&gt; DEF1;
+<br />DEF1 -&gt; ID1;
+<br />DEF1 -&gt; SET1;
+<br />DEF1 -&gt; SC1;
+<br />DEF2 -&gt; ID2;
+<br />DEF2 -&gt; SET2;
+<br />DEF2 -&gt; SC2;
+<br />SET1 -&gt; OPEN1;
+<br />SET1 -&gt; ELEM1;
+<br />SET1 -&gt; SC3;
+<br />SET1 -&gt; ELEM2;
+<br />SET1 -&gt; CLOSE1;
+<br />ELEM1 -&gt; ID3;
+<br />SET2 -&gt; OPEN2;
+<br />SET2 -&gt; ELEM3;
+<br />SET2 -&gt; CLOSE2;
+<br />ELEM2 -&gt; ID4;
+<br />ELEM3 -&gt; ID5;
+<br />DEF1 [label=DEF];
+<br />DEF2 [label=DEF];
+<br />SET1 [label=SET];
+<br />SC1 [label=&quot;;&quot;];
+<br />SC3 [label=&quot;;&quot;];
+<br />SET2 [label=SET];
+<br />SC2 [label=&quot;;&quot;];
+<br />OPEN1 [label=&quot;{&quot;];
+<br />OPEN2 [label=&quot;{&quot;];
+<br />CLOSE1 [label=&quot;}&quot;];
+<br />CLOSE2 [label=&quot;}&quot;];
+<br />ELEM1 [label=ELEMENT];
+<br />ELEM2 [label=ELEMENT];
+<br />ELEM3 [label=ELEMENT];
+<br />ID1 [label=cities];
+<br />ID2 [label=insects];
+<br />ID3 [label=andover];
+<br />ID4 [label=boston];
+<br />ID5 [label=fly];
+<br />}
+
+  </td>
+  <td>
+<object data = "./jcctree.svg"></object><br />
+Output file 110: html/jcctree.svg (9894 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 111: data/jsort.gv (6189 bytes):<br />digraph prof {
+<br />	size=&quot;6,4&quot;; ratio = fill;
+<br />	node [style=filled];
+<br />	start -&gt; main [color=&quot;0.002 0.999 0.999&quot;];
+<br />	start -&gt; on_exit [color=&quot;0.649 0.701 0.701&quot;];
+<br />	main -&gt; sort [color=&quot;0.348 0.839 0.839&quot;];
+<br />	main -&gt; merge [color=&quot;0.515 0.762 0.762&quot;];
+<br />	main -&gt; term [color=&quot;0.647 0.702 0.702&quot;];
+<br />	main -&gt; signal [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; sbrk [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; unlink [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; newfile [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; fclose [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; close [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; brk [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; setbuf [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; copyproto [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; initree [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; safeoutfil [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; getpid [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; sprintf [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; creat [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; rem [color=&quot;0.650 0.700 0.700&quot;];
+<br />	main -&gt; oldfile [color=&quot;0.650 0.700 0.700&quot;];
+<br />	sort -&gt; msort [color=&quot;0.619 0.714 0.714&quot;];
+<br />	sort -&gt; filbuf [color=&quot;0.650 0.700 0.700&quot;];
+<br />	sort -&gt; newfile [color=&quot;0.650 0.700 0.700&quot;];
+<br />	sort -&gt; fclose [color=&quot;0.650 0.700 0.700&quot;];
+<br />	sort -&gt; setbuf [color=&quot;0.650 0.700 0.700&quot;];
+<br />	sort -&gt; setfil [color=&quot;0.650 0.700 0.700&quot;];
+<br />	msort -&gt; qsort [color=&quot;0.650 0.700 0.700&quot;];
+<br />	msort -&gt; insert [color=&quot;0.650 0.700 0.700&quot;];
+<br />	msort -&gt; wline [color=&quot;0.650 0.700 0.700&quot;];
+<br />	msort -&gt; div [color=&quot;0.650 0.700 0.700&quot;];
+<br />	msort -&gt; cmpsave [color=&quot;0.650 0.700 0.700&quot;];
+<br />	merge -&gt; insert [color=&quot;0.650 0.700 0.700&quot;];
+<br />	merge -&gt; rline [color=&quot;0.650 0.700 0.700&quot;];
+<br />	merge -&gt; wline [color=&quot;0.650 0.700 0.700&quot;];
+<br />	merge -&gt; unlink [color=&quot;0.650 0.700 0.700&quot;];
+<br />	merge -&gt; fopen [color=&quot;0.650 0.700 0.700&quot;];
+<br />	merge -&gt; fclose [color=&quot;0.650 0.700 0.700&quot;];
+<br />	merge -&gt; setfil [color=&quot;0.650 0.700 0.700&quot;];
+<br />	merge -&gt; mul [color=&quot;0.650 0.700 0.700&quot;];
+<br />	merge -&gt; setbuf [color=&quot;0.650 0.700 0.700&quot;];
+<br />	merge -&gt; cmpsave [color=&quot;0.650 0.700 0.700&quot;];
+<br />	insert -&gt; cmpa [color=&quot;0.650 0.700 0.700&quot;];
+<br />	wline -&gt; flsbuf [color=&quot;0.649 0.700 0.700&quot;];
+<br />	qsort -&gt; cmpa [color=&quot;0.650 0.700 0.700&quot;];
+<br />	rline -&gt; filbuf [color=&quot;0.649 0.700 0.700&quot;];
+<br />	xflsbuf -&gt; write [color=&quot;0.650 0.700 0.700&quot;];
+<br />	flsbuf -&gt; xflsbuf [color=&quot;0.649 0.700 0.700&quot;];
+<br />	filbuf -&gt; read [color=&quot;0.650 0.700 0.700&quot;];
+<br />	term -&gt; unlink [color=&quot;0.650 0.700 0.700&quot;];
+<br />	term -&gt; signal [color=&quot;0.650 0.700 0.700&quot;];
+<br />	term -&gt; setfil [color=&quot;0.650 0.700 0.700&quot;];
+<br />	term -&gt; exit [color=&quot;0.650 0.700 0.700&quot;];
+<br />	endopen -&gt; open [color=&quot;0.650 0.700 0.700&quot;];
+<br />	fopen -&gt; endopen [color=&quot;0.639 0.705 0.705&quot;];
+<br />	fopen -&gt; findiop [color=&quot;0.650 0.700 0.700&quot;];
+<br />	newfile -&gt; fopen [color=&quot;0.634 0.707 0.707&quot;];
+<br />	newfile -&gt; setfil [color=&quot;0.650 0.700 0.700&quot;];
+<br />	fclose -&gt; fflush [color=&quot;0.642 0.704 0.704&quot;];
+<br />	fclose -&gt; close [color=&quot;0.650 0.700 0.700&quot;];
+<br />	fflush -&gt; xflsbuf [color=&quot;0.635 0.707 0.707&quot;];
+<br />	malloc -&gt; morecore [color=&quot;0.325 0.850 0.850&quot;];
+<br />	malloc -&gt; demote [color=&quot;0.650 0.700 0.700&quot;];
+<br />	morecore -&gt; sbrk [color=&quot;0.650 0.700 0.700&quot;];
+<br />	morecore -&gt; getfreehdr [color=&quot;0.650 0.700 0.700&quot;];
+<br />	morecore -&gt; free [color=&quot;0.650 0.700 0.700&quot;];
+<br />	morecore -&gt; getpagesize [color=&quot;0.650 0.700 0.700&quot;];
+<br />	morecore -&gt; putfreehdr [color=&quot;0.650 0.700 0.700&quot;];
+<br />	morecore -&gt; udiv [color=&quot;0.650 0.700 0.700&quot;];
+<br />	morecore -&gt; umul [color=&quot;0.650 0.700 0.700&quot;];
+<br />	on_exit -&gt; malloc [color=&quot;0.325 0.850 0.850&quot;];
+<br />	signal -&gt; sigvec [color=&quot;0.650 0.700 0.700&quot;];
+<br />	moncontrol -&gt; profil [color=&quot;0.650 0.700 0.700&quot;];
+<br />	getfreehdr -&gt; sbrk [color=&quot;0.650 0.700 0.700&quot;];
+<br />	free -&gt; insert [color=&quot;0.650 0.700 0.700&quot;];
+<br />	insert -&gt; getfreehdr [color=&quot;0.650 0.700 0.700&quot;];
+<br />	setfil -&gt; div [color=&quot;0.650 0.700 0.700&quot;];
+<br />	setfil -&gt; rem [color=&quot;0.650 0.700 0.700&quot;];
+<br />	sigvec -&gt; sigblock [color=&quot;0.650 0.700 0.700&quot;];
+<br />	sigvec -&gt; sigsetmask [color=&quot;0.650 0.700 0.700&quot;];
+<br />	doprnt -&gt; urem [color=&quot;0.650 0.700 0.700&quot;];
+<br />	doprnt -&gt; udiv [color=&quot;0.650 0.700 0.700&quot;];
+<br />	doprnt -&gt; strlen [color=&quot;0.650 0.700 0.700&quot;];
+<br />	doprnt -&gt; localeconv [color=&quot;0.650 0.700 0.700&quot;];
+<br />	sprintf -&gt; doprnt [color=&quot;0.650 0.700 0.700&quot;];
+<br />cmpa [color=&quot;0.000 1.000 1.000&quot;];
+<br />wline [color=&quot;0.201 0.753 1.000&quot;];
+<br />insert [color=&quot;0.305 0.625 1.000&quot;];
+<br />rline [color=&quot;0.355 0.563 1.000&quot;];
+<br />sort [color=&quot;0.408 0.498 1.000&quot;];
+<br />qsort [color=&quot;0.449 0.447 1.000&quot;];
+<br />write [color=&quot;0.499 0.386 1.000&quot;];
+<br />read [color=&quot;0.578 0.289 1.000&quot;];
+<br />msort [color=&quot;0.590 0.273 1.000&quot;];
+<br />merge [color=&quot;0.603 0.258 1.000&quot;];
+<br />unlink [color=&quot;0.628 0.227 1.000&quot;];
+<br />filbuf [color=&quot;0.641 0.212 1.000&quot;];
+<br />open [color=&quot;0.641 0.212 1.000&quot;];
+<br />sbrk [color=&quot;0.647 0.204 1.000&quot;];
+<br />signal [color=&quot;0.647 0.204 1.000&quot;];
+<br />moncontrol [color=&quot;0.647 0.204 1.000&quot;];
+<br />xflsbuf [color=&quot;0.650 0.200 1.000&quot;];
+<br />flsbuf [color=&quot;0.650 0.200 1.000&quot;];
+<br />div [color=&quot;0.650 0.200 1.000&quot;];
+<br />cmpsave [color=&quot;0.650 0.200 1.000&quot;];
+<br />rem [color=&quot;0.650 0.200 1.000&quot;];
+<br />setfil [color=&quot;0.650 0.200 1.000&quot;];
+<br />close [color=&quot;0.650 0.200 1.000&quot;];
+<br />fclose [color=&quot;0.650 0.200 1.000&quot;];
+<br />fflush [color=&quot;0.650 0.200 1.000&quot;];
+<br />setbuf [color=&quot;0.650 0.200 1.000&quot;];
+<br />endopen [color=&quot;0.650 0.200 1.000&quot;];
+<br />findiop [color=&quot;0.650 0.200 1.000&quot;];
+<br />fopen [color=&quot;0.650 0.200 1.000&quot;];
+<br />mul [color=&quot;0.650 0.200 1.000&quot;];
+<br />newfile [color=&quot;0.650 0.200 1.000&quot;];
+<br />sigblock [color=&quot;0.650 0.200 1.000&quot;];
+<br />sigsetmask [color=&quot;0.650 0.200 1.000&quot;];
+<br />sigvec [color=&quot;0.650 0.200 1.000&quot;];
+<br />udiv [color=&quot;0.650 0.200 1.000&quot;];
+<br />urem [color=&quot;0.650 0.200 1.000&quot;];
+<br />brk [color=&quot;0.650 0.200 1.000&quot;];
+<br />getfreehdr [color=&quot;0.650 0.200 1.000&quot;];
+<br />strlen [color=&quot;0.650 0.200 1.000&quot;];
+<br />umul [color=&quot;0.650 0.200 1.000&quot;];
+<br />doprnt [color=&quot;0.650 0.200 1.000&quot;];
+<br />copyproto [color=&quot;0.650 0.200 1.000&quot;];
+<br />creat [color=&quot;0.650 0.200 1.000&quot;];
+<br />demote [color=&quot;0.650 0.200 1.000&quot;];
+<br />exit [color=&quot;0.650 0.200 1.000&quot;];
+<br />free [color=&quot;0.650 0.200 1.000&quot;];
+<br />getpagesize [color=&quot;0.650 0.200 1.000&quot;];
+<br />getpid [color=&quot;0.650 0.200 1.000&quot;];
+<br />initree [color=&quot;0.650 0.200 1.000&quot;];
+<br />insert [color=&quot;0.650 0.200 1.000&quot;];
+<br />localeconv [color=&quot;0.650 0.200 1.000&quot;];
+<br />main [color=&quot;0.650 0.200 1.000&quot;];
+<br />malloc [color=&quot;0.650 0.200 1.000&quot;];
+<br />morecore [color=&quot;0.650 0.200 1.000&quot;];
+<br />oldfile [color=&quot;0.650 0.200 1.000&quot;];
+<br />on_exit [color=&quot;0.650 0.200 1.000&quot;];
+<br />profil [color=&quot;0.650 0.200 1.000&quot;];
+<br />putfreehdr [color=&quot;0.650 0.200 1.000&quot;];
+<br />safeoutfil [color=&quot;0.650 0.200 1.000&quot;];
+<br />sprintf [color=&quot;0.650 0.200 1.000&quot;];
+<br />term [color=&quot;0.650 0.200 1.000&quot;];
+<br />}
+
+  </td>
+  <td>
+<object data = "./jsort.svg"></object><br />
+Output file 111: html/jsort.svg (45869 bytes)
+  </td>
+</tr>
+<tr>
+  <td>
+	Input file 112: data/utf8.01.gv (113 bytes):<br />digraph utf8_01
 <br />{
 <br />	rankdir = TB
 <br />
@@ -2902,12 +3344,12 @@ Output file 105: html/fsm.svg (9659 bytes)
   </td>
   <td>
 <object data = "./utf8.01.svg"></object><br />
-Output file 106: html/utf8.01.svg (1949 bytes)
+Output file 112: html/utf8.01.svg (1949 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 107: data/utf8.02.gv (295 bytes):<br />digraph utf8_02
+	Input file 113: data/utf8.02.gv (295 bytes):<br />digraph utf8_02
 <br />{
 <br />	rankdir = TB
 <br />
@@ -2929,12 +3371,12 @@ Output file 106: html/utf8.01.svg (1949 bytes)
   </td>
   <td>
 <object data = "./utf8.02.svg"></object><br />
-Output file 107: html/utf8.02.svg (2656 bytes)
+Output file 113: html/utf8.02.svg (2656 bytes)
   </td>
 </tr>
 <tr>
   <td>
-	Input file 108: data/utf8.03.gv (503 bytes):<br />graph utf8_03
+	Input file 114: data/utf8.03.gv (503 bytes):<br />graph utf8_03
 <br />{
 <br />	rankdir = TB
 <br />
@@ -2959,7 +3401,7 @@ Output file 107: html/utf8.02.svg (2656 bytes)
   </td>
   <td>
 <object data = "./utf8.03.svg"></object><br />
-Output file 108: html/utf8.03.svg (4002 bytes)
+Output file 114: html/utf8.03.svg (4002 bytes)
   </td>
 </tr>
 </table>
