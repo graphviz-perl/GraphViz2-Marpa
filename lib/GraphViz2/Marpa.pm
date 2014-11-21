@@ -551,16 +551,29 @@ sub hashref2string
 
 sub _identify_lexeme
 {
-	my($self, $string, $start, $span, $lexeme) = @_;
+	my($self, $string, $start, $span, $pos, $lexeme) = @_;
 
 	pos($string) = $start + $span;
 	$string      =~ /\G\s*(\S)/ || return;
 	my($literal) = $1;
-	my($type)    = ($literal eq '=') ? 'attribute_name' : 'node_name';
 
-	$self -> log(debug => "Disambiguated lexeme (2 of 2) |$lexeme| as '$type'");
+	my($type);
 
-	return $type;
+	if (substr($lexeme, 0, 1) eq '{')
+	{
+		$pos++;
+
+		$span = 1;
+		$type = 'open_brace';
+	}
+	else
+	{
+		$type = ($literal eq '=') ? 'attribute_name' : 'node_name';
+	}
+
+	$self -> log(debug => "Disambiguated lexeme (2 of 2) |$lexeme| as '$type'. pos: $pos");
+
+	return ($type, $span, $pos);
 
 } # End of _identify_lexeme.
 
@@ -651,11 +664,11 @@ sub _process
 		$pos = $self -> recce -> resume($pos)
 	)
 	{
-		($start, $span)  = $self -> recce -> pause_span;
-		$event_name      = $self -> _validate_event($string, $start, $span);
-		$lexeme          = $self -> recce -> literal($start, $span);
-		$original_lexeme = $lexeme;
-		$pos             = $self -> recce -> lexeme_read($event_name);
+		($start, $span)            = $self -> recce -> pause_span;
+		($event_name, $span, $pos) = $self -> _validate_event($string, $start, $span, $pos);
+		$lexeme                    = $self -> recce -> literal($start, $span);
+		$original_lexeme           = $lexeme;
+		$pos                       = $self -> recce -> lexeme_read($event_name);
 
 		die "lexeme_read($event_name) rejected lexeme |$lexeme|\n" if (! defined $pos);
 
@@ -702,7 +715,7 @@ sub _process
 			($lexeme, $pos) = $self -> check4embedded_comma($lexeme, $pos);
 			$lexeme         = $self -> clean_after($lexeme);
 
-			$self -> log(debug => "Lexeme |$original_lexeme| corrected to be |$lexeme|. pos now $pos") if ($original_lexeme ne $lexeme);
+			$self -> log(debug => "Lexeme |$original_lexeme| corrected to be |$lexeme|. pos: $pos") if ($original_lexeme ne $lexeme);
 			$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
 
 			@fields = ();
@@ -1043,7 +1056,7 @@ sub run
 
 sub _validate_event
 {
-	my($self, $string, $start, $span) = @_;
+	my($self, $string, $start, $span, $pos) = @_;
 	my(@event)         = @{$self -> recce -> events};
 	my($event_count)   = scalar @event;
 	my(@event_name)    = sort map{$$_[0]} @event;
@@ -1099,7 +1112,7 @@ sub _validate_event
 
 			if ($expected eq 'attribute_name!node_name')
 			{
-				$event_name = $self -> _identify_lexeme($string, $start, $span, $lexeme);
+				($event_name, $span, $pos) = $self -> _identify_lexeme($string, $start, $span, $pos, $lexeme);
 			}
 
 			if (! defined $event_name)
@@ -1113,7 +1126,7 @@ sub _validate_event
 		}
 	}
 
-	return $event_name;
+	return ($event_name, $span, $pos);
 
 } # End of _validate_event.
 
