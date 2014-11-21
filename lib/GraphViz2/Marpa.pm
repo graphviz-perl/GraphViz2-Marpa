@@ -870,7 +870,7 @@ sub _process_brace
 		push @$stack, $daughters[$#daughters];
 
 		$self -> stack($stack);
-		$self -> _dump_stack('_process_brace({) pushed { onto stack');
+		#$self -> _dump_stack('_process_brace({) pushed { onto stack');
 	}
 	else
 	{

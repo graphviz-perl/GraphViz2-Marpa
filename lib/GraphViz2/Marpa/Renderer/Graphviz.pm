@@ -125,6 +125,7 @@ sub format_node
 		if ($value =~ /[{}]/)
 		{
 			$indent    = "\t" x ($depth - 2);
+			$indent    .= "\n$indent" if ($$opts{previous}{name} eq 'edge_id'); # Separate edge from subgraph.
 			$dot_input .= "$indent$value\n";
 		}
 		elsif ($value =~ /[\[\]]/)
@@ -155,6 +156,7 @@ sub format_node
 		$indent    = "\t" x ($depth - 2);
 		$indent    = '' if ($$opts{previous}{type} eq 'subgraph_literal');         # Seperate 'subgraph' and its name.
 		$dot_input .= "\n\n" if ($$opts{previous}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
+		$dot_input .= "\n"   if ($$opts{previous}{name} eq 'literal');             # Separate nodes from subgraphs.
 
 		if ($$opts{previous}{name} eq 'edge_id')
 		{
