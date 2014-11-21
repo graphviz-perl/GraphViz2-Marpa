@@ -1,0 +1,13 @@
+digraph graph_29_6
+{
+	{
+		node_29_6_1
+		node_29_6_2
+	}
+
+	subgraph sub_29_6_3
+	{
+		node_29_6_4
+		node_29_6_5
+	}
+}
