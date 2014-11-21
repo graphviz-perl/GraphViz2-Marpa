@@ -682,14 +682,6 @@ sub _process
 				$event_name           = 'open_bracket'; # Sets $last_event at the end of the loop.
 				substr($lexeme, 0, 1) = '';
 			}
-			elsif ($lexeme eq ',')
-			{
-				$pos++;
-
-				$self -> log(debug => "pos now $pos. Next few chars |" . substr($string, $pos, 10) .'|');
-
-				next;
-			}
 
 			$fields[0] = $self -> clean_after($lexeme);
 		}
@@ -815,6 +807,13 @@ sub _process
 		elsif ($event_name eq 'undirected_edge')
 		{
 			$self -> _add_daughter('edge_id', {name => $event_name, value => $lexeme});
+		}
+
+		# Step past separators.
+
+		if (substr($string, $pos, 1) =~ /[;,]/)
+		{
+			$pos++;
 		}
 
 		$last_event = $event_name;
