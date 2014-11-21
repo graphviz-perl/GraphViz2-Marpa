@@ -469,18 +469,14 @@ sub check4embedded_comma
 {
 	my($self, $lexeme, $pos) = @_;
 
-	# The grammar allows things like 'style=filled,color-white', so clean them up.
+	# The grammar allows things like 'style=filled,color=white', so clean them up.
+	# Also clean up '24,fontname=...'.
 
-	if ($lexeme !~ /^([\"\']).*\1/)
+	if ($lexeme =~ /^(".*"|\d+|[A-Za-z]+),/s)
 	{
-		my($offset) = index($lexeme, ',');
-
-		if ($offset >= 0)
-		{
-			my($s)                   = $lexeme;
-			substr($lexeme, $offset) = '';
-			$pos                     = $pos - length($s) + $offset - 1;
-		}
+		my($s)  = $lexeme;
+		$lexeme = $1;
+		$pos    = $pos - length($s) + length($lexeme) + 1;
 	}
 
 	return ($lexeme, $pos);
@@ -679,12 +675,20 @@ sub _process
 
 		if ($event_name eq 'attribute_name')
 		{
-			# Special case.
+			# Special cases.
 
 			if (substr($lexeme, 0, 1) eq '[')
 			{
 				$event_name           = 'open_bracket'; # Sets $last_event at the end of the loop.
 				substr($lexeme, 0, 1) = '';
+			}
+			elsif ($lexeme eq ',')
+			{
+				$pos++;
+
+				$self -> log(debug => "pos now $pos. Next few chars |" . substr($string, $pos, 10) .'|');
+
+				next;
 			}
 
 			$fields[0] = $self -> clean_after($lexeme);
@@ -703,8 +707,8 @@ sub _process
 				substr($lexeme, -1, 1) = '';
 			}
 
-			$lexeme         = $self -> clean_after($lexeme);
 			($lexeme, $pos) = $self -> check4embedded_comma($lexeme, $pos);
+			$lexeme         = $self -> clean_after($lexeme);
 
 			$self -> log(debug => "Lexeme |$original_lexeme| corrected to be |$lexeme|. pos now $pos") if ($original_lexeme ne $lexeme);
 			$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
