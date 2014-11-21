@@ -275,9 +275,9 @@ subgraph_sequence		::= subgraph_sub_and_id
 
 subgraph_sub_and_id		::= subgraph_prefix subgraph_id_token graph_statement
 
-subgraph_sub_no_id		::= subgraph_id_token graph_statement
+subgraph_sub_no_id		::= subgraph_prefix graph_statement
 
-subgraph_no_sub_no_id	::=	subgraph_prefix graph_statement
+subgraph_no_sub_no_id	::=	graph_statement
 
 subgraph_prefix			::= subgraph_literal
 

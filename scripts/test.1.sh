@@ -21,7 +21,7 @@ echo ----------------------------
 
 scripts/gv2svg.sh $1
 
-scripts/g2m.sh data/$1.gv -t 99 -max $MAX -out $1.gv > $1.log
+scripts/g2m.sh data/$1.gv -max $MAX -out $1.gv > $1.log
 
 if [ ! -e "$1.gv" ]
 then
