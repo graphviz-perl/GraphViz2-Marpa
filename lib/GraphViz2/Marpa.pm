@@ -348,7 +348,7 @@ undirected_edge			~ '--'
 
 unquoted_char_set		~ unquoted_char+
 unquoted_char			~ escaped_char
-							| [^\s\[\]=]
+							| [^\s\[\]={}]
 
 # Boilerplate.
 
