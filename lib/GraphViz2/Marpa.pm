@@ -469,8 +469,11 @@ sub check4embedded_comma
 {
 	my($self, $lexeme, $pos) = @_;
 
-	# The grammar allows things like 'style=filled,color=white', so clean them up.
-	# Also clean up '24,fontname=...' and 'shape=record,width=.1,height=.1'.
+	# The grammar allows commas in things, like:
+	# o width=.1,height=.1.				Accept floats.
+	# o fontsize=24,fontname="Arial".	Accept integers.
+	# o color="slateblue",fontsize=24.	Accept "...".
+	# o style=filled,color=white.		Accent [A-Za-z].
 
 	my($numeric) = ($lexeme =~ /^(\d+|\d+\.\d*|\.\d+),/) ? $1 : undef;
 
