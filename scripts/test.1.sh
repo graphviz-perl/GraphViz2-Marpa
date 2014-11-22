@@ -13,11 +13,12 @@ then
 	MAX=info
 fi
 
-echo Using maxlevel $MAX
-
-echo Contents of data/$1.gv:
-cat data/$1.gv
-echo ----------------------------
+if [ "$MAX" == "debug" ]
+then
+	echo Contents of data/$1.gv:
+	cat data/$1.gv
+	echo ----------------------------
+fi
 
 scripts/gv2svg.sh $1
 
@@ -47,3 +48,5 @@ then
 else
 	echo Failed - Check $1.svg and $1.new.svg
 fi
+
+echo

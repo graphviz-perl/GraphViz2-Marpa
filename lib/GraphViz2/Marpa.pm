@@ -335,7 +335,8 @@ semicolon_literal		~ ';'
 strict_literal			~ 'strict':i
 
 string					~ [\"]	double_quoted_char_set	[\"]
-string					~ [<]	html_quoted_char_set	[>]
+string					~ '<<'	html_quoted_char_set	'>>'
+string					~ '<'	html_quoted_char_set	'>'
 string					~ unquoted_char_set
 
 :lexeme					~ subgraph_literal		pause => before		event => subgraph_literal
@@ -465,28 +466,29 @@ sub _add_daughter
 
 # ------------------------------------------------
 
-sub check4embedded_comma
+sub check4embedded_separator
 {
 	my($self, $lexeme, $pos) = @_;
 
-	# The grammar allows commas in things, like:
+	# Separators are [;,].
+	# The grammar allows them in things, like:
 	# o width=.1,height=.1.				Accept floats.
 	# o fontsize=24,fontname="Arial".	Accept integers.
 	# o color="slateblue",fontsize=24.	Accept "...".
-	# o style=filled,color=white.		Accent [A-Za-z].
+	# o style=filled,color=white.		Accent [A-Za-z]
 
-	my($numeric) = ($lexeme =~ /^(\d+|\d+\.\d*|\.\d+),/) ? $1 : undef;
+	my($numeric) = ($lexeme =~ /^(\d+|\d+\.\d*|\.\d+)[;,]/) ? $1 : undef;
 
-	if ($numeric || ($lexeme =~ /^(".*"|[A-Za-z]+),/s) )
+	if ($numeric || ($lexeme =~ /^(".*"|[A-Za-z]+)[;,]/s) )
 	{
 		my($s)  = $lexeme;
 		$lexeme = $numeric || $1;
-		$pos    = $pos - length($s) + length($lexeme) + 1;
+		$pos    = $pos - length($s) + length($lexeme);
 	}
 
 	return ($lexeme, $pos);
 
-} # End of check4embedded_comma.
+} # End of check4embedded_separator.
 
 # ------------------------------------------------
 
@@ -594,6 +596,20 @@ sub log
 
 # ------------------------------------------------
 
+sub next_few_chars
+{
+	my($self, $s, $offset) = @_;
+	$s = substr($s, $offset, 20);
+	$s =~ tr/\n/ /;
+	$s =~ s/^\s+//;
+	$s =~ s/\s+$//;
+
+	return $s;
+
+} # End of next_few_chars.
+
+# ------------------------------------------------
+
 sub _post_process
 {
 	my($self) = @_;
@@ -656,7 +672,7 @@ sub _process
 	my($lexeme);
 	my($node_name);
 	my($original_lexeme);
-	my($span, $start);
+	my($span, $start, $s);
 	my($temp, $type);
 
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
@@ -717,10 +733,11 @@ sub _process
 				substr($lexeme, -1, 1) = '';
 			}
 
-			($lexeme, $pos) = $self -> check4embedded_comma($lexeme, $pos);
+			($lexeme, $pos) = $self -> check4embedded_separator($lexeme, $pos);
 			$lexeme         = $self -> clean_after($lexeme);
+			$s              = $self -> next_few_chars($string, $pos);
 
-			$self -> log(debug => "Lexeme |$original_lexeme| corrected to be |$lexeme|. pos: $pos") if ($original_lexeme ne $lexeme);
+			$self -> log(debug => "Lexeme |$original_lexeme| corrected to be |$lexeme|. pos: $pos. Next few char |$s|") if ($original_lexeme ne $lexeme);
 			$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
 
 			@fields = ();
@@ -742,7 +759,9 @@ sub _process
 			# Special case.
 
 			substr($lexeme, -1, 1) = '' if (substr($lexeme, -1, 1) eq ';');
+			$s                     = $self -> next_few_chars($string, $pos);
 
+			$self -> log(debug => "Lexeme |$original_lexeme| corrected to be |$lexeme|. pos: $pos. Next few char |$s|") if ($original_lexeme ne $lexeme);
 			$self -> _process_bracket($lexeme, $event_name);
 		}
 		elsif ($event_name eq 'directed_edge')
@@ -1068,10 +1087,7 @@ sub _validate_event
 	my($event_name)    = $event_name[0]; # Default.
 	my($lexeme)        = substr($string, $start, $span);
 	my($line, $column) = $self -> recce -> line_column($start);
-	my($literal)       = substr($string, $start + $span, 20);
-	$literal           =~ tr/\n/ /;
-	$literal           =~ s/^\s+//;
-	$literal           =~ s/\s+$//;
+	my($literal)       = $self -> next_few_chars($string, $start + $span);
 	my($message)       = "Location: ($line, $column). Lexeme: |$lexeme|. Next few chars: |$literal|";
 	$message           = "$message. Events: $event_count. Names: ";
 
