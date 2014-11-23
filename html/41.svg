@@ -9,8 +9,8 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 40)">
 <title>%3</title>
 <polygon fill="white" stroke="none" points="-4,4 -4,-40 120.99,-40 120.99,4 -4,4"/>
-<!-- node_41 -->
-<g id="node1" class="node"><title>node_41</title>
+<!-- node_41_1 -->
+<g id="node1" class="node"><title>node_41_1</title>
 <ellipse fill="none" stroke="red" cx="58.4948" cy="-18" rx="58.4896" ry="18"/>
 <text text-anchor="middle" x="58.4948" y="-14.3" font-family="Times,serif" font-size="14.00" fill="green">ID&#45;less graph</text>
 </g>

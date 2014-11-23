@@ -9,8 +9,8 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 53.4975)">
 <title>graph_34</title>
 <polygon fill="white" stroke="none" points="-4,4 -4,-53.4975 433.921,-53.4975 433.921,4 -4,4"/>
-<!-- node_34 -->
-<g id="node1" class="node"><title>node_34</title>
+<!-- node_34_1 -->
+<g id="node1" class="node"><title>node_34_1</title>
 <ellipse fill="none" stroke="red" cx="214.96" cy="-24.7487" rx="214.921" ry="25"/>
 <polygon fill="none" stroke="red" points="73.9605,-13.7487 73.9605,-34.7487 355.96,-34.7487 355.96,-13.7487 73.9605,-13.7487"/>
 <text text-anchor="start" x="76.9605" y="-20.5487" font-family="Times,serif" font-size="14.00" fill="green">html&#45;style label with &lt;&gt; embedded angle brackets</text>
