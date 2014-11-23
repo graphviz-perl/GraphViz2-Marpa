@@ -335,7 +335,6 @@ semicolon_literal		~ ';'
 strict_literal			~ 'strict':i
 
 string					~ [\"]	double_quoted_char_set	[\"]
-string					~ '<<'	html_quoted_char_set	'>>'
 string					~ '<'	html_quoted_char_set	'>'
 string					~ unquoted_char_set
 
@@ -721,33 +720,44 @@ sub _process
 		}
 		elsif ($event_name eq 'attribute_value')
 		{
-			# Special cases.
-			# Handle ']' and '];'.
-
-			$temp                  = '';
-			substr($lexeme, -1, 1) = '' if (substr($lexeme, -1, 1) eq ';');
-
-			if (substr($lexeme, -1, 1) eq ']')
+			if ($lexeme =~ /^</)
 			{
-				$temp                  = ']';
-				substr($lexeme, -1, 1) = '';
+				# Note: We pass in $start and it becomes $pos.
+
+				($lexeme, $pos) = $self -> _process_html($string, $length, $start);
+
+				$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
 			}
-
-			($lexeme, $pos) = $self -> check4embedded_separator($lexeme, $pos);
-			$lexeme         = $self -> clean_after($lexeme);
-			$s              = $self -> next_few_chars($string, $pos);
-
-			$self -> log(debug => "Lexeme |$original_lexeme| corrected to be |$lexeme|. pos: $pos. Next few char |$s|") if ($original_lexeme ne $lexeme);
-			$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
-
-			@fields = ();
-
-			if ($temp)
+			else
 			{
-				$event_name = 'close_bracket'; # Sets $last_event at the end of the loop.
+				# Special cases.
+				# Handle ']' and '];'.
 
-				$self -> log(debug => sprintf($format, $event_name, $start, 1, $pos, $temp, 'Adjusted event_name') );
-				$self -> _process_bracket($temp, $event_name);
+				$temp                  = '';
+				substr($lexeme, -1, 1) = '' if (substr($lexeme, -1, 1) eq ';');
+
+				if (substr($lexeme, -1, 1) eq ']')
+				{
+					$temp                  = ']';
+					substr($lexeme, -1, 1) = '';
+				}
+
+				($lexeme, $pos) = $self -> check4embedded_separator($lexeme, $pos);
+				$lexeme         = $self -> clean_after($lexeme);
+				$s              = $self -> next_few_chars($string, $pos);
+
+				$self -> log(debug => "Lexeme |$original_lexeme| corrected to be |$lexeme|. pos: $pos. Next few char |$s|") if ($original_lexeme ne $lexeme);
+				$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
+
+				@fields = ();
+
+				if ($temp)
+				{
+					$event_name = 'close_bracket'; # Sets $last_event at the end of the loop.
+
+					$self -> log(debug => sprintf($format, $event_name, $start, 1, $pos, $temp, 'Adjusted event_name') );
+					$self -> _process_bracket($temp, $event_name);
+				}
 			}
 		}
 		elsif ($event_name eq 'close_brace')
@@ -952,6 +962,62 @@ sub _process_bracket
 	}
 
 } # End of _process_bracket.
+
+# ------------------------------------------------
+
+sub _process_html
+{
+	my($self, $string, $length, $pos) = @_;
+
+	my($bracket_count) = 0;
+	my($open_bracket)  = '<';
+	my($close_bracket) = '>';
+	my($previous_char) = '';
+	my($label)         = '';
+
+	my($char);
+
+	while ($pos < $length)
+	{
+		$char  = substr($string, $pos, 1);
+		$label .= $char;
+
+		if ($previous_char eq '\\')
+		{
+		}
+		elsif ($char eq $open_bracket)
+		{
+			$bracket_count++;
+		}
+		elsif ($char eq $close_bracket)
+		{
+			$bracket_count--;
+
+			if ($bracket_count == 0)
+			{
+				$pos++;
+
+				last;
+			}
+		}
+
+		$previous_char = $char;
+
+		$pos++;
+	}
+
+	$label = $self -> clean_after($label);
+
+	if ( ($label =~ /^</) && ($label !~ /^<.+>$/s) )
+	{
+		my($line, $column) = $self -> recce -> line_column;
+
+		die "Mismatched <> in HTML |$label| at (line, column) = ($line, $column). Bracket count: $bracket_count\n";
+	}
+
+	return ($label, $pos);
+
+} # End of _process_html.
 
 # ------------------------------------------------
 

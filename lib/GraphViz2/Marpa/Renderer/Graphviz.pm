@@ -102,7 +102,7 @@ sub format_node
 		$$opts{previous}{attribute_count}++;
 
 		$indent    = "\t" x ($depth - 2);
-		$value     = qq("$value") if ( ($value !~ /^<.+>$/) && ($value !~ /^".*"/) );
+		$value     = qq("$value") if ( ($value !~ /^<.+>$/s) && ($value !~ /^".*"/) );
 		$dot_input .= "\n"        if ($$opts{previous}{attribute_count} > 1); # Each attr on a new line.
 		$dot_input .= "$indent$type = $value";
 	}
