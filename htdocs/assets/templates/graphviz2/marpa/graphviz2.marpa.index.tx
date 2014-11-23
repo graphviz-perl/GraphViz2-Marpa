@@ -21,12 +21,13 @@
 
 <table border = "1">
 <tr>
-  <td>Result of GraphViz2::Marpa processing *.gv</td><td>Result of dot processing the same file</td>
+  <td>#</td><td>Result of GraphViz2::Marpa processing *.gv</td><td>Result of dot processing the same file</td>
 </tr>
 :for $data -> $row {
 <tr>
+  <td><: $row.count :></td>
   <td>
-	Input file <: $row.count :>: <: $row.input :> (<: $row.input_size :> <: $row.input_bytes :>):<br /><: $row.raw :>
+	Input file: <: $row.input :> (<: $row.input_size :> <: $row.input_bytes :>):<br /><: $row.raw :>
   </td>
   <td>
 : if ($row.image_size > 0) {
