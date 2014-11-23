@@ -1,6 +1,6 @@
 digraph graph_32
 {
-	node_32
+	node_32_1
 	[
 		arbitrary = attribute
 		color = red

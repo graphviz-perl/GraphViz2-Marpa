@@ -1061,8 +1061,46 @@ sub run
 	elsif ($self -> input_file)
 	{
 		# Quick removal of whole-line C++ and hash comments.
+		# In the regexp, # is written as \# just for the Ultraedit syntax hiliter.
+		# Steps:
+		# o Read file as a set of lines.
+		# o Look for trailing \ chars, and combine those lines.
+		# o Combine all remaining lines with ' '.
 
-		$self -> graph_text(join(' ', grep{! m!^(?:#|//)!} read_file($self -> input_file, binmode => ':encoding(utf-8)') ) );
+		my(@line)   = grep{! m!^(?:\#|//)!} read_file($self -> input_file, binmode => ':encoding(utf-8)');
+		my($last)   = $#line; # Store this separately so we can fiddle $i.
+		my($i)      = 0;
+		my($buffer) = '';
+
+		my(@out);
+
+		# We don't check the very last line. If it ends with '\\', we definitely want an error.
+
+		while ($i < $last)
+		{
+			if ($line[$i] =~ /(.*)\\$/)
+			{
+				$buffer .= $1;
+			}
+			else
+			{
+				if (length($buffer) > 0)
+				{
+					$line[$i] = "$buffer$line[$i]";
+					$buffer   = '';
+				}
+
+				push @out, $line[$i];
+			}
+
+			$i++;
+		}
+
+		push @out, $line[$i];
+
+		$self -> graph_text(join(' ', @out) );
+
+		$self -> log(debug => "After processing \\:\n" . $self -> graph_text);
 	}
 	else
 	{

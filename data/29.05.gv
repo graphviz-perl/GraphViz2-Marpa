@@ -1,12 +1,12 @@
-digraph graph_29_4
+digraph graph_29_05
 {
 	{
-		node_29_4_1
-		node_29_4_2
+		node_29_05_1
+		node_29_05_2
 	}
 
 	{
-		node_29_4_3
-		node_29_4_4
+		node_29_05_3
+		node_29_05_4
 	}
 }
