@@ -101,9 +101,17 @@ sub format_node
 	{
 		$$opts{previous}{attribute_count}++;
 
-		$indent    = "\t" x ($depth - 2);
+		$indent    = ' ';
 		$value     = qq("$value") if ( ($value !~ /^<.+>$/s) && ($value !~ /^".*"/) );
-		$dot_input .= "\n"        if ($$opts{previous}{attribute_count} > 1); # Each attr on a new line.
+
+		# Separate nodes and graph attrs.
+
+		if ($$opts{previous}{name} eq 'node_id')
+		{
+			$indent    = "\t" x ($depth - 2);
+			$dot_input .= "\n";
+		}
+
 		$dot_input .= "$indent$type = $value";
 	}
 	elsif ($name eq 'class')
@@ -111,7 +119,7 @@ sub format_node
 		$indent    = "\t" x ($depth - 2);
 		$dot_input .= "\n"   if ($$opts{previous}{name} eq 'node_id');             # Separate classes and nodes.
 		$dot_input .= "\n\n" if ($$opts{previous}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
-		$dot_input .= "$indent$value\n";
+		$dot_input .= "$indent$value";
 	}
 	elsif ($name eq 'edge_id')
 	{
@@ -120,7 +128,7 @@ sub format_node
 	}
 	elsif ($name eq 'literal')
 	{
-		$dot_input .= "\n" if ($$opts{previous}{name} eq 'node_id'); # Separate literals and nodes.
+		$dot_input .= "\n" if ($value =~ /[{}]/);
 
 		if ($value =~ /[{}]/)
 		{
@@ -132,12 +140,11 @@ sub format_node
 		{
 			$$opts{previous}{attribute_count} = 0 if ($value eq '[');
 
-			$indent    = "\t" x ($depth - 3);
-			$dot_input .= "\n" if ($value eq ']'); # Put ']' on a new line.
-			$dot_input .= "$indent$value\n";
+			$indent    = '';
+			$dot_input .= "$indent$value";
 			$dot_input .= "\n" if ($value eq ']'); # Separate attrs and other things.
 		}
-		elsif ($type =~ /^(?:digraph|graph|strict)_literal$/) # Must not match 'subgraph'!
+		elsif ($type =~ /^(?:digraph|graph|strict)_literal$/) # Must match 'graph' but not 'subgraph'!
 		{
 			$dot_input .= "$value ";
 		}
@@ -154,9 +161,8 @@ sub format_node
 	elsif ($name eq 'node_id')
 	{
 		$indent    = "\t" x ($depth - 2);
-		$indent    = '' if ($$opts{previous}{type} eq 'subgraph_literal');         # Seperate 'subgraph' and its name.
-		$dot_input .= "\n\n" if ($$opts{previous}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
-		$dot_input .= "\n"   if ($$opts{previous}{name} eq 'literal');             # Separate nodes from subgraphs.
+		$indent    = ''    if ($$opts{previous}{type} eq 'subgraph_literal');    # Seperate 'subgraph' and its name.
+		$dot_input .= "\n" if ($$opts{previous}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
 
 		if ($$opts{previous}{name} eq 'edge_id')
 		{
