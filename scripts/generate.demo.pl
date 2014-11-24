@@ -19,7 +19,7 @@ my(%option);
 if ($option_parser -> getoptions
 (
 	\%option,
-	'author_tests=i',
+	'authortest=i',
 	'help',
 ) )
 {
@@ -45,7 +45,7 @@ generate.demo.pl - Generate GraphViz2::Marpa's html/index.html.
 generate.demo.pl [options]
 
 	Options:
-	-author_tests $Boolean
+	-authortest $Boolean
 	-help
 
 Exit value: 0 for success, 1 for failure. Die upon error.
@@ -54,9 +54,11 @@ Exit value: 0 for success, 1 for failure. Die upon error.
 
 =over 4
 
-=item o -author_tests $Boolean
+=item o -authortest $Boolean
 
 Specify whether (1) or not (0) to generate the author's tests demo age.
+
+See scripts/generate.demo.sh.
 
 Default: 0.
 

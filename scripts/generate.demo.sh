@@ -2,18 +2,18 @@
 
 PM=Perl-modules/html/graphviz2.marpa
 
-for author_tests in 0 1
+for authortest in 0 1
 do
-	scripts/generate.svg.sh $author_tests
+	scripts/generate.svg.sh $authortest
 
-	perl -Ilib scripts/generate.demo.pl -author_tests $author_tests
+	perl -Ilib scripts/generate.demo.pl -authortest $authortest
 
 	# $DR is my web server's doc root (in Debian's RAM disk).
 	# $PM is a directory path.
 
-	if [ "$author_tests" == "1" ]
+	if [ "$authortest" == "1" ]
 	then
-		PM="$PM/author_tests"
+		PM="$PM/authortest"
 		DIR=xt/author/html
 	else
 		DIR=html

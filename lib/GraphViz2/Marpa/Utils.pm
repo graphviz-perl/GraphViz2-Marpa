@@ -31,7 +31,7 @@ use Text::Xslate 'mark_raw';
 
 use Types::Standard qw/Int HashRef Str/;
 
-has author_tests =>
+has authortest =>
 (
 	default  => sub{return 0},
 	is       => 'rw',
@@ -78,7 +78,7 @@ sub generate_demo_index
 	my($data_dir_name) = 'data';
 	my($html_dir_name) = 'html';
 
-	if ($self -> author_tests)
+	if ($self -> authortest)
 	{
 		$data_dir_name = "xt/author/$data_dir_name";
 		$html_dir_name = "xt/author/$html_dir_name";
@@ -124,8 +124,8 @@ sub generate_demo_index
 	(
 	'graphviz2.marpa.index.tx',
 	{
-		author_tests => $self -> author_tests,
-		data         =>
+		authortest => $self -> authortest,
+		data       =>
 		[
 			map
 			{
