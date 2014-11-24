@@ -74,6 +74,7 @@ sub generate_demo_index
 	my(@content);
 	my($dot_file);
 	my($image_file, %image_file);
+	my($object_file);
 
 	for my $file_name (@dot_file)
 	{
@@ -81,6 +82,7 @@ sub generate_demo_index
 		$image_file             = path("$file_name.$format") -> basename;
 		$image_file             = File::Spec -> catfile($html_dir_name, $image_file);
 		@content                = map{$Entitize{$_} } path($dot_file) -> lines_utf8;
+		$object_file            = './' . path("$file_name.svg") -> basename;
 		$image_file{$file_name} =
 		{
 			image_file   => -e $image_file ? $image_file : '',
@@ -88,7 +90,7 @@ sub generate_demo_index
 			input        => $dot_file,
 			input_bytes  => 'byte' . (-s $dot_file == 1 ? '' : 's'),
 			input_size   => -s $dot_file,
-			object_file  => "./$image_file",
+			object_file  => $object_file,
 			output       => -e $image_file && -s $image_file ? $image_file : '',
 			output_bytes => 'byte' . (-e $image_file && -s $image_file == 1 ? '' : 's'),
 			output_size  => -s $image_file,
