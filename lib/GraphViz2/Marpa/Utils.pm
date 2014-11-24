@@ -15,7 +15,6 @@ use Config;
 use Date::Format; # For time2str().
 use Date::Simple;
 
-use File::Slurp; # For read_dir() and read_file().
 use File::Spec;
 use File::Temp;
 
@@ -25,6 +24,8 @@ use GraphViz2::Marpa::Config;
 use HTML::Entities::Interpolate;
 
 use Moo;
+
+use Path::Tiny;
 
 use Text::Xslate 'mark_raw';
 
@@ -76,9 +77,10 @@ sub generate_demo_index
 
 	for my $file_name (@dot_file)
 	{
-		$dot_file               = File::Spec -> catfile($data_dir_name, "$file_name.gv");
-		$image_file             = File::Spec -> catfile($html_dir_name, "$file_name.$format");
-		@content                = map{$Entitize{$_} } read_file($dot_file, binmode => ':encoding(utf-8)');
+		$dot_file               = "$file_name.gv";
+		$image_file             = path("$file_name.$format") -> basename;
+		$image_file             = File::Spec -> catfile($html_dir_name, $image_file);
+		@content                = map{$Entitize{$_} } path($dot_file) -> lines_utf8;
 		$image_file{$file_name} =
 		{
 			image_file   => -e $image_file ? $image_file : '',
@@ -150,7 +152,7 @@ sub get_files
 {
 	my($self, $dir_name, $type) = @_;
 
-	return (sort map{s/\.$type//; $_} grep{/\.$type$/} read_dir $dir_name);
+	return (sort map{s/\.$type//; $_} grep{/\.$type$/} path($dir_name) -> children);
 
 } # End of get_files.
 
