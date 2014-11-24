@@ -19,8 +19,8 @@ my(%option);
 if ($option_parser -> getoptions
 (
 	\%option,
+	'author_tests=i',
 	'help',
-	'prefix=s'
 ) )
 {
 	pod2usage(1) if ($option{'help'});
@@ -45,8 +45,8 @@ generate.demo.pl - Generate GraphViz2::Marpa's html/index.html.
 generate.demo.pl [options]
 
 	Options:
+	-author_tests $Boolean
 	-help
-	-prefix $s
 
 Exit value: 0 for success, 1 for failure. Die upon error.
 
@@ -54,13 +54,15 @@ Exit value: 0 for success, 1 for failure. Die upon error.
 
 =over 4
 
+=item o -author_tests $Boolean
+
+Specify whether (1) or not (0) to generate the author's tests demo age.
+
+Default: 0.
+
 =item o -help
 
 Print help and exit.
-
-=item o -prefix $s
-
-Restrict input file names to those matching /^$s/.
 
 =back
 

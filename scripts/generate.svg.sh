@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$1" == "1" ]
+then
+	cd xt/author
+fi
+
 for i in data/*.gv ;
 do
 	X=`basename $i .gv`
