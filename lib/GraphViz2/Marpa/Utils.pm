@@ -29,13 +29,21 @@ use Path::Tiny;
 
 use Text::Xslate 'mark_raw';
 
-use Types::Standard qw/HashRef/;
+use Types::Standard qw/HashRef Str/;
 
 has config =>
 (
 	default  => sub{return GraphViz2::Marpa::Config -> new -> config},
 	is       => 'rw',
 	isa      => HashRef,
+	required => 0,
+);
+
+has prefix =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Str,
 	required => 0,
 );
 
@@ -68,6 +76,7 @@ sub generate_demo_index
 	my($self)          = @_;
 	my($data_dir_name) = 'data';
 	my($html_dir_name) = 'html';
+	my($prefix)        = $self -> prefix;
 	my($format)        = 'svg';
 	my(@dot_file)      = $self -> get_files($data_dir_name, 'gv');
 
@@ -78,6 +87,8 @@ sub generate_demo_index
 
 	for my $file_name (@dot_file)
 	{
+		next if ($self -> prefix && ($file_name !~ /^$prefix/) );
+
 		$dot_file               = "$file_name.gv";
 		$image_file             = path("$file_name.$format") -> basename;
 		$image_file             = File::Spec -> catfile($html_dir_name, $image_file);

@@ -20,6 +20,7 @@ if ($option_parser -> getoptions
 (
 	\%option,
 	'help',
+	'prefix=s'
 ) )
 {
 	pod2usage(1) if ($option{'help'});
@@ -45,6 +46,7 @@ generate.demo.pl [options]
 
 	Options:
 	-help
+	-prefix $s
 
 Exit value: 0 for success, 1 for failure. Die upon error.
 
@@ -55,6 +57,10 @@ Exit value: 0 for success, 1 for failure. Die upon error.
 =item o -help
 
 Print help and exit.
+
+=item o -prefix $s
+
+Restrict input file names to those matching /^$s/.
 
 =back
 

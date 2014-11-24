@@ -10,7 +10,7 @@
 <title>G</title>
 <polygon fill="white" stroke="none" points="-4,4 -4,-242 312,-242 312,4 -4,4"/>
 <g id="clust1" class="cluster"><title>cluster_0</title>
-<polygon fill="none" stroke="hotpink" points="158,-8 158,-155 300,-155 300,-8 158,-8"/>
+<polygon fill="none" stroke="#000000" points="158,-8 158,-155 300,-155 300,-8 158,-8"/>
 <text text-anchor="middle" x="229" y="-139.8" font-family="Times,serif" font-size="14.00">hello world</text>
 </g>
 <g id="clust2" class="cluster"><title>cluster_1</title>
