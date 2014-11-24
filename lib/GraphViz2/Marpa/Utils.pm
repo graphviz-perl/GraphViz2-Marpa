@@ -88,7 +88,7 @@ sub generate_demo_index
 			input        => $dot_file,
 			input_bytes  => 'byte' . (-s $dot_file == 1 ? '' : 's'),
 			input_size   => -s $dot_file,
-			object_file  => "./$file_name.$format",
+			object_file  => "./$image_file",
 			output       => -e $image_file && -s $image_file ? $image_file : '',
 			output_bytes => 'byte' . (-e $image_file && -s $image_file == 1 ? '' : 's'),
 			output_size  => -s $image_file,
