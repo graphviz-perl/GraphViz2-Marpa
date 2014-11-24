@@ -124,7 +124,8 @@ sub generate_demo_index
 	(
 	'graphviz2.marpa.index.tx',
 	{
-		data =>
+		author_tests => $self -> author_tests,
+		data         =>
 		[
 			map
 			{

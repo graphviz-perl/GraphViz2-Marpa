@@ -17,7 +17,12 @@
 
 <p>Some sample data is deliberately faulty, and so does not produce an image, or produces a faulty one (e.g. data/42.*.gv)</p>
 
-<p><span class = 'index'>Warning:</span> The <a href = './author_tests/'>author tests page</a> is quite large</p>
+: if ($author_tests == 1) {
+	<p><span class = 'index'>Note:</span> This is the author tests page. The <a href = '../index.html'>standard tests page</a> is up 1 dir level</p>
+: }
+: else {
+	<p><span class = 'index'>Warning:</span> This is the standard tests page. The <a href = './author_tests/index.html'>author tests page</a> is at least 20 times the size</p>
+: }
 
 <table border = "1">
 <tr>
