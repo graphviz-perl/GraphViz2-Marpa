@@ -94,7 +94,6 @@ $class -> new
 		'Date::Simple'                => 3.03,
 		'File::HomeDir'               => 1.00,
 		'File::Spec'                  => 3.40,
-		'File::Slurp'                 => 9999.19,
 		'File::Temp'                  => 0.2301,
 		'Getopt::Long'                => 2.38,
 		'HTML::Entities::Interpolate' => 1.04,
@@ -102,6 +101,7 @@ $class -> new
 		'Marpa::R2'                   => 2.096000,
 		'Moo'                         => 1.006000,
 		'open'                        => 0, # For writing utf8 node etc names.
+		'Path::Tiny'                  => 0.061,
 		'perl'                        => 5.014002,
 		'Pod::Usage'                  => 1.36,
 		'strict'                      => 0,
