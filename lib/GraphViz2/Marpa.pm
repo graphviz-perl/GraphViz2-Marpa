@@ -30,6 +30,14 @@ has bnf =>
 	required => 0,
 );
 
+has bnf4html =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Any,
+	required => 0,
+);
+
 has brace_count =>
 (
 	default  => sub{return 0},
@@ -47,6 +55,14 @@ has description =>
 );
 
 has grammar =>
+(
+	default  => sub {return ''},
+	is       => 'rw',
+	isa      => Any,
+	required => 0,
+);
+
+has grammar4html =>
 (
 	default  => sub {return ''},
 	is       => 'rw',
@@ -111,6 +127,14 @@ has output_file =>
 );
 
 has recce =>
+(
+	default  => sub{return ''},
+	is       => 'rw',
+	isa      => Any,
+	required => 0,
+);
+
+has recce4html =>
 (
 	default  => sub{return ''},
 	is       => 'rw',
@@ -423,6 +447,35 @@ END_OF_GRAMMAR
 
 	$self -> known_events(\%event);
 
+	# This grammar was devised by rns (Ruslan Shvedov) for nested, double-quoted strings.
+	# See MarpaX::Demo::SampleScipts and scripts/quoted.strings.05.pl.
+
+	$self -> bnf4html
+	(
+<<'END_OF_GRAMMAR'
+:default		::= action => [ values ]
+
+lexeme default	= latm => 1
+
+html_string		::= '<' quoted '>'
+quoted			::= item | quoted item
+item			::= html_string | unquoted
+
+unquoted		~ [^<>]+
+
+:discard		~ whitespace
+whitespace		~ [\s+]
+END_OF_GRAMMAR
+	);
+
+	$self -> grammar4html
+	(
+		Marpa::R2::Scanless::G -> new
+		({
+			source => \$self -> bnf4html
+		})
+	);
+
 	# Since $self -> stack has not been initialized yet,
 	# we can't call _add_daughter() until after this statement.
 
@@ -520,6 +573,46 @@ sub clean_before
 	return $s;
 
 } # End of clean_before.
+
+# ------------------------------------------------
+# Warning: This is a function, not a method.
+
+sub decode_result
+{
+	my($result)   = @_;
+	my(@worklist) = $result;
+
+	my($obj);
+	my($ref_type);
+	my(@stack);
+
+	do
+	{
+		$obj      = shift @worklist;
+		$ref_type = ref $obj;
+
+		if ($ref_type eq 'ARRAY')
+		{
+			unshift @worklist, @$obj;
+		}
+		elsif ($ref_type eq 'HASH')
+		{
+			push @stack, {%$obj};
+		}
+		elsif ($ref_type)
+		{
+			die "Unsupported object type $ref_type\n";
+		}
+		else
+		{
+			push @stack, $obj;
+		}
+
+	} while (@worklist);
+
+	return join('', @stack);
+
+} # End of decode_result.
 
 # ------------------------------------------------
 
@@ -724,7 +817,7 @@ sub _process
 			{
 				# Note: We pass in $start and it becomes $pos.
 
-				($lexeme, $pos) = $self -> _process_html($string, $length, $start);
+				($lexeme, $pos) = $self -> _process_html($string, $start);
 
 				$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
 			}
@@ -967,55 +1060,62 @@ sub _process_bracket
 
 sub _process_html
 {
-	my($self, $string, $length, $pos) = @_;
+	my($self, $string, $pos) = @_;
 
-	my($bracket_count) = 0;
-	my($open_bracket)  = '<';
-	my($close_bracket) = '>';
-	my($previous_char) = '';
-	my($label)         = '';
+	$self -> recce4html
+	(
+		Marpa::R2::Scanless::R -> new
+		({
+			grammar => $self -> grammar4html,
+		})
+	);
 
-	my($char);
+	# Return 0 for success and 1 for failure.
 
-	while ($pos < $length)
+	my($error);
+	my($html);
+	my($value);
+
+	try
 	{
-		$char  = substr($string, $pos, 1);
-		$label .= $char;
+		$self -> recce4html -> read(\$string);
 
-		if ($previous_char eq '\\')
+		$value = $self -> recce4html -> value;
+
+		if (defined $value)
 		{
+			$html = decode_result($$value);
 		}
-		elsif ($char eq $open_bracket)
+		else
 		{
-			$bracket_count++;
+			$error = 'Parse failed';
 		}
-		elsif ($char eq $close_bracket)
+	}
+	catch
+	{
+		$error = $_;
+
+		# But wait: It might be OK after all.
+
+		if ($error =~ /Error in SLIF parse: Parse exhausted, but lexemes remain/)
 		{
-			$bracket_count--;
-
-			if ($bracket_count == 0)
-			{
-				$pos++;
-
-				last;
-			}
+			$error = '';
+			$html  = decode_result($$value);
 		}
+		else
+		{
+			$error = "Parse failed. Error: $error";
+		}
+	};
 
-		$previous_char = $char;
-
-		$pos++;
+	if (! defined $html)
+	{
+		die $error;
 	}
 
-	$label = $self -> clean_after($label);
+	$pos += length($html);
 
-	if ( ($label =~ /^</) && ($label !~ /^<.+>$/s) )
-	{
-		my($line, $column) = $self -> recce -> line_column;
-
-		die "Mismatched <> in HTML |$label| at (line, column) = ($line, $column). Bracket count: $bracket_count\n";
-	}
-
-	return ($label, $pos);
+	return ($html, $pos);
 
 } # End of _process_html.
 
