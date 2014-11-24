@@ -6,8 +6,6 @@ use warnings;
 use warnings  qw(FATAL utf8);    # Fatalize encoding glitches.
 use open      qw(:std :utf8);    # Undeclared streams in UTF-8.
 
-use File::Slurp; # For read_file().
-
 use GraphViz2::Marpa::Renderer::Graphviz;
 
 use Log::Handler;
@@ -15,6 +13,8 @@ use Log::Handler;
 use Marpa::R2;
 
 use Moo;
+
+use Path::Tiny; # For path().
 
 use Tree::DAG_Node;
 
@@ -1067,7 +1067,7 @@ sub run
 		# o Look for trailing \ chars, and combine those lines.
 		# o Combine all remaining lines with ' '.
 
-		my(@line)   = grep{! m!^(?:\#|//)!} read_file($self -> input_file, binmode => ':encoding(utf-8)');
+		my(@line)   = grep{! m!^(?:\#|//)!} path($self -> input_file) -> lines_utf8;
 		my($last)   = $#line; # Store this separately so we can fiddle $i.
 		my($i)      = 0;
 		my($buffer) = '';
