@@ -297,7 +297,9 @@ Key-value pairs accepted in the parameter list:
 
 =over 4
 
-=item o (none)
+=item o authortest => $Boolean
+
+This allows generate.demo.pl to control whether it's processing data/ ot xt/author/data/.
 
 =back
 

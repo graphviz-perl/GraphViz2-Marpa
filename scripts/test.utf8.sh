@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in data/u*.gv ;
+for i in xt/author/data/u*.gv ;
 do
 	X=`basename $i .gv`
 
@@ -18,11 +18,11 @@ do
 
 		#echo Dot in: $i. Out: /tmp/$X.old.svg
 
-		dot -Tsvg /tmp/$X.gv > html/$X.svg
+		dot -Tsvg /tmp/$X.gv > xt/author/html/$X.svg
 
 		#echo Dot out: /tmp/$X.gv. Out: /tmp/$X.new.svg
 
-		diff /tmp/$X.old.svg html/$X.svg
+		diff /tmp/$X.old.svg xt/author/html/$X.svg
 
 		if [ "$?" -eq "0" ]
 		then

@@ -56,7 +56,7 @@ Exit value: 0 for success, 1 for failure. Die upon error.
 
 =item o -authortest $Boolean
 
-Specify whether (1) or not (0) to generate the author's tests demo age.
+Specify whether (1) or not (0) to generate the author tests demo age.
 
 See scripts/generate.demo.sh.
 
