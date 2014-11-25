@@ -92,6 +92,8 @@ $class -> new
 		'Config::Tiny'                => 2.14,
 		'Date::Format'                => 2.24,
 		'Date::Simple'                => 3.03,
+		'File::Basename'              => 2.84,
+		'File::Copy'                  => 2.26,
 		'File::HomeDir'               => 1.00,
 		'File::Spec'                  => 3.40,
 		'File::Temp'                  => 0.2301,
@@ -101,6 +103,7 @@ $class -> new
 		'Marpa::R2'                   => 2.096000,
 		'Moo'                         => 1.006000,
 		'open'                        => 0, # For writing utf8 node etc names.
+		'Path::Iterator::Rule'        => 1.008,
 		'Path::Tiny'                  => 0.061,
 		'perl'                        => 5.014002,
 		'Pod::Usage'                  => 1.36,

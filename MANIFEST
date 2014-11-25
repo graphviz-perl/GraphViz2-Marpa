@@ -204,6 +204,7 @@ META.json
 META.yml
 README
 scripts/copy.config.pl
+scripts/find.candidates.pl
 scripts/find.config.pl
 scripts/g2m.pl
 scripts/g2m.sh
@@ -214,7 +215,6 @@ scripts/gv2svg.sh
 scripts/pod2html.sh
 scripts/test.1.sh
 scripts/test.n.sh
-scripts/test.size.pl
 scripts/test.utf8.sh
 t/test.t
 xt/author/data/a.gv
