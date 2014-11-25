@@ -214,7 +214,6 @@ sub perform_1_test
 	my($html_dir_name) = $temp_dir_name;
 	my($in_suffix)     = 'gv';
 	my($out_suffix)    = 'gv';
-	my($svg_suffix)    = 'svg';
 
 	my(@new_svg, $new_svg);
 	my(@old_svg, $old_svg);
@@ -330,6 +329,11 @@ Right justify the $string in a field of 20 spaces.
 =head2 new()
 
 See L</Constructor and Initialization> for details on the parameters accepted by L</new()>.
+
+=head2 perform_1_test($file_name)
+
+Run C<dot> on the input file, and run C<g2m.pl> on it, and run C<dot> on the output file, and compare
+the outputs of the 2 svg files.
 
 =head1 Machine-Readable Change Log
 
