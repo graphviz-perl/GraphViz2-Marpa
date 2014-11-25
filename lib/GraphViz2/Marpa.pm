@@ -1064,11 +1064,15 @@ sub _process_html
 	(
 		Marpa::R2::Scanless::R -> new
 		({
-			grammar => $self -> grammar4html,
+			grammar         => $self -> grammar4html,
+			ranking_method  => 'high_rule_only',
+			trace_terminals => $self -> trace_terminals,
 		})
 	);
 
 	# Return 0 for success and 1 for failure.
+
+	my($candidate) = substr($string, $pos);
 
 	my($error);
 	my($html);
@@ -1076,7 +1080,7 @@ sub _process_html
 
 	try
 	{
-		$self -> recce4html -> read(\$string);
+		$self -> recce4html -> read(\$candidate);
 
 		$value = $self -> recce4html -> value;
 
@@ -1095,14 +1099,10 @@ sub _process_html
 
 		# But wait: It might be OK after all.
 
-		if ($error =~ /Error in SLIF parse: Parse exhausted, but lexemes remain/)
+		if (defined($value) && ($error =~ /Error in SLIF parse: Parse exhausted, but lexemes remain/) )
 		{
 			$error = '';
 			$html  = decode_result($$value);
-		}
-		else
-		{
-			$error = "Parse failed. Error: $error";
 		}
 	};
 
