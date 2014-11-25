@@ -340,9 +340,7 @@ escaped_char			~ '\' [[:print:]]
 :lexeme					~ graph_literal			pause => before		event => graph_literal
 graph_literal			~ 'graph':i
 
-html_quoted_char_set	~ html_quoted_char+
-html_quoted_char		~ escaped_char
-							| [^\x{0A}\x{0B}\x{0C}\x{0D}\x{0085}\x{2028}\x{2029}]
+html_quoted_char_set	~ [.]+
 
 :lexeme					~ node_name				pause => before		event => node_name
 node_name				~ string
