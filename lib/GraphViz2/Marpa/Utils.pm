@@ -221,6 +221,9 @@ sub perform_1_test
 	my($in_file)                 = File::Spec -> catfile($data_dir_name, "$file_name.$in_suffix");
 	my($out_file)                = File::Spec -> catfile($temp_dir_name, "$file_name.$out_suffix");
 	my($stdout, $stderr, $exit)  = capture{system $^X, '-Ilib', 'scripts/g2m.pl', '-input_file', $in_file, '-output_file', $out_file};
+
+	die "Error: g2m.pl did not create an output *.gv file\n" if (! -e $out_file);
+
 	($old_svg, $stderr, $exit)   = capture{system 'dot', '-Tsvg', $in_file};
 	@old_svg                     = split(/\n/, $old_svg);
 	($new_svg, $stderr, $exit)   = capture{system 'dot', '-Tsvg', $out_file};
@@ -334,6 +337,10 @@ See L</Constructor and Initialization> for details on the parameters accepted by
 
 Run C<dot> on the input file, and run C<g2m.pl> on it, and run C<dot> on the output file, and compare
 the outputs of the 2 svg files.
+
+Dies if scripts/g2m.pl fails to create an output file.
+
+Used by scripts/test.html.pl and t/test.t.
 
 =head1 Machine-Readable Change Log
 

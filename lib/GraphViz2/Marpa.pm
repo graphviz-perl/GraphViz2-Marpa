@@ -455,9 +455,9 @@ END_OF_GRAMMAR
 
 lexeme default	= latm => 1
 
-html_string		::= '<' quoted '>'
+string			::= '<' quoted '>'
 quoted			::= item | quoted item
-item			::= html_string | unquoted
+item			::= string | unquoted
 
 unquoted		~ [^<>]+
 
@@ -573,12 +573,11 @@ sub clean_before
 } # End of clean_before.
 
 # ------------------------------------------------
-# Warning: This is a function, not a method.
 
 sub decode_result
 {
-	my($result)   = @_;
-	my(@worklist) = $result;
+	my($self, $result) = @_;
+	my(@worklist)      = $result;
 
 	my($obj);
 	my($ref_type);
@@ -815,7 +814,7 @@ sub _process
 			{
 				# Note: We pass in $start and it becomes $pos.
 
-				($lexeme, $pos) = $self -> _process_html($string, $start);
+				($lexeme, $pos) = $self -> _process_html(\$string, $start);
 
 				$self -> _add_daughter('attribute', {type => $fields[0], value => $lexeme});
 			}
@@ -1011,7 +1010,7 @@ sub _process_brace
 		push @$stack, $daughters[$#daughters];
 
 		$self -> stack($stack);
-		#$self -> _dump_stack('_process_brace({) pushed { onto stack');
+		#$self -> _dump_stack('_process_brace() pushed { onto stack');
 	}
 	else
 	{
@@ -1058,21 +1057,19 @@ sub _process_bracket
 
 sub _process_html
 {
-	my($self, $string, $pos) = @_;
+	my($self, $stringref, $pos) = @_;
 
 	$self -> recce4html
 	(
 		Marpa::R2::Scanless::R -> new
 		({
-			grammar         => $self -> grammar4html,
-			ranking_method  => 'high_rule_only',
-			trace_terminals => $self -> trace_terminals,
+			grammar => $self -> grammar4html,
 		})
 	);
 
 	# Return 0 for success and 1 for failure.
 
-	my($candidate) = substr($string, $pos);
+	my($candidate) = substr($$stringref, $pos);
 
 	my($error);
 	my($html);
@@ -1097,12 +1094,25 @@ sub _process_html
 	{
 		$error = $_;
 
-		# But wait: It might be OK after all.
+		# But wait! It might be OK after all.
+		# Actually, this branch always happens, because for valid DOT files,
+		# there must be something in the input ('lexemes') after the HTML.
 
-		if (defined($value) && ($error =~ /Error in SLIF parse: Parse exhausted, but lexemes remain/) )
+		if ($error =~ /Error in SLIF parse: Parse exhausted, but lexemes remain/)
 		{
-			$error = '';
-			$html  = decode_result($$value);
+			if (defined($value) )
+			{
+				# But this branch never happens, because Marpa does not populate $value
+				# when we get this type of error. But we don't care. The false branch works!
+
+				$error = '';
+				$html  = $self -> decode_result($$value);
+			}
+			else
+			{
+				my(@span) = $self -> recce4html -> last_completed_span('string');
+				$html     = substr($candidate, $span[0], $span[1]);
+			}
 		}
 	};
 
@@ -1198,7 +1208,7 @@ sub run
 
 		$self -> graph_text(join(' ', @out) );
 
-		$self -> log(debug => "After processing \\:\n" . $self -> graph_text);
+		$self -> log(debug => "After processing this graph:\n|" . $self -> graph_text . '|');
 	}
 	else
 	{
@@ -1269,7 +1279,7 @@ sub run
 	else
 	{
 		$self -> log(info => 'The stack and the tree when we died ...');
-		$self -> _dump_stack('_process_brace({) pushed { onto stack');
+		$self -> _dump_stack('_process_brace() pushed { onto stack');
 	}
 
 	# Return 0 for success and 1 for failure.
@@ -1576,6 +1586,13 @@ RAM disk).
 =item o test.1.sh
 
 Runs both the parser and C<dot> so I can compare the output.
+
+=item o test.html.pl
+
+Uses method perform_1_test() in L<GraphViz2::Marpa::Utils>, to test the stand-alone BNF used for
+HTML-like tables.
+
+Note: t/test.t also calls perform_1_test().
 
 =item o test.utf8.sh
 
