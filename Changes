@@ -6,6 +6,9 @@ Revision history for Perl extension GraphViz2::Marpa.
 	- Rewrite from Marpa::XS to Marpa::R2, and hence build a new, and much more sophisticated,
 		grammar. This grammar is based on MarpaX::Demo::StringParser V 2.02.
 	- Include sample graphs shipped with Graphviz, in xt/author/data/ as new test data.
+	- Expand helper scripts. E.g. scripts/generate.demo.sh generates SVGs for both standard test
+		data, from data/, and author test data. The HTML template for the demo page has been changed
+		to link the 2 output sets of images.
 	- Rewrite docs.
 	- Reformat the docs and this file to be a max of 100 chars per line.
 
