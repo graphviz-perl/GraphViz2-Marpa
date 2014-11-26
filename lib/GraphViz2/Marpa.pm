@@ -2163,9 +2163,9 @@ The main grammar (See C<< $self -> bnf >> in the source) is used to hold the def
 (See C<strict_literal>). Thus Marpa, via the main parser C<< $self -> recce >>, is used to identify
 all types of strings.
 
-Then, if the string starts with '<', C<< _process_html >> is called, and it uses a separate grammar
+Then, if the string starts with '>', C<_process_html()> is called, and has a separate grammar
 (See C<bnf4html>). This in turn uses a separate grammar object (C<grammar4html>) and a separate
-parser (C<recce4html). C<_process_html()> traps any I<apparent> parsing errors, found when lexemes
+parser (C<recce4html>). C<_process_html()> traps any I<apparent> parsing errors, found when lexemes
 (text) follows the HTML, and saves the label's value. This method also sets $pos to the first char
 after the HTML, so when control returns to the main parser, and the main grammar, the main parser
 is not aware of the existence of the HTML, and just keeps on parsing from where the HTML parser
