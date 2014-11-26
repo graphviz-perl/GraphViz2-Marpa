@@ -2249,6 +2249,9 @@ This runs both standard and author tests:
 
 	shell> perl Build.PL; ./Build; ./Build test; ./Build authortest
 
+There are currently (V 2.00) 91 standard tests, and in xt/author/*.t, 4 pod tests and 355 author
+tests. Combined, they take almost 2m 30s to run.
+
 =head1 See Also
 
 L<Marpa::Demo::StringParser>. The significance of this module is that during the re-write of
