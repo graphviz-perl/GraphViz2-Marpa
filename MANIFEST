@@ -214,6 +214,7 @@ scripts/generate.svg.sh
 scripts/gv2svg.sh
 scripts/pod2html.sh
 scripts/test.1.sh
+scripts/test.html.pl
 scripts/test.n.sh
 scripts/test.utf8.sh
 t/test.t
