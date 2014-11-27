@@ -1,5 +1,12 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+2.01  Thu Nov 27 15:37:00 2014
+	- Split Utils.pm into Demo.pm (just for generating the demo pages), Utils.pm (just for testing).
+		This way, GraphViz2::Marpa::Config is not needed for testing, and since that module needs
+		scripts/copy.config.pl to have been run, CPAN testers were reporting failures.
+	- Update scripts/generate.demo.pl.
+	- Update MANIFEST.
+
 2.00  Tue Sep  9 09:36:00 2014
 	- Warning: GraphViz2::Marpa::PathUtils V 1.05 will not work with GraphViz2::Marpa V 2.00.
 		With this release of GraphViz2::Marpa, GraphViz2::Marpa::PathUtils must now be re-written.

@@ -195,6 +195,7 @@ html/62.svg
 html/index.html
 lib/GraphViz2/Marpa.pm
 lib/GraphViz2/Marpa/Config.pm
+lib/GraphViz2/Marpa/Demo.pm
 lib/GraphViz2/Marpa/Renderer/Graphviz.pm
 lib/GraphViz2/Marpa/Utils.pm
 LICENSE
