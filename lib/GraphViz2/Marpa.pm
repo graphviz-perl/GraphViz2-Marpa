@@ -1098,21 +1098,10 @@ sub _process_html
 		# Actually, this branch always happens, because for valid DOT files,
 		# there must be something in the input ('lexemes') after the HTML.
 
-		if ($error =~ /Error in SLIF parse: Parse exhausted, but lexemes remain/)
+		if ($self -> recce4html -> exhausted)
 		{
-			if (defined($value) )
-			{
-				# But this branch never happens, because Marpa does not populate $value
-				# when we get this type of error. But we don't care. The false branch works!
-
-				$error = '';
-				$html  = $self -> decode_result($$value);
-			}
-			else
-			{
-				my(@span) = $self -> recce4html -> last_completed_span('string');
-				$html     = substr($candidate, $span[0], $span[1]);
-			}
+			my(@span) = $self -> recce4html -> last_completed_span('string');
+			$html     = substr($candidate, $span[0], $span[1]);
 		}
 	};
 
