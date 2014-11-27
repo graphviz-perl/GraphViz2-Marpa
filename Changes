@@ -1,6 +1,8 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
 2.01  Thu Nov 27 15:37:00 2014
+	- Replace string comparison when getting a 'parse exhausted' error from Marpa, with a call to
+		Marpa::R2::Scanless::R's exhausted(). That makes the code much nicer.
 	- Split Utils.pm into Demo.pm (just for generating the demo pages), Utils.pm (just for testing).
 		This way, GraphViz2::Marpa::Config is not needed for testing, and since that module needs
 		scripts/copy.config.pl to have been run, CPAN testers were reporting failures.
