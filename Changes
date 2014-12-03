@@ -1,5 +1,10 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+2.02  Mon Dec  1 10:28:00 2014
+	- If maxlevel for logging set to info or above, print 'Parsed tree:' just before printing the tree.
+		This is to make it easier to parse the output, if that ever happens.
+	- Remove commented-out code for _post_process().
+
 2.01  Thu Nov 27 15:37:00 2014
 	- Replace string comparison when getting a 'parse exhausted' error from Marpa, with a call to
 		Marpa::R2::Scanless::R's exhausted(). That makes the code much nicer.

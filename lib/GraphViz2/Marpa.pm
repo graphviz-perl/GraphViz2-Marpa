@@ -699,44 +699,6 @@ sub next_few_chars
 
 # ------------------------------------------------
 
-sub _post_process
-{
-	my($self) = @_;
-
-	# Walk the tree, find the edges, and stockpile uids of interest.
-	# The Tree::DAG_Node docs warn against modifying the tree during a walk,
-	# so we use a hash to track uids found, and post-process them.
-
-	my($attributes);
-	my($uid, %uid);
-
-	$self -> tree -> walk_down
-	({
-		callback => sub
-		{
-			my($node) = @_;
-			my($name) = $node -> name;
-
-			# Stash uids for later processing.
-
-			if ($name eq 'edge_id')
-			{
-				$attributes  = $node -> mother -> attributes;
-				$uid         = $$attributes{uid};
-				$uid{$uid}   = $node;
-			}
-
-			# Keep walking.
-
-			return 1;
-		},
-		_depth => 0,
-	});
-
-} # End of _post_process.
-
-# ------------------------------------------------
-
 sub _process
 {
 	my($self)          = @_;
@@ -1212,9 +1174,7 @@ sub run
 	{
 		if (defined (my $value = $self -> _process) )
 		{
-			# At this stage, _post_process() does nothing.
-
-			#$self -> _post_process;
+			$self -> log(info => 'Parsed tree:');
 			$self -> log(info => join("\n", @{$self -> tree -> tree2string}) );
 		}
 		else
