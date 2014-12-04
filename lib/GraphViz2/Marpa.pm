@@ -1868,7 +1868,7 @@ And this is the output:
 	   |   |--- literal. Attributes: {type => "strict_literal", uid => "3", value => "strict"}
 	   |   |--- literal. Attributes: {type => "digraph_literal", uid => "4", value => "digraph"}
 	   |--- graph. Attributes: {type => "graph_literal", uid => "2", value => "graph"}
-	       |--- node_id. Attributes: {type => "node_id", uid => "5", value => "graph_10"}
+	       |--- graph_id. Attributes: {type => "node_id", uid => "5", value => "graph_10"}
 	       |--- literal. Attributes: {type => "open_brace", uid => "6", value => "{"}
 	       |   |--- class. Attributes: {type => "class", uid => "7", value => "edge"}
 	       |   |   |--- literal. Attributes: {type => "open_bracket", uid => "8", value => "["}
@@ -2016,7 +2016,16 @@ attributes for the edge.
 
 =item o graph
 
-There is only ever 1 node called C<graph>.
+There is only ever 1 node called C<graph>. This tree node is always present.
+
+=item o graph_id
+
+There is only ever 1 node called C<graph_id>.
+
+If present, it's mother must be the tree node called C<graph>, in which case it will be the first
+daughter of C<graph>.
+
+But, it will be absent if the graph is unnamed, as in strict digraph /* no name /* {...}.
 
 =item o literal
 
@@ -2083,11 +2092,11 @@ This is a case where tree compression could be done, but isn't done yet.
 
 =item o prolog
 
-There is only ever 1 node called C<prolog>.
+There is only ever 1 node called C<prolog>. This tree node is always present.
 
 =item o root
 
-There is only ever 1 node called C<root>.
+There is only ever 1 node called C<root>. This tree node is always present.
 
 =back
 

@@ -7,6 +7,7 @@ Revision history for Perl extension GraphViz2::Marpa.
 	- Remove commented-out code for _post_process().
 	- Rename the tree node of the graph's id from 'node_id' to 'graph_id'. This really should have
 		been the in original design, and it helps GraphViz2::Marpa::ParthUtils.
+	- Update the docs.
 
 2.01  Thu Nov 27 15:37:00 2014
 	- Replace string comparison when getting a 'parse exhausted' error from Marpa, with a call to
