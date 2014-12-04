@@ -182,7 +182,7 @@ has uid =>
 	required => 0,
 );
 
-our $VERSION = '2.01';
+our $VERSION = '2.02';
 
 # ------------------------------------------------
 
@@ -723,7 +723,7 @@ sub _process
 	my($lexeme);
 	my($node_name);
 	my($original_lexeme);
-	my($span, $start, $s);
+	my($span, $start, $s, $stack);
 	my($temp, $type);
 
 	# We use read()/lexeme_read()/resume() because we pause at each lexeme.
@@ -882,6 +882,11 @@ sub _process
 			else
 			{
 				$type = 'node_id';
+
+				# If this node's mother is the 'graph' node, then it's a graph_id.
+
+				$stack = $self -> stack;
+				$type  = 'graph_id' if ($$stack[$#$stack] -> name eq 'graph');
 			}
 
 			$self -> log(debug => "|$lexeme| classified as a $type") if ($original_lexeme ne $lexeme);
