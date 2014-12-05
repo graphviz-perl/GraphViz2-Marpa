@@ -158,7 +158,7 @@ sub format_node
 			die "Rendering error: Unknown literal. $message";
 		}
 	}
-	elsif ($name eq 'node_id')
+	elsif ($name =~ /(?:graph_id|node_id/)
 	{
 		$indent    = "\t" x ($depth - 2);
 		$indent    = ''    if ($$opts{previous}{type} eq 'subgraph_literal');    # Seperate 'subgraph' and its name.
