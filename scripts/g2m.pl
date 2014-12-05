@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use warnings  qw(FATAL utf8);    # Fatalize encoding glitches.
+use warnings qw(FATAL utf8); # Fatalize encoding glitches.
 
 use Getopt::Long;
 
