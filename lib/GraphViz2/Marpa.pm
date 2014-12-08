@@ -2217,10 +2217,13 @@ tests. Combined, they take almost 2m 30s to run.
 =head1 See Also
 
 L<Marpa::Demo::StringParser>. The significance of this module is that during the re-write of
-GraphViz2::Marpa, the string-handling code was perfected in L<Marpa::Demo::StringParser>.
+GraphViz2::Marpa (V 1 .. 2), the string-handling code was designed in L<Marpa::Demo::StringParser>.
 
 Later, that code was improved within this module, and will be back-ported into
 Marpa::Demo::StringParser.
+
+Also, see L<GraphViz2::Marpa::PathUtils> for 2 ways the tree build by this module can be processed
+to provide analysis of the structure of the graph.
 
 =head1 Machine-Readable Change Log
 
