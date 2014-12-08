@@ -100,15 +100,26 @@ sub format_node
 	{
 		$$opts{previous}{attribute_count}++;
 
-		$indent    = ' ';
-		$value     = qq("$value") if ( ($value !~ /^<.+>$/s) && ($value !~ /^".*"/) );
+		$value = qq("$value") if ( ($value !~ /^<.+>$/s) && ($value !~ /^".*"/) );
 
 		# Separate nodes and graph attrs.
 
 		if ($$opts{previous}{name} eq 'node_id')
 		{
-			$indent    = "\t" x ($depth - 2);
 			$dot_input .= "\n";
+		}
+
+		if ($$opts{previous}{value} eq '[')
+		{
+			$indent = '';
+		}
+		elsif ($$opts{previous}{name} eq 'attribute')
+		{
+			$indent = ' ';
+		}
+		else
+		{
+			$indent = "\t" x ($depth - 2);
 		}
 
 		$dot_input .= "$indent$type = $value";
@@ -122,7 +133,6 @@ sub format_node
 	}
 	elsif ($name eq 'edge_id')
 	{
-		$indent    = "\t" x ($depth - 2);
 		$dot_input .= " $value";
 	}
 	elsif ($name eq 'literal')
@@ -150,7 +160,8 @@ sub format_node
 		elsif ($type eq 'subgraph_literal')
 		{
 			$indent    = "\t" x ($depth - 2);
-			$dot_input .= "$indent$value ";
+			$dot_input .= "\n" if ($$opts{previous}{name} eq 'attribute');
+			$dot_input .= "\n$indent$value ";
 		}
 		else
 		{
@@ -160,16 +171,15 @@ sub format_node
 	elsif ($name =~ /(?:graph_id|node_id)/)
 	{
 		$indent    = "\t" x ($depth - 2);
-		$indent    = ''    if ($$opts{previous}{type} eq 'subgraph_literal');    # Seperate 'subgraph' and its name.
 		$dot_input .= "\n" if ($$opts{previous}{name} =~ /(?:attribute|class)/); # Separate classes and attrs.
 
 		if ($$opts{previous}{name} eq 'edge_id')
 		{
 			$indent = ' '; # Don't separate nodes and edges.
 		}
-		elsif ($$opts{previous}{type} =~ /(?:digraph|graph|subgraph)_literal/)
+		elsif ($$opts{previous}{type} =~ /(?:digraph|graph)_literal/)
 		{
-			$indent = ''; # Don't separate nodes and 'digraph', 'graph' or 'subgraph'.
+			$indent = ''; # Don't separate nodes and 'digraph' or 'graph'.
 		}
 		elsif ($$opts{previous}{name} ne 'literal')
 		{
@@ -177,6 +187,10 @@ sub format_node
 		}
 
 		$dot_input .= "$indent$value";
+	}
+	elsif ($name eq 'subgraph_id')
+	{
+		$dot_input .= " $value";
 	}
 	elsif (! $ignore{$name})
 	{

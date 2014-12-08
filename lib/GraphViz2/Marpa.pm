@@ -304,7 +304,7 @@ subgraph_no_sub_no_id	::=	graph_statement
 
 subgraph_prefix			::= subgraph_literal
 
-subgraph_id_token		::= node_name
+subgraph_id_token		::= subgraph_id
 
 # Lexemes in alphabetical order.
 # Quoted string handling copied from Marpa::R2's metag.bnf.
@@ -358,6 +358,9 @@ strict_literal			~ 'strict':i
 string					~ [\"]	double_quoted_char_set	[\"]
 string					~ '<'	html_quoted_char_set	'>'
 string					~ unquoted_char_set
+
+:lexeme					~ subgraph_id			pause => before		event => subgraph_id
+subgraph_id				~ string
 
 :lexeme					~ subgraph_literal		pause => before		event => subgraph_literal
 subgraph_literal		~ 'subgraph':i
@@ -902,6 +905,10 @@ sub _process
 		elsif ($event_name =~ $prolog_token)
 		{
 			$self -> _process_prolog_token($event_name, $lexeme);
+		}
+		elsif ($event_name eq 'subgraph_id')
+		{
+			$self -> _add_daughter('subgraph_id', {type => $event_name, value => $lexeme});
 		}
 		elsif ($event_name eq 'subgraph_literal')
 		{
