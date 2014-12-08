@@ -16,19 +16,19 @@ name: GraphViz2-Marpa
 provides:
   GraphViz2::Marpa:
     file: lib/GraphViz2/Marpa.pm
-    version: '2.02'
+    version: '2.03'
   GraphViz2::Marpa::Config:
     file: lib/GraphViz2/Marpa/Config.pm
-    version: '2.02'
+    version: '2.03'
   GraphViz2::Marpa::Demo:
     file: lib/GraphViz2/Marpa/Demo.pm
-    version: '2.02'
+    version: '2.03'
   GraphViz2::Marpa::Renderer::Graphviz:
     file: lib/GraphViz2/Marpa/Renderer/Graphviz.pm
-    version: '2.02'
+    version: '2.03'
   GraphViz2::Marpa::Utils:
     file: lib/GraphViz2/Marpa/Utils.pm
-    version: '2.02'
+    version: '2.03'
 requires:
   Algorithm::Diff: '1.1902'
   Capture::Tiny: '0.25'
@@ -61,4 +61,4 @@ requires:
 resources:
   license: http://www.perlfoundation.org/artistic_license_2_0
   repository: https://github.com/ronsavage/GraphViz2-Marpa
-version: '2.02'
+version: '2.03'
