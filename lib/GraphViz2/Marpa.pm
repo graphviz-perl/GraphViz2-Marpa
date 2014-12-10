@@ -512,8 +512,6 @@ sub _add_daughter
 
 	$$stack[$#$stack] -> add_daughter($node);
 
-	#$self -> _dump_stack('End of _add_daughter()');
-
 } # End of _add_daughter.
 
 # ------------------------------------------------
@@ -579,6 +577,23 @@ sub clean_before
 
 # ------------------------------------------------
 
+sub decode_node
+{
+	my($self, $node) = @_;
+	my($attributes)  = $node -> attributes;
+
+	return
+	{
+		id   => $node -> name,
+		name => $$attributes{value},
+		type => $$attributes{type},
+		uid  => $$attributes{uid},
+	};
+
+} # End of decode_node.
+
+# ------------------------------------------------
+
 sub _decode_result
 {
 	my($self, $result) = @_;
@@ -624,13 +639,13 @@ sub _dump_stack
 
 	$self -> log(info => "\tStack @ $caller");
 
-	my($attributes);
+	my($node_id);
 
 	for my $item (@{$self -> stack})
 	{
-		$attributes = $item -> attributes;
+		$node_id = $self -> decode_node($item);
 
-		$self -> log(info => "\tUid: $$attributes{uid}. Name: " . $item -> name);
+		$self -> log(info => "\tUid: $node_id{uid}. Id: $node_id{id}. Name: $node_id{name}");
 	}
 
 	$self -> log(debug => join("\n", @{$self -> tree -> tree2string}) );
@@ -986,7 +1001,6 @@ sub _process_brace
 		push @$stack, $daughters[$#daughters];
 
 		$self -> stack($stack);
-		#$self -> _dump_stack('_process_brace() pushed { onto stack');
 	}
 	else
 	{
