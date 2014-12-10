@@ -549,10 +549,13 @@ sub clean_after
 	my($self, $s) = @_;
 
 	# The grammar allows things like 'xyz,', so clean them up.
+	# Also, trim spaces and then double-quotes. The reason for doing things in this order
+	# is that the user might have written "  X  ", so we don't remove the quotes first.
 
 	substr($s, -1, 1) = '' if (substr($s, -1, 1) eq ',');
 	$s                =~ s/^\s+//;
 	$s                =~ s/\s+$//;
+	$s                =~ s/"(.*)"/$1/;
 
 	return $s;
 

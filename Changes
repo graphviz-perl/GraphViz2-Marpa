@@ -1,6 +1,8 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
 2.03  Mon Dec  8 16:26:00 2014
+	- Patch so token names are not stored with double-quotes when input is double-quoted.
+		This means renderers must double-quote things.
 	- Patch so the graph's id has the tree node name of 'graph_id' and not 'node_id'.
 	- Patch so subgraph ids have the tree node name of 'subgraph_id' and not 'node_id'.
 	- Patch docs re See Also.
