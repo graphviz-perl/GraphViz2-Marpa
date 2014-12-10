@@ -518,7 +518,7 @@ sub _add_daughter
 
 # ------------------------------------------------
 
-sub check4embedded_separator
+sub _check4embedded_separator
 {
 	my($self, $lexeme, $pos) = @_;
 
@@ -540,7 +540,7 @@ sub check4embedded_separator
 
 	return ($lexeme, $pos);
 
-} # End of check4embedded_separator.
+} # End of _check4embedded_separator.
 
 # ------------------------------------------------
 
@@ -579,7 +579,7 @@ sub clean_before
 
 # ------------------------------------------------
 
-sub decode_result
+sub _decode_result
 {
 	my($self, $result) = @_;
 	my(@worklist)      = $result;
@@ -614,7 +614,7 @@ sub decode_result
 
 	return join('', @stack);
 
-} # End of decode_result.
+} # End of _decode_result.
 
 # ------------------------------------------------
 
@@ -799,7 +799,7 @@ sub _process
 					substr($lexeme, -1, 1) = '';
 				}
 
-				($lexeme, $pos) = $self -> check4embedded_separator($lexeme, $pos);
+				($lexeme, $pos) = $self -> _check4embedded_separator($lexeme, $pos);
 				$lexeme         = $self -> clean_after($lexeme);
 				$s              = $self -> next_few_chars($string, $pos);
 
@@ -1059,7 +1059,7 @@ sub _process_html
 
 		if (defined $value)
 		{
-			$html = decode_result($$value);
+			$html = $self -> _decode_result($$value);
 		}
 		else
 		{
@@ -1236,7 +1236,6 @@ sub run
 			) if (! $self -> renderer);
 
 			$self -> renderer -> run;
-			$self -> log(info => "Rendered file: $output_file");
 		}
 	}
 	else
@@ -1692,6 +1691,14 @@ This allows g2m.pl to control the C<trace_terminals> setting passed to L<Marpa::
 
 =head1 Methods
 
+=head2 clean_before($s)
+
+Clean the given string before passing it to Marpa.
+
+=head2 clean_after($s)
+
+Clean the given string before storing it in the tree.
+
 =head2 description([$graph])
 
 The [] indicate an optional parameter.
@@ -1704,6 +1711,12 @@ The value supplied by the 'description' option takes precedence over the value r
 See also L</input_file()>.
 
 'description' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
+
+=head2 hashref2string($h)
+
+Convert the keys and values of $h to a string, including '{' and '}'.
+
+Defaults to '{}' if $h is not defined.
 
 =head2 input_file([$graph_file_name])
 
@@ -1760,6 +1773,12 @@ use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
 =head2 new()
 
 See L</Constructor and Initialization> for details on the parameters accepted by L</new()>.
+
+=head2 next_few_chars($s, $offset)
+
+Returns a substring of $s, starting at $offset, for use in progress messages.
+
+The default string length returned is 20 characters.
 
 =head2 output_file([$file_name])
 

@@ -253,6 +253,8 @@ sub run
 		open(my $fh, '> :encoding(utf-8)', $output_file) || die "Can't open(> $output_file): $!";
 		print $fh $$previous{dot_input};
 		close $fh;
+
+		$self -> log(info => "Rendered file: $output_file");
 	}
 
 	# Return 0 for success and 1 for failure.
