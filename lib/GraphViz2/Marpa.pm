@@ -645,7 +645,7 @@ sub _dump_stack
 	{
 		$node_id = $self -> decode_node($item);
 
-		$self -> log(info => "\tUid: $node_id{uid}. Id: $node_id{id}. Name: $node_id{name}");
+		$self -> log(info => "\tUid: $$node_id{uid}. Id: $$node_id{id}. Name: $$node_id{name}");
 	}
 
 	$self -> log(debug => join("\n", @{$self -> tree -> tree2string}) );
