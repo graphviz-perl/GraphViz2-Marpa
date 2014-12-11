@@ -594,6 +594,32 @@ sub decode_node
 
 # ------------------------------------------------
 
+sub decode_tree
+{
+	my($self, $tree) = @_;
+	my($prolog) =
+	{
+		digraph => 'digraph',
+		strict  => '',
+	};
+
+	# Examine the daughters of the prolog to find the digraph/graph and strict attributes.
+
+	my($node_id);
+
+	for my $node ( ($tree -> daughters)[0] -> daughters)
+	{
+		$node_id         = $self -> decode_node($node);
+		$prolog{digraph} = 'graph'   if ($$node_id{name} eq 'graph');
+		$prolog{strict}  = 'strict ' if ($$node_id{name} eq 'strict');
+	}
+
+	return $prolog;
+
+} # End of decode_tree.
+
+# ------------------------------------------------
+
 sub _decode_result
 {
 	my($self, $result) = @_;
@@ -1715,7 +1741,9 @@ Clean the given string before storing it in the tree.
 
 =head2 decode_node($node)
 
-Returns a hashref of the tree node's name and attributes. Details:
+Returns a hashref of the tree node's name and attributes.
+
+Key => Value pairs:
 
 =over 4
 
@@ -1735,6 +1763,26 @@ This has values like 'node_id', 'open_bracket', etc. In fact, these are the name
 =item o uid  => $$attributes{uid}
 
 This is the unique uid of the tree node.
+
+=back
+
+=head2 decode_tree($tree)
+
+Returns a hashref of the tree's digraph/graph and strict attributes. These are extracted from the
+prolog of the tree, which means $tree must be a whole tree, and not just a node within a whole
+tree.
+
+Key => Value pairs:
+
+=over 4
+
+=item o digraph => 'digraph' | 'graph'
+
+Default: 'digraph'.
+
+=item o strict  => '' | 'strict'
+
+Default: ''.
 
 =back
 
@@ -2092,7 +2140,7 @@ There is only ever 1 node called C<graph_id>.
 If present, it's mother must be the tree node called C<graph>, in which case it will be the first
 daughter of C<graph>.
 
-But, it will be absent if the graph is unnamed, as in strict digraph /* no name /* {...}.
+But, it will be absent if the graph is unnamed, as in strict digraph /* no name */ {...}.
 
 =item o literal
 
