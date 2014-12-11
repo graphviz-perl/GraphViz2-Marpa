@@ -609,9 +609,9 @@ sub decode_tree
 
 	for my $node ( ($tree -> daughters)[0] -> daughters)
 	{
-		$node_id         = $self -> decode_node($node);
-		$prolog{digraph} = 'graph'   if ($$node_id{name} eq 'graph');
-		$prolog{strict}  = 'strict ' if ($$node_id{name} eq 'strict');
+		$node_id          = $self -> decode_node($node);
+		$$prolog{digraph} = 'graph'   if ($$node_id{name} eq 'graph');
+		$$prolog{strict}  = 'strict ' if ($$node_id{name} eq 'strict');
 	}
 
 	return $prolog;
