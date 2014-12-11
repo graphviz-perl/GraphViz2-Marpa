@@ -1713,6 +1713,31 @@ Clean the given string before passing it to Marpa.
 
 Clean the given string before storing it in the tree.
 
+=head2 decode_node($node)
+
+Returns a hashref of the tree node's name and attributes. Details:
+
+=over 4
+
+=item o id => $node -> name
+
+This has values like 'node_id', 'edge_id', 'literal', etc.
+
+=item o name => $$attributes{value}
+
+This is the real name of the tree node. E.g. If C<id> is 'node_id', then C<name> is the DOT node's
+name.
+
+=item o type => $$attributes{type}
+
+This has values like 'node_id', 'open_bracket', etc. In fact, these are the names of lexemes.
+
+=item o uid  => $$attributes{uid}
+
+This is the unique uid of the tree node.
+
+=back
+
 =head2 description([$graph])
 
 The [] indicate an optional parameter.
