@@ -586,6 +586,7 @@ sub decode_node
 	{
 		id   => $node -> name,
 		name => $$attributes{value},
+		node => $node,
 		type => $$attributes{type},
 		uid  => $$attributes{uid},
 	};
