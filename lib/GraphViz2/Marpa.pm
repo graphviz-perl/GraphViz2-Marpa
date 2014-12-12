@@ -581,16 +581,63 @@ sub decode_node
 {
 	my($self, $node) = @_;
 	my($attributes)  = $node -> attributes;
+	my(@name)        = $self -> decode_port_compass($$attributes{value});
 
 	return
 	{
 		id   => $node -> name,
 		name => $$attributes{value},
+		node => $name[0],
+		port => $name[1],
 		type => $$attributes{type},
 		uid  => $$attributes{uid},
 	};
 
 } # End of decode_node.
+
+# --------------------------------------------------
+
+sub decode_port_compass
+{
+	my($self -> $name) = @_;
+
+	# Remove :port:compass, if any, from name.
+	# But beware Perl-style node names like 'A::Class'.
+	# The (?=.) means there must be something after the last ':',
+	# which means we don't split 'A:' or 'A::'.
+
+	my(@field) = split(/(:(?!:)(?=.))/, $name);
+	$field[0]  = $name if ($#field < 0);
+
+	# Restore Perl module names:
+	# o A: & : & B to A::B.
+	# o A: & : B: & : & C to A::B::C.
+
+	while ($field[0] =~ /:$/)
+	{
+		splice(@field, 0, 3, "$field[0]:$field[2]");
+	}
+
+	# Restore:
+	# o : & port to :port.
+	# o : & port & : & compass to :port:compass.
+
+	splice(@field, 1, $#field, join('', @field[1 .. $#field]) ) if ($#field > 0);
+
+	my(@result);
+
+	if ($#field == 0)
+	{
+		@result = ($name, '');
+	}
+	else
+	{
+		@result = ($field[0], join('', @field[1 .. $#field]) );
+	}
+
+	return [@result];
+
+} # End of decode_port_compass.
 
 # ------------------------------------------------
 
@@ -1754,7 +1801,11 @@ This has values like 'node_id', 'edge_id', 'literal', etc.
 =item o name => $$attributes{value}
 
 This is the real name of the tree node. E.g. If C<id> is 'node_id', then C<name> is the DOT node's
-name.
+name. It includes any port+compass suffix.
+
+=item o node => The node name without the port+compass suffix
+
+=item o port => The node name's port+compass suffix (prefixed by ':'), or ''
 
 =item o type => $$attributes{type}
 
