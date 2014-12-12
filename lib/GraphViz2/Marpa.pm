@@ -599,7 +599,7 @@ sub decode_node
 
 sub decode_port_compass
 {
-	my($self -> $name) = @_;
+	my($self, $name) = @_;
 
 	# Remove :port:compass, if any, from name.
 	# But beware Perl-style node names like 'A::Class'.
