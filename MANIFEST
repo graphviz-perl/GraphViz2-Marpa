@@ -218,6 +218,7 @@ scripts/test.1.sh
 scripts/test.html.pl
 scripts/test.n.sh
 scripts/test.utf8.sh
+t/decode.port.compass.t
 t/test.t
 xt/author/data/a.gv
 xt/author/data/abstract.gv
