@@ -635,7 +635,7 @@ sub decode_port_compass
 		@result = ($field[0], join('', @field[1 .. $#field]) );
 	}
 
-	return [@result];
+	return @result;
 
 } # End of decode_port_compass.
 
