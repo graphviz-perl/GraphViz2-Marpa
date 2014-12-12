@@ -613,7 +613,7 @@ sub decode_port_compass
 	# o A: & : & B to A::B.
 	# o A: & : B: & : & C to A::B::C.
 
-	while ($field[0] =~ /:$/)
+	while ( ($field[0] =~ /:$/) && ($#field >= 2) )
 	{
 		splice(@field, 0, 3, "$field[0]:$field[2]");
 	}
