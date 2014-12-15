@@ -507,7 +507,7 @@ sub _add_daughter
 {
 	my($self, $name, $attributes)  = @_;
 	my(@name)          = $self -> decode_port_compass($$attributes{value});
-	$$attributes{node} = $name[0];
+	$$attributes{name} = $name[0];
 	$$attributes{port} = $name[1];
 	$$attributes{uid}  = $self -> uid($self -> uid + 1);
 	my($node)          = Tree::DAG_Node -> new({name => $name, attributes => $attributes});
@@ -587,12 +587,12 @@ sub decode_node
 
 	return
 	{
-		id   => $node -> name,
-		name => $$attributes{value},
-		node => $$attributes{node},
-		port => $$attributes{port},
-		type => $$attributes{type},
-		uid  => $$attributes{uid},
+		id    => $node -> name,
+		name  => $$attributes{name},
+		port  => $$attributes{port},
+		type  => $$attributes{type},
+		uid   => $$attributes{uid},
+		value => $$attributes{value},
 	};
 
 } # End of decode_node.
@@ -1810,24 +1810,34 @@ Key => Value pairs:
 
 =item o id => $node -> name
 
-This has values like 'node_id', 'edge_id', 'literal', etc.
+This identifies the type of tree node. It has values like 'node_id', 'edge_id', 'literal', etc.
+These values come from the grammar.
 
 =item o name => $$attributes{value}
 
-This is the real name of the tree node. E.g. If C<id> is 'node_id', then C<name> is the DOT node's
-name. It includes any port+compass suffix.
+This is the name of the tree node. The value comes from the input stream.
 
-=item o node => The DOT node name without the port+compass suffix
+But, if C<id> is 'node_id', then C<name> is the DOT node's name without any port+compass suffix.
 
 =item o port => The DOT node name's port+compass suffix (prefixed by ':'), or ''
+
+This value come from the grammar.
 
 =item o type => $$attributes{type}
 
 This has values like 'node_id', 'open_bracket', etc. In fact, these are the names of lexemes.
+These values come from the grammar.
 
 =item o uid  => $$attributes{uid}
 
 This is the unique uid of the tree node.
+
+=item o value  => $$attributes{value}
+
+This is usually a copy of the C<name> attribute. The value comes from the input stream.
+
+If the C<id> is 'node_id>' then this value will be the DOT node's name including any
+port+compass suffix.
 
 =back
 
@@ -1841,7 +1851,7 @@ Key => Value pairs:
 
 =over 4
 
-=item o digraph => 'digraph' | 'graph'
+=item o digraph => 'digraph' || 'graph'
 
 Default: 'digraph'.
 
@@ -2052,30 +2062,30 @@ And this is the output:
 
 	Parsed tree:
 	root. Attributes: {type => "root_literal", uid => "0", value => "root"}
-	   |--- prolog. Attributes: {node => "prolog", port => "", type => "prolog_literal", uid => "1", value => "prolog"}
-	   |   |--- literal. Attributes: {node => "strict", port => "", type => "strict_literal", uid => "3", value => "strict"}
-	   |   |--- literal. Attributes: {node => "digraph", port => "", type => "digraph_literal", uid => "4", value => "digraph"}
-	   |--- graph. Attributes: {node => "graph", port => "", type => "graph_literal", uid => "2", value => "graph"}
-	       |--- graph_id. Attributes: {node => "graph_10_01", port => "", type => "graph_id", uid => "5", value => "graph_10_01"}
-	       |--- literal. Attributes: {node => "{", port => "", type => "open_brace", uid => "6", value => "{"}
-	       |   |--- node_id. Attributes: {node => "node_10_01_1", port => "", type => "node_id", uid => "7", value => "node_10_01_1"}
-	       |   |   |--- literal. Attributes: {node => "[", port => "", type => "open_bracket", uid => "8", value => "["}
-	       |   |   |--- attribute. Attributes: {node => "red", port => "", type => "fillcolor", uid => "9", value => "red"}
-	       |   |   |--- attribute. Attributes: {node => "filled", port => "", type => "style", uid => "10", value => "filled"}
-	       |   |   |--- literal. Attributes: {node => "]", port => "", type => "close_bracket", uid => "11", value => "]"}
-	       |   |--- node_id. Attributes: {node => "node_10_01_2", port => "", type => "node_id", uid => "12", value => "node_10_01_2"}
-	       |   |   |--- literal. Attributes: {node => "[", port => "", type => "open_bracket", uid => "13", value => "["}
-	       |   |   |--- attribute. Attributes: {node => "green", port => "", type => "fillcolor", uid => "14", value => "green"}
-	       |   |   |--- attribute. Attributes: {node => "filled", port => "", type => "style", uid => "15", value => "filled"}
-	       |   |   |--- literal. Attributes: {node => "]", port => "", type => "close_bracket", uid => "16", value => "]"}
-	       |   |--- node_id. Attributes: {node => "node_10_01_1", port => "", type => "node_id", uid => "17", value => "node_10_01_1"}
-	       |   |--- edge_id. Attributes: {name => "directed_edge", node => "->", port => "", uid => "18", value => "->"}
-	       |   |--- node_id. Attributes: {node => "node_10_01_2", port => "", type => "node_id", uid => "19", value => "node_10_01_2"}
-	       |       |--- literal. Attributes: {node => "[", port => "", type => "open_bracket", uid => "20", value => "["}
-	       |       |--- attribute. Attributes: {node => "dot", port => "", type => "arrowtail", uid => "21", value => "dot"}
-	       |       |--- attribute. Attributes: {node => "odot", port => "", type => "arrowhead", uid => "22", value => "odot"}
-	       |       |--- literal. Attributes: {node => "]", port => "", type => "close_bracket", uid => "23", value => "]"}
-	       |--- literal. Attributes: {node => "}", port => "", type => "close_brace", uid => "24", value => "}"}
+	   |--- prolog. Attributes: {name => "prolog", port => "", type => "prolog_literal", uid => "1", value => "prolog"}
+	   |   |--- literal. Attributes: {name => "strict", port => "", type => "strict_literal", uid => "3", value => "strict"}
+	   |   |--- literal. Attributes: {name => "digraph", port => "", type => "digraph_literal", uid => "4", value => "digraph"}
+	   |--- graph. Attributes: {name => "graph", port => "", type => "graph_literal", uid => "2", value => "graph"}
+	       |--- graph_id. Attributes: {name => "graph_10_01", port => "", type => "graph_id", uid => "5", value => "graph_10_01"}
+	       |--- literal. Attributes: {name => "{", port => "", type => "open_brace", uid => "6", value => "{"}
+	       |   |--- node_id. Attributes: {name => "node_10_01_1", port => "", type => "node_id", uid => "7", value => "node_10_01_1"}
+	       |   |   |--- literal. Attributes: {name => "[", port => "", type => "open_bracket", uid => "8", value => "["}
+	       |   |   |--- attribute. Attributes: {name => "red", port => "", type => "fillcolor", uid => "9", value => "red"}
+	       |   |   |--- attribute. Attributes: {name => "filled", port => "", type => "style", uid => "10", value => "filled"}
+	       |   |   |--- literal. Attributes: {name => "]", port => "", type => "close_bracket", uid => "11", value => "]"}
+	       |   |--- node_id. Attributes: {name => "node_10_01_2", port => "", type => "node_id", uid => "12", value => "node_10_01_2"}
+	       |   |   |--- literal. Attributes: {name => "[", port => "", type => "open_bracket", uid => "13", value => "["}
+	       |   |   |--- attribute. Attributes: {name => "green", port => "", type => "fillcolor", uid => "14", value => "green"}
+	       |   |   |--- attribute. Attributes: {name => "filled", port => "", type => "style", uid => "15", value => "filled"}
+	       |   |   |--- literal. Attributes: {name => "]", port => "", type => "close_bracket", uid => "16", value => "]"}
+	       |   |--- node_id. Attributes: {name => "node_10_01_1", port => "", type => "node_id", uid => "17", value => "node_10_01_1"}
+	       |   |--- edge_id. Attributes: {name => "->", port => "", uid => "18", value => "->"}
+	       |   |--- node_id. Attributes: {name => "node_10_01_2", port => "", type => "node_id", uid => "19", value => "node_10_01_2"}
+	       |       |--- literal. Attributes: {name => "[", port => "", type => "open_bracket", uid => "20", value => "["}
+	       |       |--- attribute. Attributes: {name => "dot", port => "", type => "arrowtail", uid => "21", value => "dot"}
+	       |       |--- attribute. Attributes: {name => "odot", port => "", type => "arrowhead", uid => "22", value => "odot"}
+	       |       |--- literal. Attributes: {name => "]", port => "", type => "close_bracket", uid => "23", value => "]"}
+	       |--- literal. Attributes: {name => "}", port => "", type => "close_brace", uid => "24", value => "}"}
 	Parse result:  0 (0 is success)
 
 You can see from this output that words special to Graphviz (e.g. STRICT) are accepted no matter
