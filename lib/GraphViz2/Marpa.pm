@@ -2061,7 +2061,7 @@ This is the input:
 And this is the output:
 
 	Parsed tree:
-	root. Attributes: {type => "root_literal", uid => "0", value => "root"}
+	root. Attributes: {name => "root", port => "", type => "root_literal", uid => "0", value => "root"}
 	   |--- prolog. Attributes: {name => "prolog", port => "", type => "prolog_literal", uid => "1", value => "prolog"}
 	   |   |--- literal. Attributes: {name => "strict", port => "", type => "strict_literal", uid => "3", value => "strict"}
 	   |   |--- literal. Attributes: {name => "digraph", port => "", type => "digraph_literal", uid => "4", value => "digraph"}
@@ -2079,7 +2079,7 @@ And this is the output:
 	       |   |   |--- attribute. Attributes: {name => "filled", port => "", type => "style", uid => "15", value => "filled"}
 	       |   |   |--- literal. Attributes: {name => "]", port => "", type => "close_bracket", uid => "16", value => "]"}
 	       |   |--- node_id. Attributes: {name => "node_10_01_1", port => "", type => "node_id", uid => "17", value => "node_10_01_1"}
-	       |   |--- edge_id. Attributes: {name => "->", port => "", uid => "18", value => "->"}
+	       |   |--- edge_id. Attributes: {name => "->", port => "", type => "directed_edge", uid => "18", value => "->"}
 	       |   |--- node_id. Attributes: {name => "node_10_01_2", port => "", type => "node_id", uid => "19", value => "node_10_01_2"}
 	       |       |--- literal. Attributes: {name => "[", port => "", type => "open_bracket", uid => "20", value => "["}
 	       |       |--- attribute. Attributes: {name => "dot", port => "", type => "arrowtail", uid => "21", value => "dot"}
