@@ -479,7 +479,7 @@ END_OF_GRAMMAR
 	# Since $self -> stack has not been initialized yet,
 	# we can't call _add_daughter() until after this statement.
 
-	$self -> tree(Tree::DAG_Node -> new({name => 'root', attributes => {type => 'root_literal', uid => $self -> uid, value => 'root'} }));
+	$self -> tree(Tree::DAG_Node -> new({name => 'root', attributes => {name => 'root', port => '', type => 'root_literal', uid => $self -> uid, value => 'root'} }));
 	$self -> stack([$self -> tree -> root]);
 
 	for my $name (qw/prolog graph/)
