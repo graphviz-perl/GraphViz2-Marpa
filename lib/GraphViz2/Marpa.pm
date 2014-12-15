@@ -923,7 +923,7 @@ sub _process
 		}
 		elsif ($event_name eq 'directed_edge')
 		{
-			$self -> _add_daughter('edge_id', {name => $event_name, value => $lexeme});
+			$self -> _add_daughter('edge_id', {type => $event_name, value => $lexeme});
 		}
 		elsif ($event_name eq 'node_name')
 		{
@@ -1009,7 +1009,7 @@ sub _process
 		}
 		elsif ($event_name eq 'undirected_edge')
 		{
-			$self -> _add_daughter('edge_id', {name => $event_name, value => $lexeme});
+			$self -> _add_daughter('edge_id', {type => $event_name, value => $lexeme});
 		}
 
 		# Step past separators.
