@@ -506,9 +506,12 @@ END_OF_GRAMMAR
 sub _add_daughter
 {
 	my($self, $name, $attributes)  = @_;
-	$$attributes{uid} = $self -> uid($self -> uid + 1);
-	my($node)         = Tree::DAG_Node -> new({name => $name, attributes => $attributes});
-	my($stack)        = $self -> stack;
+	my(@name)          = $self -> decode_port_compass($$attributes{value});
+	$$attributes{node} = $name[0];
+	$$attributes{port} = $name[1];
+	$$attributes{uid}  = $self -> uid($self -> uid + 1);
+	my($node)          = Tree::DAG_Node -> new({name => $name, attributes => $attributes});
+	my($stack)         = $self -> stack;
 
 	$$stack[$#$stack] -> add_daughter($node);
 
@@ -581,14 +584,13 @@ sub decode_node
 {
 	my($self, $node) = @_;
 	my($attributes)  = $node -> attributes;
-	my(@name)        = $self -> decode_port_compass($$attributes{value});
 
 	return
 	{
 		id   => $node -> name,
 		name => $$attributes{value},
-		node => $name[0],
-		port => $name[1],
+		node => $$attributes{node},
+		port => $$attributes{port},
 		type => $$attributes{type},
 		uid  => $$attributes{uid},
 	};
@@ -1786,6 +1788,18 @@ Clean the given string before passing it to Marpa.
 
 Clean the given string before storing it in the tree.
 
+=head2 decode_port_compass($name)
+
+Returns a 2-element array for the given DOT node name.
+
+=over 4
+
+=item o [0]: The node name without any port+compass suffix
+
+=item o [1]: The port+compass suffix (prefixed by ':'), or ''
+
+=back
+
 =head2 decode_node($node)
 
 Returns a hashref of the tree node's name and attributes.
@@ -1803,9 +1817,9 @@ This has values like 'node_id', 'edge_id', 'literal', etc.
 This is the real name of the tree node. E.g. If C<id> is 'node_id', then C<name> is the DOT node's
 name. It includes any port+compass suffix.
 
-=item o node => The node name without the port+compass suffix
+=item o node => The DOT node name without the port+compass suffix
 
-=item o port => The node name's port+compass suffix (prefixed by ':'), or ''
+=item o port => The DOT node name's port+compass suffix (prefixed by ':'), or ''
 
 =item o type => $$attributes{type}
 
@@ -1831,7 +1845,7 @@ Key => Value pairs:
 
 Default: 'digraph'.
 
-=item o strict  => '' | 'strict'
+=item o strict  => 'strict' || '' (empty string)
 
 Default: ''.
 
@@ -1964,7 +1978,7 @@ Here and below, the word C<node> (usually) refers to nodes in this tree, not Gra
 
 The root node always looks like this when printed by Tree::DAG_Node's tree2string() method:
 
-	root. Attributes: {type => "root_literal", uid => "0", value => "root"}
+	root. Attributes: {node=>"root", port=>"", type=>"root_literal", uid=>"0", value=>"root"}
 
 Interpretation:
 
@@ -1979,6 +1993,14 @@ Here, C<root>.
 Key fields:
 
 =over 4
+
+=item o node
+
+The name of the DOT node without any port+compass suffix. Here C<root>.
+
+=item o port
+
+The port+compass suffix of the DOT node name, if any, else ''. Here the empty string.
 
 =item o type
 
@@ -2018,44 +2040,42 @@ Using C<-max notice>, which is the default, produces no output from C<g2m.pl>.
 
 This is the input:
 
-	STRICT digraph graph_10
+	STRICT DiGraph graph_10_01
 	{
-		edge ["color" = "green"];
-		node [shape=rpromoter]
-		terminator [label = "\nterminator" shape = terminator;];
+		node_10_01_1 [fillcolor = red, style = filled]
+		node_10_01_2 [fillcolor = green, style = filled]
 
-		rpromoter -> terminator [label = Transformer]
+		node_10_01_1 -> node_10_01_2 [arrowtail = dot, arrowhead = odot]
 	}
 
 And this is the output:
 
+	Parsed tree:
 	root. Attributes: {type => "root_literal", uid => "0", value => "root"}
-	   |--- prolog. Attributes: {type => "prolog_literal", uid => "1", value => "prolog"}
-	   |   |--- literal. Attributes: {type => "strict_literal", uid => "3", value => "strict"}
-	   |   |--- literal. Attributes: {type => "digraph_literal", uid => "4", value => "digraph"}
-	   |--- graph. Attributes: {type => "graph_literal", uid => "2", value => "graph"}
-	       |--- graph_id. Attributes: {type => "node_id", uid => "5", value => "graph_10"}
-	       |--- literal. Attributes: {type => "open_brace", uid => "6", value => "{"}
-	       |   |--- class. Attributes: {type => "class", uid => "7", value => "edge"}
-	       |   |   |--- literal. Attributes: {type => "open_bracket", uid => "8", value => "["}
-	       |   |   |--- attribute. Attributes: {type => "color", uid => "9", value => "green"}
-	       |   |   |--- literal. Attributes: {type => "close_bracket", uid => "10", value => "]"}
-	       |   |--- class. Attributes: {type => "class", uid => "11", value => "node"}
-	       |   |   |--- literal. Attributes: {type => "open_bracket", uid => "12", value => "["}
-	       |   |   |--- attribute. Attributes: {type => "shape", uid => "13", value => "rpromoter"}
-	       |   |   |--- literal. Attributes: {type => "close_bracket", uid => "14", value => "]"}
-	       |   |--- node_id. Attributes: {type => "node_id", uid => "15", value => "terminator"}
-	       |   |   |--- literal. Attributes: {type => "open_bracket", uid => "16", value => "["}
-	       |   |   |--- attribute. Attributes: {type => "label", uid => "17", value => "\nterminator"}
-	       |   |   |--- attribute. Attributes: {type => "shape", uid => "18", value => "terminator"}
-	       |   |   |--- literal. Attributes: {type => "close_bracket", uid => "19", value => "]"}
-	       |   |--- node_id. Attributes: {type => "node_id", uid => "20", value => "rpromoter"}
-	       |   |--- edge_id. Attributes: {name => "directed_edge", uid => "21", value => "->"}
-	       |   |--- node_id. Attributes: {type => "node_id", uid => "22", value => "terminator"}
-	       |       |--- literal. Attributes: {type => "open_bracket", uid => "23", value => "["}
-	       |       |--- attribute. Attributes: {type => "label", uid => "24", value => "Transformer"}
-	       |       |--- literal. Attributes: {type => "close_bracket", uid => "25", value => "]"}
-	       |--- literal. Attributes: {type => "close_brace", uid => "26", value => "}"}
+	   |--- prolog. Attributes: {node => "prolog", port => "", type => "prolog_literal", uid => "1", value => "prolog"}
+	   |   |--- literal. Attributes: {node => "strict", port => "", type => "strict_literal", uid => "3", value => "strict"}
+	   |   |--- literal. Attributes: {node => "digraph", port => "", type => "digraph_literal", uid => "4", value => "digraph"}
+	   |--- graph. Attributes: {node => "graph", port => "", type => "graph_literal", uid => "2", value => "graph"}
+	       |--- graph_id. Attributes: {node => "graph_10_01", port => "", type => "graph_id", uid => "5", value => "graph_10_01"}
+	       |--- literal. Attributes: {node => "{", port => "", type => "open_brace", uid => "6", value => "{"}
+	       |   |--- node_id. Attributes: {node => "node_10_01_1", port => "", type => "node_id", uid => "7", value => "node_10_01_1"}
+	       |   |   |--- literal. Attributes: {node => "[", port => "", type => "open_bracket", uid => "8", value => "["}
+	       |   |   |--- attribute. Attributes: {node => "red", port => "", type => "fillcolor", uid => "9", value => "red"}
+	       |   |   |--- attribute. Attributes: {node => "filled", port => "", type => "style", uid => "10", value => "filled"}
+	       |   |   |--- literal. Attributes: {node => "]", port => "", type => "close_bracket", uid => "11", value => "]"}
+	       |   |--- node_id. Attributes: {node => "node_10_01_2", port => "", type => "node_id", uid => "12", value => "node_10_01_2"}
+	       |   |   |--- literal. Attributes: {node => "[", port => "", type => "open_bracket", uid => "13", value => "["}
+	       |   |   |--- attribute. Attributes: {node => "green", port => "", type => "fillcolor", uid => "14", value => "green"}
+	       |   |   |--- attribute. Attributes: {node => "filled", port => "", type => "style", uid => "15", value => "filled"}
+	       |   |   |--- literal. Attributes: {node => "]", port => "", type => "close_bracket", uid => "16", value => "]"}
+	       |   |--- node_id. Attributes: {node => "node_10_01_1", port => "", type => "node_id", uid => "17", value => "node_10_01_1"}
+	       |   |--- edge_id. Attributes: {name => "directed_edge", node => "->", port => "", uid => "18", value => "->"}
+	       |   |--- node_id. Attributes: {node => "node_10_01_2", port => "", type => "node_id", uid => "19", value => "node_10_01_2"}
+	       |       |--- literal. Attributes: {node => "[", port => "", type => "open_bracket", uid => "20", value => "["}
+	       |       |--- attribute. Attributes: {node => "dot", port => "", type => "arrowtail", uid => "21", value => "dot"}
+	       |       |--- attribute. Attributes: {node => "odot", port => "", type => "arrowhead", uid => "22", value => "odot"}
+	       |       |--- literal. Attributes: {node => "]", port => "", type => "close_bracket", uid => "23", value => "]"}
+	       |--- literal. Attributes: {node => "}", port => "", type => "close_brace", uid => "24", value => "}"}
 	Parse result:  0 (0 is success)
 
 You can see from this output that words special to Graphviz (e.g. STRICT) are accepted no matter
@@ -2268,9 +2288,9 @@ There is only ever 1 node called C<root>. This tree node is always present.
 
 =head2 How are nodes, ports and compass points represented in the (above) tree?
 
-Input contains this fragment of data/16.gv:
+Input contains this fragment of data/17.02.gv:
 
-	node_16_1:p11 -> node_16_2:p22:s
+	node_17_02_1:p11 -> node_17_02_2:p22:s
 	[
 		arrowhead = "odiamond";
 		arrowtail = "odot",
@@ -2280,11 +2300,14 @@ Input contains this fragment of data/16.gv:
 
 The output log contains:
 
-	|   |--- node_id. Attributes: {type => "node_id", uid => "29", value => "node_16_1:p11"}
-	|   |--- edge_id. Attributes: {name => "directed_edge", uid => "30", value => "->"}
-	|   |--- node_id. Attributes: {type => "node_id", uid => "31", value => "node_16_2:p22:s"}
+	|   |--- node_id. Attributes: {node => "node_17_02_1", port => ":p11", type => "node_id", uid => "29", value => "node_17_02_1:p11"}
+	|   |--- edge_id. Attributes: {name => "directed_edge", node => "->", port => "", uid => "30", value => "->"}
+	|   |--- node_id. Attributes: {node => "node_17_02_2", port => ":p22:s", type => "node_id", uid => "31", value => "node_17_02_2:p22:s"}
 
-You can see the ports and compass points have been incorporated into the C<value> attribute.
+You can see the ports and compass points have been incorporated into the C<value> attribute, and
+that is value comes from concatenating the values of the C<node> and C<port> attributes.
+
+See L</decode_port_compass($name)> and L</decode_node($node)>.
 
 =head2 How are HTML-like labels handled
 
@@ -2384,12 +2407,14 @@ tests. Combined, they take almost 2m 30s to run.
 =head1 See Also
 
 L<Marpa::Demo::StringParser>. The significance of this module is that during the re-write of
-GraphViz2::Marpa (V 1 .. 2), the string-handling code was designed in L<Marpa::Demo::StringParser>.
+GraphViz2::Marpa V 1 => 2, the string-handling code was built-up step-by-step in
+L<Marpa::Demo::StringParser>.
 
 Later, that code was improved within this module, and will be back-ported into
-Marpa::Demo::StringParser.
+Marpa::Demo::StringParser. In particular the technique used in _process_html() really should be
+back-ported.
 
-Also, see L<GraphViz2::Marpa::PathUtils> for 2 ways the tree build by this module can be processed
+Also, see L<GraphViz2::Marpa::PathUtils> for 2 ways the tree built by this module can be processed
 to provide analysis of the structure of the graph.
 
 =head1 Machine-Readable Change Log
