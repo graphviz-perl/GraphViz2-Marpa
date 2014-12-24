@@ -2439,8 +2439,7 @@ Version numbers < 1.00 represent development versions. From 1.00 up, they are pr
 
 Many thanks are due to the people who worked on L<Graphviz|http://www.graphviz.org/>.
 
-Jeffrey Kegler wrote L<Marpa::XS>, and has a blog on it at
-L<http://blogs.perl.org/users/jeffrey_kegler/>.
+Jeffrey Kegler wrote Marpa and L<Marpa::R2>.
 
 And thanks to rns (Ruslan Shvedov) for writing the grammar for double-quoted strings used in
 L<MarpaX::Demo::SampleScripts>'s scripts/quoted.strings.02.pl. I adapted it to HTML (see
