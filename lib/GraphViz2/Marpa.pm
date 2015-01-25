@@ -1691,7 +1691,7 @@ C<new()> is called as C<< my($g2m) = GraphViz2::Marpa -> new(k1 => v1, k2 => v2,
 It returns a new object of type C<GraphViz2::Marpa>.
 
 Key-value pairs accepted in the parameter list (see corresponding methods for details
-[e.g. L<description([$graph])>]):
+[e.g. L</description([$graph])>]):
 
 =over 4
 
@@ -1916,8 +1916,8 @@ Here, the [] indicate an optional parameter.
 
 Get or set the value used by the logger object.
 
-This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
-use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
+This option is only used if an object of type L<Log::Handler> is ceated.
+See L<Log::Handler::Levels>.
 
 'maxlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
@@ -1927,8 +1927,8 @@ Here, the [] indicate an optional parameter.
 
 Get or set the value used by the logger object.
 
-This option is only used if L<GraphViz2::Marpa:::Lexer> or L<GraphViz2::Marpa::Parser>
-use or create an object of type L<Log::Handler>. See L<Log::Handler::Levels>.
+This option is only used if an object of type L<Log::Handler> is created.
+See L<Log::Handler::Levels>.
 
 'minlevel' is a parameter to L</new()>. See L</Constructor and Initialization> for details.
 
