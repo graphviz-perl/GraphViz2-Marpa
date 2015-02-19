@@ -4,7 +4,7 @@
       "Ron Savage <ron@savage.net.au>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.421",
+   "generated_by" : "Module::Build version 0.4211",
    "license" : [
       "artistic_2"
    ],
@@ -83,10 +83,7 @@
    "resources" : {
       "license" : [
          "http://www.perlfoundation.org/artistic_license_2_0"
-      ],
-      "repository" : {
-         "url" : "https://github.com/ronsavage/GraphViz2-Marpa"
-      }
+      ]
    },
    "version" : "2.03"
 }
