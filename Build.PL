@@ -77,13 +77,6 @@ $class -> new
 	{
 		'Module::Build' => 0.4210,
 	},
-	meta_merge =>
-	{
-		resources =>
-		{
-			repository => 'https://github.com/ronsavage/GraphViz2-Marpa',
-		},
-	},
 	requires =>
 	{
 		'Algorithm::Diff'             => 1.1902,
@@ -119,5 +112,6 @@ $class -> new
 	{
 		bugtracker => 'https://rt.cpan.org/Public/Dist/Display.html?Name=GraphViz2-Marpa',
 		license    => 'http://opensource.org/licenses/Artistic-2.0',
+		repository => 'https://github.com/ronsavage/GraphViz2-Marpa',
 	},
 ) -> create_build_script();
