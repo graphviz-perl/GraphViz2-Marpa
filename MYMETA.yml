@@ -60,5 +60,4 @@ requires:
   warnings: '0'
 resources:
   license: http://www.perlfoundation.org/artistic_license_2_0
-  repository: https://github.com/ronsavage/GraphViz2-Marpa
 version: '2.03'
