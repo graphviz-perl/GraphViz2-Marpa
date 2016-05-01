@@ -2,13 +2,15 @@ Revision history for Perl extension GraphViz2::Marpa.
 
 2.05  2016-05-01T17:25:00
 	- Replace Test::More with Test2::Suite. See t/*.t.
+	- Hence bail out cleanly if 'dot' is not installed. See RT#105575. Thanx Karen Etheridge.
 
 2.04  2016-05-01T12:54:00
-	- Reduce required version of Perl from V 5.14.2 to 5.10.1.
+	- Reduce required version of Perl from V 5.14.2 to 5.10.1. See RT#105577. Thanx Karen Etheridge.
 	- Reduce required version of File::Copy from V 2.26 to 2.14 to match.
 	- Remove 'use open qw(:std :utf8)' from all modules.
 	- See http://savage.net.au/Ron/html/My.Workflow.for.Building.Distros.html for notes on the
-		modernization of Makefile.PL. This includes removing Build.PL.
+		modernization of Makefile.PL.
+	- Remove Build.PL. See RT#105576. Thanx Karen Etheridge.
 
 2.03  2014-12-12T13:45:00
 	- Patch so token names are not stored with double-quotes when input is double-quoted.
