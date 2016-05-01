@@ -48,7 +48,7 @@ for my $file_name ($utils -> get_files($data_dir_name, $in_suffix) )
 	$diff_count = 0;
 	$message    = $will_fail{$file_name}
 					? "Known and expected failure : data/$file_name.gv"
-					: "Tests shipped and generated: data/$file_name.gv";
+					: "Test shipped and generated: data/$file_name.gv";
 
 	$diff -> Base(1); # Return line numbers, not indices.
 

@@ -83,20 +83,21 @@ my(%params) =
 		'Log::Handler' => 0.71,
 		'Marpa::R2' => 2.096000,
 		'Moo' => 1.006000,
-		'open' => 0,
 		'Path::Iterator::Rule' => 1.008,
 		'Path::Tiny' => 0.061,
-		'perl' => 5.014002,
+		'perl' => 5.010001,
 		'Pod::Usage' => 1.36,
 		'strict' => 0,
-		'Test::More' => 1.001014,
-		'Test::Pod' => 1.48,
 		'Text::Xslate' => 1.4001,
 		'Tree::DAG_Node' => 1.07,
 		'Try::Tiny' => 0.09,
 		'Types::Standard' => 1.000004,
-		'utf8' => 0,
 		'warnings' => 0,
+	},
+	TEST_REQUIRES =>
+	{
+		'Test::More' => 1.001014,
+		'Test::Pod' => 1.48,
 	},
 	VERSION_FROM => 'lib/GraphViz2/Marpa.pm',
 );
@@ -112,17 +113,20 @@ if ($ExtUtils::MakeMaker::VERSION ge '6.46')
 	{
 		'meta-spec' =>
 		{
-		'version' => 2,
+			version => 2,
 		},
 		resources   =>
 		{
-		'bugtracker' => 'https://rt.cpan.org/Public/Dist/Display.html?Name=GraphViz2-Marpa',
-		'license' => 'http://opensource.org/licenses/Artistic-2.0',
-			repository =>
+			bugtracker =>
 			{
-		'type' => 'git',
-		'url' => 'https://github.com/ronsavage/GraphViz2-Marpa.git',
-		'web' => 'https://github.com/ronsavage/GraphViz2-Marpa',
+				web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=GraphViz2-Marpa',
+			},
+			license		=> 'http://dev.perl.org/licenses/',
+			repository	=>
+			{
+				type	=> 'git',
+				url		=> 'https://github.com/ronsavage/GraphViz2-Marpa.git',
+				web		=> 'https://github.com/ronsavage/GraphViz2-Marpa',
 			},
 		},
 	};

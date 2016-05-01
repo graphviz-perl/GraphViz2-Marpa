@@ -3,7 +3,6 @@ package GraphViz2::Marpa;
 use strict;
 use warnings;
 use warnings qw(FATAL utf8); # Fatalize encoding glitches.
-use open     qw(:std :utf8); # Undeclared streams in UTF-8.
 
 use GraphViz2::Marpa::Renderer::Graphviz;
 
