@@ -12,7 +12,7 @@ use Test2::Tools::Compare;
 
 # -----------
 
-if (! defined which('dotx') )
+if (! defined which('dot') )
 {
 	bail_out("Cannot find 'dot'. Please install Graphviz from http://www.graphviz.org/");
 }
