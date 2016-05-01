@@ -3,11 +3,19 @@
 use strict;
 use warnings;
 
+use File::Which 'which';
+
 use GraphViz2::Marpa::Utils;
 
-use Test::More;
+use Test2::Tools::Basic;
+use Test2::Tools::Compare;
 
 # -----------
+
+if (! defined which('dotx') )
+{
+	bail_out("Cannot find 'dot'. Please install Graphviz from http://www.graphviz.org/");
+}
 
 # Allow for known failures.
 # The key '01' means input file data/01.gv, etc.

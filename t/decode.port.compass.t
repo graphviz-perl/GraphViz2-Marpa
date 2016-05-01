@@ -3,9 +3,12 @@
 use strict;
 use warnings;
 
+use File::Which 'which';
+
 use GraphViz2::Marpa;
 
-use Test::More;
+use Test2::Tools::Basic;
+use Test2::Tools::Compare;
 
 # -------------------
 
@@ -29,11 +32,16 @@ sub test
 
 	$$count++;
 
-	is_deeply([@result], $expected{$name}, "Test $name");
+	is([@result], $expected{$name}, "Test $name");
 
 } # End of test.
 
 # -------------------
+
+if (! defined which('dotx') )
+{
+	bail_out("Cannot find 'dot'. Please install Graphviz from http://www.graphviz.org/");
+}
 
 my($count) = 0;
 my($graph) = GraphViz2::Marpa -> new;
@@ -51,4 +59,4 @@ test(\$count, $graph, '"A::B":p:c');
 
 print "# Internal test count: $count\n";
 
-done_testing($count);
+done_testing;

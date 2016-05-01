@@ -1,5 +1,8 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+2.05  2016-05-01T17:25:00
+	- Replace Test::More with Test2::Suite. See t/*.t.
+
 2.04  2016-05-01T12:54:00
 	- Reduce required version of Perl from V 5.14.2 to 5.10.1.
 	- Reduce required version of File::Copy from V 2.26 to 2.14 to match.
