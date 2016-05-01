@@ -63,8 +63,10 @@ my(%params) =
 	},
 	TEST_REQUIRES =>
 	{
-		'Test::Pod'		=> 1.48,
-		'Test2::Suite'	=> 0.000029,
+		'Test::Pod'				=> 1.48,
+		'Test2::Suite'			=> 0.000029,
+		'Test2::Tools::Basic'	=> 0.000029, # Keep one of my build tools happy.
+		'Test2::Tools::Compare'	=> 0.000029, # Keep one of my build tools happy.
 	},
 	VERSION_FROM => 'lib/GraphViz2/Marpa.pm',
 );
