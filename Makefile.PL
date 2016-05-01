@@ -8,7 +8,7 @@ use ExtUtils::MakeMaker;
 use File::Spec;
 use File::Temp;
 
-require 5.014002; # For the utf8 stuff.
+require 5.010001; # For the utf8 stuff.
 
 # -----------------------------------------------
 
