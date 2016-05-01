@@ -74,7 +74,7 @@ my(%params) =
 		'Date::Format' => 2.24,
 		'Date::Simple' => 3.03,
 		'File::Basename' => 2.84,
-		'File::Copy' => 2.26,
+		'File::Copy' => 2.14,
 		'File::HomeDir' => 1.00,
 		'File::Spec' => 3.40,
 		'File::Temp' => 0.2301,
@@ -115,7 +115,7 @@ if ($ExtUtils::MakeMaker::VERSION ge '6.46')
 		{
 			version => 2,
 		},
-		resources   =>
+		resources =>
 		{
 			bugtracker =>
 			{
