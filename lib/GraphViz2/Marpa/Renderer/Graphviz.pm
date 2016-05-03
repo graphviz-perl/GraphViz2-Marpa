@@ -51,7 +51,7 @@ has tree =>
 );
 
 
-our $VERSION = '2.05';
+our $VERSION = '2.06';
 
 # --------------------------------------------------
 
@@ -469,7 +469,7 @@ Australian copyright (c) 2012, Ron Savage.
 
 	All Programs of mine are 'OSI Certified Open Source Software';
 	you can redistribute them and/or modify them under the terms of
-	The Artistic License 2.0, a copy of which is available at:
-	http://opensource.org/licenses/alphabetical.
+	The Perl License, a copy of which is available at:
+	http://dev.perl.org/licenses/
 
 =cut

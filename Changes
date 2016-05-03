@@ -1,5 +1,14 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+2.06  2016-05-03T11:45:00
+	- Update last 2 lines of docs from:
+			The Artistic License, a copy of which is available at:
+			http://www.opensource.org/licenses/index.html
+		To
+			The Perl License, a copy of which is available at:
+			http://dev.perl.org/licenses/
+		See RT#114119. With thanx to eagle-eyed Petr Pisar.
+
 2.05  2016-05-01T17:25:00
 	- Replace Test::More with Test2::Suite. See t/*.t.
 	- Hence bail out cleanly if 'dot' is not installed. See RT#105575. Thanx Karen Etheridge.
