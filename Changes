@@ -1,5 +1,9 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+2.07  2016-05-04T08;15:00
+	- Correct physical address of Free Software Foundation in LICENSE file. See RT#114149.
+		Thanx to Petr Pisar.
+
 2.06  2016-05-03T11:45:00
 	- Update last 2 lines of docs from:
 			The Artistic License, a copy of which is available at:
