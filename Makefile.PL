@@ -64,7 +64,7 @@ my(%params) =
 	TEST_REQUIRES =>
 	{
 		'Test::Pod'					=> 1.48,
-		'Test2::Bundle::Extended'	=> 0.000030,
+		'Test2::Bundle::Extended'	=> '0.000030',
 	},
 	VERSION_FROM => 'lib/GraphViz2/Marpa.pm',
 );
