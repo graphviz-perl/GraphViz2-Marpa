@@ -1,14 +1,10 @@
 #!/usr/bin/env perl
 
-use strict;
-use warnings;
-
 use File::Which 'which';
 
 use GraphViz2::Marpa::Utils;
 
-use Test2::Tools::Basic;
-use Test2::Tools::Compare;
+use Test2::Bundle::Extended;
 
 # -----------
 
