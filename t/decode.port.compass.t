@@ -4,7 +4,7 @@ use File::Which 'which';
 
 use GraphViz2::Marpa;
 
-use Test2::Bundle::Extended;
+use Test::More;
 
 # -------------------
 

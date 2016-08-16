@@ -1,5 +1,9 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+2.09  2016-08-14T11:33:00
+	- Stop using Test::Stream. Use Test::More shipped in the Test::Simple distro.
+	- Update version #s in pre-reqs.
+
 2.08  2016-05-11T10:09:00
 	- Update pre-reqs from Test2::Tools::* V 0.000029 to Test2::Bundle::Extended V 0.000030.
 	- Remove Test2::Suite from TEST_REQUIRES in Makefile.PL. It's not used explicitly, and this
