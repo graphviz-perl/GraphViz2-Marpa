@@ -28,7 +28,7 @@ sub test
 
 	$$count++;
 
-	is([@result], $expected{$name}, "Test $name");
+	is(@result, @{$expected{$name} }, "Test $name");
 
 } # End of test.
 
