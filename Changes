@@ -1,5 +1,9 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+2.10  2016-09-28T08:47:00
+	- Fix pre-version # of Try::Tiny. It was 1.29 (copied carelessly from Tree::DAG_Node) and
+		should be 0.27.  Thanx to Xavier Caron, via github.
+
 2.09  2016-08-14T11:33:00
 	- Stop using Test::Stream. Use Test::More shipped in the Test::Simple distro.
 	- Update version #s in pre-reqs.

@@ -57,7 +57,7 @@ my(%params) =
 		'strict'						=> 0,
 		'Text::Xslate'					=> 3.3.9,
 		'Tree::DAG_Node'				=> 1.29,
-		'Try::Tiny'						=> 1.29,
+		'Try::Tiny'						=> 0.27,
 		'Types::Standard'				=> 1.000005,
 		'warnings'						=> 0,
 	},
