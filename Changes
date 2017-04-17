@@ -1,5 +1,10 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+2.11  2017-04-17T15:55:00
+	- Edit 2 test files to change bail_out() to BAIL_OUT().
+	- Wind down pre-req for Test::More to 1.001002.
+	- Edit Config pre-req version from under to 0.
+
 2.10  2016-09-28T08:47:00
 	- Fix pre-version # of Try::Tiny. It was 1.29 (copied carelessly from Tree::DAG_Node) and
 		should be 0.27.  Thanx to Xavier Caron, via github.

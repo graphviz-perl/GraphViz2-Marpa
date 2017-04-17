@@ -10,7 +10,7 @@ use Test::More;
 
 if (! defined which('dot') )
 {
-	bail_out("Cannot find 'dot'. Please install Graphviz from http://www.graphviz.org/");
+	BAIL_OUT("Cannot find 'dot'. Please install Graphviz from http://www.graphviz.org/");
 }
 
 # Allow for known failures.

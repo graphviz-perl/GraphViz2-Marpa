@@ -35,7 +35,7 @@ my(%params) =
 	{
 		'Algorithm::Diff'				=> 1.1903,
 		'Capture::Tiny'					=> 0.44,
-		'Config'						=> undef,
+		'Config'						=> 0,
 		'Config::Tiny'					=> 2.23,
 		'Date::Format'					=> 2.24,
 		'Date::Simple'					=> 3.03,
@@ -64,7 +64,7 @@ my(%params) =
 	TEST_REQUIRES =>
 	{
 		'Test::Pod'		=> 1.51,
-		'Test::Simple'	=> 1.302052, # For Test::More.
+		'Test::More'	=> 1.001002,
 	},
 	VERSION_FROM => 'lib/GraphViz2/Marpa.pm',
 );
