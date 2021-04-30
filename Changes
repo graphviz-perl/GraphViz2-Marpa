@@ -1,5 +1,9 @@
 Revision history for Perl extension GraphViz2::Marpa.
 
+2.12  2021-04-30T19:45:00
+	- Fix bug whereby I used a variable name $numeric instead of defined($numeric), because the value can be 0.
+	  Reported by Martin Ward.
+
 2.11  2017-04-17T15:55:00
 	- Edit 2 test files to change bail_out() to BAIL_OUT().
 	- Wind down pre-req for Test::More to 1.001002.
