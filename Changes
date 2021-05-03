@@ -4,6 +4,8 @@ Revision history for Perl extension GraphViz2::Marpa.
 	- Fix bug whereby I had used a variable name $numeric instead of defined($numeric).
 		This is triggered when a node attribute has the value 0.
 		Reported by Martin Ward.
+	- Adopt new repo structure. See
+		http://savage.net.au/Ron/html/My.Workflow.for.Building.Distros.html.
 	- Add files t/00.versions.*.
 
 2.11  2017-04-17T15:55:00
