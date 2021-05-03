@@ -28,7 +28,6 @@ use Marpa::R2;
 use Moo;
 use Path::Iterator::Rule;
 use Path::Tiny;
-use perl;
 use Pod::Usage;
 use strict;
 use Text::Xslate;
@@ -62,7 +61,6 @@ my(@modules) = qw
 	Moo
 	Path::Iterator::Rule
 	Path::Tiny
-	perl
 	Pod::Usage
 	strict
 	Text::Xslate
