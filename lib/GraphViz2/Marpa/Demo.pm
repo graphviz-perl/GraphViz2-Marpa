@@ -188,7 +188,7 @@ sub justify
 
 =head1 NAME
 
-C<GraphViz2::Marpa::Demo> - A demo page generator for C<GraphViz2::Marpa>
+GraphViz2::Marpa::Demo - A demo page generator for C<GraphViz2::Marpa>
 
 =head1 Synopsis
 

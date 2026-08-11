@@ -1421,7 +1421,7 @@ sub _validate_event
 
 =head1 NAME
 
-C<GraphViz2::Marpa> - A Marpa-based parser for Graphviz C<dot> files
+GraphViz2::Marpa - A Marpa-based parser for Graphviz C<dot> files
 
 =head1 Synopsis
 

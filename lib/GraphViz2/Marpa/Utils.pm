@@ -72,7 +72,7 @@ sub perform_1_test
 
 =head1 NAME
 
-C<GraphViz2::Marpa::Utils> - A demo page generator for C<GraphViz2::Marpa>
+GraphViz2::Marpa::Utils - A demo page generator for C<GraphViz2::Marpa>
 
 =head1 Synopsis
 

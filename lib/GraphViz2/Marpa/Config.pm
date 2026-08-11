@@ -95,7 +95,7 @@ sub read
 
 =head1 NAME
 
-C<GraphViz2::Marpa::Config> - A config file helper for C<GraphViz2::Marpa>
+GraphViz2::Marpa::Config - A config file helper for C<GraphViz2::Marpa>
 
 =head1 Synopsis
 

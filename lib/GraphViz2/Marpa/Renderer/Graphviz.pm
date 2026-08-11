@@ -270,7 +270,7 @@ sub run
 
 =head1 NAME
 
-C<GraphViz2::Marpa::Renderer::Graphviz> - A renderer for L<GraphViz2::Marpa>-style C<dot> files
+GraphViz2::Marpa::Renderer::Graphviz - A renderer for L<GraphViz2::Marpa>-style C<dot> files
 
 =head1 Synopsis
 
