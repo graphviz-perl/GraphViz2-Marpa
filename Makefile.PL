@@ -40,6 +40,7 @@ my(%params) =
 		'Config::Tiny'					=> 2.23,
 		'Date::Format'					=> 2.24,
 		'Date::Simple'					=> 3.03,
+		'ExtUtils::MakeMaker'			=> 7.70,
 		'File::Basename'				=> 2.85,
 		'File::Copy'					=> 0,
 		'File::HomeDir'					=> 1.00,

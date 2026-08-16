@@ -37,11 +37,7 @@
 #   Mac OSX SMB mount metadata files
 \B\._
 
-# Avoid UltraEdit files.
-\.prj$
-\.pui$
-
 ^MYMETA.yml$
 ^MYMETA\.json$
 
-^GraphViz2-Marpa-.*
+^GraphViz2-Marpa-*
